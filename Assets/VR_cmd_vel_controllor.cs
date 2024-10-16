@@ -7,6 +7,7 @@ using Unity.Robotics.ROSTCPConnector;
 using RosMessageTypes.Geometry;
 public class vrcmdvelcontroller : MonoBehaviour
 {
+    public int sw = 0;
     public int control_mode = 0;
     public float Time_Delay = 5.0f;
     List<float> CMD_linear_list = new List<float>();
@@ -41,6 +42,7 @@ public class vrcmdvelcontroller : MonoBehaviour
     private float timeElapsed_Pose;
     private float timeElapsed_adopt;
     private float timeElapsed_adopt_starter = 0.0f;
+    private float timeElapsed_start = 0.0f;
 
     // Publish the cube's position and rotation every N seconds
     public float publishMessageInterval = 0.02f;//50Hz
@@ -79,15 +81,15 @@ public class vrcmdvelcontroller : MonoBehaviour
     void Update()
     {
         //
-        if (laiser != null && laiser.geton_ic120 == 1)
+        if (laiser != null && laiser.geton_ic120 == 1 || sw == 1)
         {
             // Debug.Log("get: " + laiser.conum_zx200);
-            if (laiser.conum_zx200 == 0)
+            if (laiser.conum_zx200 == 0 && sw != 1)
             {
                 cmd_operation = 0;
 
             }
-            else if (laiser.conum_zx200 > 0)
+            else if (laiser.conum_zx200 > 0 || sw == 1)
             {
                 cmd_operation = 1;
                 //Debug.Log("geton");
@@ -99,6 +101,7 @@ public class vrcmdvelcontroller : MonoBehaviour
                 timeElapsed_Pose += Time.deltaTime;
                 timeElapsed_CMD += Time.deltaTime;
                 timeElapsed_adopt_starter += Time.deltaTime;
+                timeElapsed_start += Time.deltaTime;
 
                 double time = Time.fixedTimeAsDouble;
                 double deltaTime = time - previousTime;
@@ -163,69 +166,72 @@ public class vrcmdvelcontroller : MonoBehaviour
 
                 Vector2 stickL = movespeed * OVRInput.Get(OVRInput.RawAxis2D.LThumbstick);
                 //
-                linear.x = stickL.y;
+                float frontback= stickL.y;
+                //linear.x = stickL.y;
                 //Vector2 stickL = movespeed * OVRInput.Get(OVRInput.RawAxis2D.LThumbstick);
-                angular.z = -stickL.x;
-                Debug.Log("x" + linear.x + "z" + angular.z);
+                float rotation = -stickL.x;
+                //angular.z = -stickL.x;
+                //Debug.Log("x" + linear.x + "z" + angular.z);
 
                 if (key == 1)
                 {
                     if (Input.GetKey(KeyCode.Space))
                     {
                         // OVRManager.display.RecenterPose();
-                        linear.x = 0;
-                        angular.z = 0;
+                        frontback = 0;
+                        rotation = 0;
                     }
                     //
-                    if (Input.GetKeyDown(KeyCode.LeftArrow))
+                    if (Input.GetKey(KeyCode.LeftArrow))
                     {
-                        angular.z = rotspeed;
+                        rotation = rotspeed;
                         //angular.z = angular.z + 0.1;
                         // Debug.Log("左アナログスティックを上に倒した");
                     }
                     if (Input.GetKeyUp(KeyCode.LeftArrow))
                     {
-                        angular.z = 0;
+                        rotation = 0;
                         //angular.z = angular.z + 0.1;
                         // Debug.Log("左アナログスティックを上に倒した");
                     }
                     // 右に移動
-                    if (Input.GetKeyDown(KeyCode.RightArrow))
+                    if (Input.GetKey(KeyCode.RightArrow))
                     {
-                        angular.z = -rotspeed;
+                        rotation = -rotspeed;
                         //angular.z = angular.z + (-0.1);
                         // Debug.Log("右アナログスティックを上に倒した");
                     }
                     if (Input.GetKeyUp(KeyCode.RightArrow))
                     {
-                        angular.z = 0;
+                        rotation = 0;
                         //angular.z = angular.z + (-0.1);
                         // Debug.Log("右アナログスティックを上に倒した");
                     }
                     // 前に移動
-                    if (Input.GetKeyDown(KeyCode.UpArrow))
+                    if (Input.GetKey(KeyCode.UpArrow))
                     {
-                        linear.x = linearspeed;
+                        frontback = linearspeed;
                         //linear.x = linear.x + 0.1;
                     }
 
                     if (Input.GetKeyUp(KeyCode.UpArrow))
                     {
-                        linear.x = 0;
+                        frontback = 0;
                         //linear.x = linear.x + 0.1;
                     }
                     // 後ろに移動
-                    if (Input.GetKeyDown(KeyCode.DownArrow))
+                    if (Input.GetKey(KeyCode.DownArrow))
                     {
-                        linear.x = -linearspeed;
+                        frontback = -linearspeed;
                         //linear.x = linear.x + (-0.1);
                     }
                     if (Input.GetKeyUp(KeyCode.DownArrow))
                     {
-                        linear.x = 0;
+                        frontback = 0;
                         //linear.x = linear.x + (-0.1);
                     }
                 }
+                Debug.Log("x" + frontback + "z" + rotation);
 
                 //print(linear);
                 //
@@ -233,7 +239,8 @@ public class vrcmdvelcontroller : MonoBehaviour
                 //
                 if (control_mode == 0)
                 {
-
+                    linear.x = frontback;
+                    angular.z = rotation;
                     if (linear.x == 0 && angular.z == 0)
                     {
                         zerocounter += 1;
@@ -242,13 +249,33 @@ public class vrcmdvelcontroller : MonoBehaviour
                     {
                         zerocounter = 0;
                     }
+                    //
+                    //Send untiy_odom to turtlebot_control
+                    TwistMsg Twist = new TwistMsg(
+                      linear,
+                      angular
+                      );
+
+                    //
+                    //
+                    // Finally send the message to server_endpoint.py running in ROS
+                    if (zerocounter <= 20 && timeElapsed >= publishMessageInterval)
+                    {
+                        Debug.Log("Publish");
+                        ros.Send("ic120/tracks/cmd_vel", Twist);
+                        timeElapsed = 0.0f;
+                    }
+                    previousTime = time;
+
                 }
                 if (control_mode == 1)
                 {
                     if (timeElapsed_CMD >= publishMessageInterval)
                     {
-                        CMD_linear_list.Add(stickL.y);
-                        CMD_anglar_list.Add(-stickL.x);
+                        CMD_linear_list.Add(frontback);
+                        CMD_anglar_list.Add(rotation);
+                        timeElapsed_CMD = 0.0f;
+
 
                     }
                     if (timeElapsed_Pose >= adopt_time)
@@ -256,24 +283,33 @@ public class vrcmdvelcontroller : MonoBehaviour
 
 
                     }
-                }
-                //
-                //Send untiy_odom to turtlebot_control
-                TwistMsg Twist = new TwistMsg(
-                  linear,
-                  angular
-                  );
+                    if (timeElapsed_start > Time_Delay) 
+                    {
+                        //
+                        int CMD_time = Mathf.RoundToInt(Time_Delay / publishMessageInterval);
+                        linear.x = CMD_linear_list[CMD_linear_list.Count-(CMD_time)];
+                        angular.z = CMD_anglar_list[CMD_anglar_list.Count-(CMD_time)];
+                        //Send untiy_odom to turtlebot_control
+                        TwistMsg Twist = new TwistMsg(
+                          linear,
+                          angular
+                          );
 
-                //
-                //
-                // Finally send the message to server_endpoint.py running in ROS
-                if (zerocounter <= 20 && timeElapsed >= publishMessageInterval)
-                {
-                    Debug.Log("Publish");
-                    ros.Send("ic120/tracks/cmd_vel", Twist);
-                    timeElapsed = 0.0f;
+                        //
+                        //
+                        // Finally send the message to server_endpoint.py running in ROS
+                        if (zerocounter <= 20 && timeElapsed >= publishMessageInterval)
+                        {
+                            Debug.Log("Publish");
+                            ros.Send("ic120/tracks/cmd_vel", Twist);
+                            timeElapsed = 0.0f;
+                        }
+                        previousTime = time;
+
+
+                    }
                 }
-                previousTime = time;
+                
             }//
         }//
     }
@@ -301,8 +337,11 @@ public class vrcmdvelcontroller : MonoBehaviour
                 last_rotation = rotation_list[rotation_list.Count - last_time];
                 diff_pose = last_pose - newPosition;
                 diff_rot = last_rotation - NewRotation;
-                GameObject.Find("ic120").transform.position += diff_pose;
-                GameObject.Find("ic120").transform.rotation = Quaternion.Euler(diff_rot + rotation_for_list.eulerAngles);
+                GameObject.Find("ic120").GetComponent<Rigidbody>().isKinematic = false;
+                //GameObject.Find("ic120").transform.position += diff_pose;
+                //GameObject.Find("ic120").transform.rotation = Quaternion.Euler(diff_rot + rotation_for_list.eulerAngles);
+                GameObject.Find("ic120").GetComponent<Rigidbody>().isKinematic = true;
+                Debug.Log("moooover");
             }
             
 

@@ -2,6 +2,7 @@ using UnityEngine;
 public class ParentObjectName : MonoBehaviour
 {
     int warp_triger = 0;
+    public string GetOnVehicle;
     public int geton_ic120 = 0;
     public int geton_zx200 = 0;
     public int geton_c30r = 0;
@@ -73,6 +74,7 @@ public class ParentObjectName : MonoBehaviour
                     geton_c30r = 1;
 
                 }
+                GetOnVehicle = parentObjectName;
             }
 
 
@@ -87,7 +89,7 @@ public class ParentObjectName : MonoBehaviour
     ///
     public int conum_zx200 = 0;
     public int sw_zx200 = 0;
-    public float swsize = 0.05f;
+    
     Vector3 posiorigin;
     Quaternion rotrigin;
     public int num = 0;

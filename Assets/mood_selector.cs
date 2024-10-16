@@ -6,6 +6,9 @@ public class mood_selector : MonoBehaviour
 {
     // Start is called before the first frame update
     public int mood = 0;
+
+    
+
     //void Start()
     void Update()
     {
@@ -37,7 +40,7 @@ public class mood_selector : MonoBehaviour
             //clock
             GameObject.Find("ROS").transform.Find("WorldClock").gameObject.GetComponent<ROSClockPublisher>().enabled = true;
             //vr controller
-            GameObject.Find("vr_cmd_vel_cont").GetComponent<vrcmdvelcontroller>().enabled = false;
+            GameObject.Find("vr_cmd_vel_cont").GetComponent<vrcmdvelcontroller>().enabled = true;
             GameObject.Find("vr_cmd_vel_cont").GetComponent<JointAnglePublisher>().enabled = false;
             GameObject.Find("vr_cmd_vel_cont").GetComponent<vrcmdc30rvelcontroller>().enabled = false;
 
@@ -69,6 +72,10 @@ public class mood_selector : MonoBehaviour
             GameObject.Find("zx200").GetComponent<PoseSubscriber>().enabled = true;
             //clock
             GameObject.Find("ROS").transform.Find("WorldClock").gameObject.GetComponent<ROSClockPublisher>().enabled = false;
+            //vr controller
+            GameObject.Find("vr_cmd_vel_cont").GetComponent<vrcmdvelcontroller>().enabled = false;
+            GameObject.Find("vr_cmd_vel_cont").GetComponent<JointAnglePublisher>().enabled = false;
+            GameObject.Find("vr_cmd_vel_cont").GetComponent<vrcmdc30rvelcontroller>().enabled = false;
 
 
         }
@@ -82,10 +89,10 @@ public class mood_selector : MonoBehaviour
             GameObject.Find("zx200").GetComponent<JointStatePublisher>().enabled = false;
 
             GameObject.Find("ic120").transform.Find("base_link").gameObject.GetComponent<PoseStampedPublisher>().enabled = false;
-            GameObject.Find("zx200").transform.Find("base_link/body_link").gameObject.GetComponent<JointPosController>().enabled = true;
-            GameObject.Find("zx200").transform.Find("base_link/body_link/boom_link").gameObject.GetComponent<JointPosController>().enabled = true;
-            GameObject.Find("zx200").transform.Find("base_link/body_link/boom_link/arm_link").gameObject.GetComponent<JointPosController>().enabled = true;
-            GameObject.Find("zx200").transform.Find("base_link/body_link/boom_link/arm_link/bucket_link").gameObject.GetComponent<JointPosController>().enabled = true;
+            GameObject.Find("zx200").transform.Find("base_link/body_link").gameObject.GetComponent<JointPosController>().enabled = false;
+            GameObject.Find("zx200").transform.Find("base_link/body_link/boom_link").gameObject.GetComponent<JointPosController>().enabled = false;
+            GameObject.Find("zx200").transform.Find("base_link/body_link/boom_link/arm_link").gameObject.GetComponent<JointPosController>().enabled = false;
+            GameObject.Find("zx200").transform.Find("base_link/body_link/boom_link/arm_link/bucket_link").gameObject.GetComponent<JointPosController>().enabled = false;
             //ic120 controllor
             GameObject.Find("ic120").GetComponent<cont_crowlar>().enabled = true;
             GameObject.Find("ic120").GetComponent<Rigidbody>().isKinematic = false;
@@ -97,10 +104,15 @@ public class mood_selector : MonoBehaviour
             //zx200 visualize
             GameObject.Find("zx200").GetComponent<JointSubscriber>().enabled = false;
             GameObject.Find("zx200").GetComponent<PoseSubscriber>().enabled = false;
+            GameObject.Find("zx120").GetComponent<PoseSubscriber>().enabled = false;
+            GameObject.Find("c30r").GetComponent<PoseSubscriber>().enabled = false;
+
+            //vr controller
+            GameObject.Find("vr_cmd_vel_cont").GetComponent<vrcmdvelcontroller>().enabled = false;
+
+
             //clock
-            GameObject.Find("ROS").transform.Find("WorldClock").gameObject.GetComponent<ROSClockPublisher>().enabled = true;
-
-
+            GameObject.Find("ROS").transform.Find("WorldClock").gameObject.GetComponent<ROSClockPublisher>().enabled = false;
 
         }
 

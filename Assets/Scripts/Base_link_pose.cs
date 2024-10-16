@@ -18,7 +18,7 @@ public class PoseSubscriber : MonoBehaviour
     public float offset_x = 0;
     public float offset_y = 0;
     public float offset_z = 0;
-
+    public PoseSubscriber Baselinkpose; 
     void Start()
     {
         //Debug.Log("aaaaaaaa");
@@ -31,16 +31,21 @@ public class PoseSubscriber : MonoBehaviour
     }
     void Callback(PoseStampedMsg msg)
     {
-        //Debug.Log(msg.pose.position);
+        Baselinkpose = FindObjectOfType<PoseSubscriber>();
+
+
+        Debug.Log("zxcvbnm");
         //Debug.Log(msg.pose.orientation);
         //
         Vector3 newPosition = new Vector3(((float)msg.pose.position.y * (-1)+ offset_x), ((float)msg.pose.position.z)+offset_z, ((float)msg.pose.position.x)+ offset_y);
         Quaternion newRotation = new((float)msg.pose.orientation.y * (-1), (float)msg.pose.orientation.z, (float)msg.pose.orientation.x, (float)msg.pose.orientation.w * (-1));
         //Debug.Log(newPosition);
-        Debug.Log(newRotation.eulerAngles);
+        //Debug.Log(newRotation.eulerAngles);
         //
+        targetObject.GetComponent<Rigidbody>().isKinematic = false;
         targetObject.transform.position = newPosition;
         targetObject.transform.rotation = newRotation;
+        targetObject.GetComponent<Rigidbody>().isKinematic = true;
         //
     }
 }
