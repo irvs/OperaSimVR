@@ -17,7 +17,7 @@ public class go_to_driver_seat : MonoBehaviour
     Vector3 dif_rot_zx200;
     //
     float clock=0;
-    Quaternion origin_rot_zx200 = GameObject.Find("zx200_cam").transform.rotation;
+    Quaternion origin_rot_zx200;// = GameObject.Find("zx200_cam").transform.rotation;
     Vector3 dif_rot_zx200_forcube;
     float timesec= Mathf.Floor((System.DateTime.Now.Millisecond)/10);
     float deltatimesec= System.DateTime.Now.Millisecond;
