@@ -1,6 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.Robotics.ROSTCPConnector;
+using RosMessageTypes.BuiltinInterfaces;
+using RosMessageTypes.Std;
+using RosMessageTypes.Geometry;
+using RosMessageTypes.Nav;
+using Unity.Robotics.Core;
+using System;
 
 public class mood_selector : MonoBehaviour
 {
@@ -30,6 +37,7 @@ public class mood_selector : MonoBehaviour
             GameObject.Find("ic120").GetComponent<cont_crowlar>().enabled = false;
             GameObject.Find("ic120").GetComponent<Rigidbody>().isKinematic = false;
             //zx200 controllor
+            GameObject.Find("zx200").GetComponent<cont_joint>().enabled = true;
             GameObject.Find("zx200").GetComponent<Rigidbody>().isKinematic = false;
             //ic120 visualize
             //GameObject.Find("ic120").GetComponent<JointSubscriber_zx200>().enabled = false;
@@ -63,6 +71,7 @@ public class mood_selector : MonoBehaviour
             GameObject.Find("ic120").GetComponent<cont_crowlar>().enabled = false;
             GameObject.Find("ic120").GetComponent<Rigidbody>().isKinematic = true;
             //zx200 controllor
+            GameObject.Find("zx200").GetComponent<cont_joint>().enabled = false;
             GameObject.Find("zx200").GetComponent<Rigidbody>().isKinematic = true;
             //ic120 visualize
             //GameObject.Find("ic120").GetComponent<JointSubscriber_ic120>().enabled = true;
@@ -97,6 +106,7 @@ public class mood_selector : MonoBehaviour
             GameObject.Find("ic120").GetComponent<cont_crowlar>().enabled = true;
             GameObject.Find("ic120").GetComponent<Rigidbody>().isKinematic = false;
             //zx200 controllor
+            GameObject.Find("zx200").GetComponent<cont_joint>().enabled = true;
             GameObject.Find("zx200").GetComponent<Rigidbody>().isKinematic = false;
             //ic120 visualize
             //GameObject.Find("ic120").GetComponent<JointSubscriber_ic120>().enabled = false;
@@ -104,11 +114,11 @@ public class mood_selector : MonoBehaviour
             //zx200 visualize
             GameObject.Find("zx200").GetComponent<JointSubscriber>().enabled = false;
             GameObject.Find("zx200").GetComponent<PoseSubscriber>().enabled = false;
-            GameObject.Find("zx120").GetComponent<PoseSubscriber>().enabled = false;
-            GameObject.Find("c30r").GetComponent<PoseSubscriber>().enabled = false;
+            //GameObject.Find("zx120").GetComponent<PoseSubscriber>().enabled = false;
+            //GameObject.Find("c30r").GetComponent<PoseSubscriber>().enabled = false;
 
             //vr controller
-            GameObject.Find("vr_cmd_vel_cont").GetComponent<vrcmdvelcontroller>().enabled = false;
+            GameObject.Find("vr_cmd_vel_cont").GetComponent<vrcmdvelcontroller>().enabled = true;
 
 
             //clock
@@ -118,9 +128,5 @@ public class mood_selector : MonoBehaviour
 
     }
 
-    // Update is called once per frame
-   // void Update()
-   // {
-        
-   // }
+
 }

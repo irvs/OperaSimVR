@@ -69,6 +69,7 @@ public class JointStatePublisher : MonoBehaviour
             }
             ros.Publish(topicName, message);
             timeElapsed = 0.0f;
+            //Debug.Log("Joint Publish");
         }
     }
 }

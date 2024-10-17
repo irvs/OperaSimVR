@@ -34,6 +34,10 @@ public class Mongo_pose_writer : MonoBehaviour
     // Used to determine how much time has elapsed since the last message was published
     private float timeElapsed;
 
+    public string WriteTargetObject;
+    public ControllerLay laiser;
+    int Geton;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -49,46 +53,54 @@ public class Mongo_pose_writer : MonoBehaviour
     void FixedUpdate()
     {
 
-        timeElapsed += Time.deltaTime;
+        laiser = FindObjectOfType<ControllerLay>();
+        Geton = laiser.GetOn;
+        WriteTargetObject = laiser.GetOnVehicle;
 
-        double time = Time.fixedTimeAsDouble;
-        double deltaTime = time - previousTime;
-
-        odomMessage.pose.position.x =   GameObject.Find("ic120").transform.position.z;
-        odomMessage.pose.position.y = - GameObject.Find("ic120").transform.position.x;
-       //Vector3 newPosition = new Vector3((float)msg.pose.position.y * (-1), (float)msg.pose.position.z, (float)msg.pose.position.x);
-
-        odomMessage.pose.orientation.w = GameObject.Find("ic120").transform.rotation.w;
-        odomMessage.pose.orientation.x = GameObject.Find("ic120").transform.rotation.x;
-        odomMessage.pose.orientation.y = GameObject.Find("ic120").transform.rotation.y;
-        odomMessage.pose.orientation.z = GameObject.Find("ic120").transform.rotation.z;
-        //Debug.Log(GameObject.Find("ic120").transform.position.x);
-       // odomMessage.pose.covariance = new double[] { 0.001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000.0 };
-
-     //   odomMessage.twist.twist.linear.x = 0.0;
-     //   odomMessage.twist.twist.linear.y = 0.0;
-     //   odomMessage.twist.twist.linear.z = 0.0;
-
-     //   odomMessage.twist.twist.angular.x = 0.0;
-     //   odomMessage.twist.twist.angular.y = 0.0;
-     //   odomMessage.twist.twist.angular.z = 0.0;
-
-      //  odomMessage.twist.covariance = new double[] { 0.001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000.0 };
-
-        if (timeElapsed >= publishMessageInterval)
+        if (Geton == 1)
         {
-            
-            odomMessage.header.frame_id = robotName;
-            odomMessage.header.stamp = new TimeStamp(Clock.time);
-            //odomMessage.child_frame_id = childFrameName;
 
-            ros.Publish(WriterTopicName, odomMessage);
-            timeElapsed = 0.0f;
-           // Debug.Log("pubpubpub");
+            timeElapsed += Time.deltaTime;
+
+            double time = Time.fixedTimeAsDouble;
+            double deltaTime = time - previousTime;
+
+            odomMessage.pose.position.x = GameObject.Find(WriteTargetObject).transform.position.z;
+            odomMessage.pose.position.y = -GameObject.Find("ic120").transform.position.x;
+            //Vector3 newPosition = new Vector3((float)msg.pose.position.y * (-1), (float)msg.pose.position.z, (float)msg.pose.position.x);
+
+            odomMessage.pose.orientation.w = GameObject.Find("ic120").transform.rotation.w;
+            odomMessage.pose.orientation.x = GameObject.Find("ic120").transform.rotation.x;
+            odomMessage.pose.orientation.y = GameObject.Find("ic120").transform.rotation.y;
+            odomMessage.pose.orientation.z = GameObject.Find("ic120").transform.rotation.z;
+            //Debug.Log(GameObject.Find("ic120").transform.position.x);
+            // odomMessage.pose.covariance = new double[] { 0.001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000.0 };
+
+            //   odomMessage.twist.twist.linear.x = 0.0;
+            //   odomMessage.twist.twist.linear.y = 0.0;
+            //   odomMessage.twist.twist.linear.z = 0.0;
+
+            //   odomMessage.twist.twist.angular.x = 0.0;
+            //   odomMessage.twist.twist.angular.y = 0.0;
+            //   odomMessage.twist.twist.angular.z = 0.0;
+
+            //  odomMessage.twist.covariance = new double[] { 0.001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000.0 };
+
+            if (timeElapsed >= publishMessageInterval)
+            {
+
+                odomMessage.header.frame_id = robotName;
+                odomMessage.header.stamp = new TimeStamp(Clock.time);
+                //odomMessage.child_frame_id = childFrameName;
+
+                ros.Publish(WriterTopicName, odomMessage);
+                timeElapsed = 0.0f;
+                // Debug.Log("pubpubpub");
+            }
+
+
+            previousTime = time;
         }
-
-
-        previousTime = time;
     }
 
 }

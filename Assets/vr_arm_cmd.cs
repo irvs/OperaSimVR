@@ -10,7 +10,7 @@ using System.Drawing;
 
 public class JointAnglePublisher : MonoBehaviour
 {
-    public ParentObjectName laiser;
+    public ControllerLay laiser;
     int cmd_operation = 0;
     float movespeed = 0.01f;
     ROSConnection ros;
@@ -40,7 +40,7 @@ public class JointAnglePublisher : MonoBehaviour
 
     void Start()
     {
-        laiser = FindObjectOfType<ParentObjectName>();
+        laiser = FindObjectOfType<ControllerLay>();
         if (laiser != null)
         {
             Debug.Log("Player's health is: " + laiser.num);

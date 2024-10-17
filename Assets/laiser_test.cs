@@ -1,5 +1,5 @@
 using UnityEngine;
-public class ParentObjectName : MonoBehaviour
+public class ControllerLay : MonoBehaviour
 {
     int warp_triger = 0;
     public string GetOnVehicle;
@@ -8,6 +8,7 @@ public class ParentObjectName : MonoBehaviour
     public int geton_c30r = 0;
     public vrcmdvelcontroller VRcont;
     public string parentObjectName;
+    public int GetOn = 0;
 
     void OnCollisionEnter(Collision collision)
     {
@@ -75,6 +76,7 @@ public class ParentObjectName : MonoBehaviour
 
                 }
                 GetOnVehicle = parentObjectName;
+                GetOn = 1;
             }
 
 
@@ -177,6 +179,7 @@ public class ParentObjectName : MonoBehaviour
                 geton_ic120 = 0;
                 geton_zx200 = 0;
                 geton_c30r = 0;
+                GetOn = 0;
                 GameObject.Find("OVRPlayerController").transform.position = posiorigin;
                 GameObject.Find("OVRPlayerController").transform.rotation = rotrigin;
                 //GameObject.Find("OVRPlayerController").GetComponent<Collider>().enabled = true;

@@ -12,6 +12,7 @@ public class vrcmdvelcontroller : MonoBehaviour
     public float Time_Delay = 5.0f;
     List<float> CMD_linear_list = new List<float>();
     List<float> CMD_anglar_list = new List<float>();
+    List<string> CMD_time_list = new List<string>();
     List<Vector3> posi_list = new List<Vector3>();
     List<Vector3> rotation_list = new List<Vector3>();
     private Vector3 last_pose;
@@ -26,7 +27,7 @@ public class vrcmdvelcontroller : MonoBehaviour
     //
     public int key = 1;
     //
-    public ParentObjectName laiser;
+    public ControllerLay laiser;
     int cmd_operation = 0;
 
     int publishersw = 0;
@@ -55,11 +56,13 @@ public class vrcmdvelcontroller : MonoBehaviour
     //Twist
     Vector3Msg linear = new Vector3Msg(0f, 0f, 0f);
     Vector3Msg angular = new Vector3Msg(0f, 0f, 0f);
+    private mood_selector mode;
+
     // Start is called before the first frame update
     void Start()
     {
         //
-        laiser = FindObjectOfType<ParentObjectName>();
+        laiser = FindObjectOfType<ControllerLay>();
         if (laiser != null)
         {
             Debug.Log("Player's health is: " + laiser.num);
@@ -81,6 +84,7 @@ public class vrcmdvelcontroller : MonoBehaviour
     void Update()
     {
         //
+        //Debug.Log("vrcmdvelcont");
         if (laiser != null && laiser.geton_ic120 == 1 || sw == 1)
         {
             // Debug.Log("get: " + laiser.conum_zx200);
@@ -261,7 +265,7 @@ public class vrcmdvelcontroller : MonoBehaviour
                     // Finally send the message to server_endpoint.py running in ROS
                     if (zerocounter <= 20 && timeElapsed >= publishMessageInterval)
                     {
-                        Debug.Log("Publish");
+                        Debug.Log("Publish On Time");
                         ros.Send("ic120/tracks/cmd_vel", Twist);
                         timeElapsed = 0.0f;
                     }
@@ -275,6 +279,10 @@ public class vrcmdvelcontroller : MonoBehaviour
                         CMD_linear_list.Add(frontback);
                         CMD_anglar_list.Add(rotation);
                         timeElapsed_CMD = 0.0f;
+                        //TodayNow = DateTime.Now;
+
+                        //テキストUIに年・月・日・秒を表示させる
+                        CMD_time_list.Add(DateTime.Now.ToLongTimeString());
 
 
                     }
@@ -283,12 +291,13 @@ public class vrcmdvelcontroller : MonoBehaviour
 
 
                     }
-                    if (timeElapsed_start > Time_Delay) 
+                    if (timeElapsed_start > (Time_Delay+5.0f)) 
                     {
                         //
                         int CMD_time = Mathf.RoundToInt(Time_Delay / publishMessageInterval);
                         linear.x = CMD_linear_list[CMD_linear_list.Count-(CMD_time)];
                         angular.z = CMD_anglar_list[CMD_anglar_list.Count-(CMD_time)];
+                        Debug.Log(CMD_time_list[CMD_time_list.Count - (CMD_time)]);
                         //Send untiy_odom to turtlebot_control
                         TwistMsg Twist = new TwistMsg(
                           linear,
@@ -300,7 +309,7 @@ public class vrcmdvelcontroller : MonoBehaviour
                         // Finally send the message to server_endpoint.py running in ROS
                         if (zerocounter <= 20 && timeElapsed >= publishMessageInterval)
                         {
-                            Debug.Log("Publish");
+                            Debug.Log("Publish After Delay Time");
                             ros.Send("ic120/tracks/cmd_vel", Twist);
                             timeElapsed = 0.0f;
                         }
@@ -316,40 +325,45 @@ public class vrcmdvelcontroller : MonoBehaviour
 
     void Callback(PoseStampedMsg msg)
     {
+        mode = FindObjectOfType<mood_selector>();
 
-        timeElapsed_adopt += Time.deltaTime;
-        //double time_adopt = Time.fixedTimeAsDouble;
-        if (timeElapsed_adopt >= adopt_time)
+        if (mode.mood == 2) //Controll mode (Pose modify)
         {
-            posi_list.Add(GameObject.Find("ic120").transform.position);
-            rotation_for_list = GameObject.Find("ic120").transform.rotation;
-            rotation_list.Add(rotation_for_list.eulerAngles);
 
-
-            Vector3 newPosition = new Vector3((float)msg.pose.position.y * (-1), (float)msg.pose.position.z, (float)msg.pose.position.x);
-            Quaternion newRotation = new((float)msg.pose.orientation.y * (-1), (float)msg.pose.orientation.z, (float)msg.pose.orientation.x, (float)msg.pose.orientation.w * (-1));
-            Vector3 NewRotation = newRotation.eulerAngles;
-
-            if (timeElapsed_adopt_starter >= Time_Delay) 
+            timeElapsed_adopt += Time.deltaTime;
+            //double time_adopt = Time.fixedTimeAsDouble;
+            if (timeElapsed_adopt >= adopt_time)
             {
-                last_time = Mathf.RoundToInt(Time_Delay / adopt_time);
-                last_pose = posi_list[posi_list.Count - last_time];
-                last_rotation = rotation_list[rotation_list.Count - last_time];
-                diff_pose = last_pose - newPosition;
-                diff_rot = last_rotation - NewRotation;
-                GameObject.Find("ic120").GetComponent<Rigidbody>().isKinematic = false;
-                //GameObject.Find("ic120").transform.position += diff_pose;
-                //GameObject.Find("ic120").transform.rotation = Quaternion.Euler(diff_rot + rotation_for_list.eulerAngles);
-                GameObject.Find("ic120").GetComponent<Rigidbody>().isKinematic = true;
-                Debug.Log("moooover");
+                posi_list.Add(GameObject.Find("ic120").transform.position);
+                rotation_for_list = GameObject.Find("ic120").transform.rotation;
+                rotation_list.Add(rotation_for_list.eulerAngles);
+
+
+                Vector3 newPosition = new Vector3((float)msg.pose.position.y * (-1), (float)msg.pose.position.z, (float)msg.pose.position.x);
+                Quaternion newRotation = new((float)msg.pose.orientation.y * (-1), (float)msg.pose.orientation.z, (float)msg.pose.orientation.x, (float)msg.pose.orientation.w * (-1));
+                Vector3 NewRotation = newRotation.eulerAngles;
+
+                if (timeElapsed_adopt_starter >= Time_Delay)
+                {
+                    last_time = Mathf.RoundToInt(Time_Delay / adopt_time);
+                    last_pose = posi_list[posi_list.Count - last_time];
+                    last_rotation = rotation_list[rotation_list.Count - last_time];
+                    diff_pose = last_pose - newPosition;
+                    diff_rot = last_rotation - NewRotation;
+                    GameObject.Find("ic120").GetComponent<Rigidbody>().isKinematic = false;
+                    //GameObject.Find("ic120").transform.position += diff_pose;
+                    //GameObject.Find("ic120").transform.rotation = Quaternion.Euler(diff_rot + rotation_for_list.eulerAngles);
+                    GameObject.Find("ic120").GetComponent<Rigidbody>().isKinematic = true;
+                    Debug.Log("moooover");
+                }
+
+
+
+
+                //double deltaTime_adopt = time_adopt - previousTime_adopt;
+                timeElapsed_adopt = 0.0f;
             }
-            
-
-
-
-            //double deltaTime_adopt = time_adopt - previousTime_adopt;
-            timeElapsed_adopt = 0.0f;
+            //previousTime_adopt = time_adopt;
         }
-        //previousTime_adopt = time_adopt;
     }
 }

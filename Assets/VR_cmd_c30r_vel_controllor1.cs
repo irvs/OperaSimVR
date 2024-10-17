@@ -7,7 +7,7 @@ using Unity.Robotics.ROSTCPConnector;
 using RosMessageTypes.Geometry;
 public class vrcmdc30rvelcontroller : MonoBehaviour
 {
-    public ParentObjectName laiser;
+    public ControllerLay laiser;
     int cmd_operation = 0;
 
     int publishersw = 0;
@@ -33,7 +33,7 @@ public class vrcmdc30rvelcontroller : MonoBehaviour
     void Start()
     {
         //
-        laiser = FindObjectOfType<ParentObjectName>();
+        laiser = FindObjectOfType<ControllerLay>();
         if (laiser != null)
         {
             Debug.Log("Player's health is: " + laiser.num);

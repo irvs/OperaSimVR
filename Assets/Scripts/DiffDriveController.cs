@@ -74,7 +74,8 @@ public class DiffDriveController : MonoBehaviour
             Debug.Log("Check left!");
 
             /* Get ArticulationBody-type Component named "left_middle_wheel_link" */
-            if(left.name == "left_middle_wheel_link"){
+            if (left.name == "left_middle_wheel_link")
+            {
                 leftMiddleWheel = body;
             }
             leftWheelControllers.Add(new PID(pGain, iGain, dGain, 1, torqueLimit, -torqueLimit));
@@ -86,14 +87,15 @@ public class DiffDriveController : MonoBehaviour
             body.ConfigureVehicleSubsteps(5f, 100, 100);
             rightWheelColliders.Add(body);
             Debug.Log("Check right!");
-            
+
             /* Get ArticulationBody-type Component named "right_middle_wheel_link" */
-            if(right.name == "right_middle_wheel_link"){
+            if (right.name == "right_middle_wheel_link")
+            {
                 rightMiddleWheel = body;
             }
             rightWheelControllers.Add(new PID(pGain, iGain, dGain, 1, torqueLimit, -torqueLimit));
         }
-        tread_half = Mathf.Abs(leftWheels[0].transform.localPosition.x - rightWheels[0].transform.localPosition.x)/2;
+        tread_half = Mathf.Abs(leftWheels[0].transform.localPosition.x - rightWheels[0].transform.localPosition.x) / 2;
 
         Debug.Log("DiffDriveController starts!!");
         ros.Subscribe<TwistMsg>(TwistTopicName, ExecuteTwist); //Register Subscriber
@@ -137,8 +139,8 @@ public class DiffDriveController : MonoBehaviour
         double angularVel = 0.0;
 
         /* Calculate linear and angular velocity based on kinematics */
-        linearVel = (rightVelMes + leftVelMes)/2.0;
-        angularVel = (rightVelMes - leftVelMes)/(2.0*tread_half*treadCollectionFactor);   
+        linearVel = (rightVelMes + leftVelMes) / 2.0;
+        angularVel = (rightVelMes - leftVelMes) / (2.0 * tread_half * treadCollectionFactor);
         // Debug.Log("LinearVelocity:"+linearVel);
         // Debug.Log("AngularVelocity:"+angularVel);
         // Debug.Log("tread_half:"+tread_half);
@@ -146,8 +148,9 @@ public class DiffDriveController : MonoBehaviour
 
         yaw += angularVel * deltaTime;
         /* Normalize Yaw [batween -PI and +PI] */
-        if(Mathf.Abs((float)yaw) > Mathf.PI){
-            yaw -= (double)(2*Mathf.PI*Mathf.Sign((float)yaw));
+        if (Mathf.Abs((float)yaw) > Mathf.PI)
+        {
+            yaw -= (double)(2 * Mathf.PI * Mathf.Sign((float)yaw));
         }
 
         odomMessage.pose.pose.position.x += linearVel * (double)Mathf.Cos((float)yaw) * deltaTime;
@@ -157,14 +160,14 @@ public class DiffDriveController : MonoBehaviour
         // Debug.Log("y:"+odomMessage.pose.pose.position.y);
         // Debug.Log("yaw:"+yaw);
 
-        Quaternion rotation = Quaternion.Euler(0, 0, (float)(yaw*180.0/(double)Mathf.PI));
+        Quaternion rotation = Quaternion.Euler(0, 0, (float)(yaw * 180.0 / (double)Mathf.PI));
 
         odomMessage.pose.pose.orientation.w = rotation.w;
         odomMessage.pose.pose.orientation.x = rotation.x;
         odomMessage.pose.pose.orientation.y = rotation.y;
         odomMessage.pose.pose.orientation.z = rotation.z;
 
-        odomMessage.pose.covariance = new double[] {0.001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000.0};
+        odomMessage.pose.covariance = new double[] { 0.001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000.0 };
 
         odomMessage.twist.twist.linear.x = linearVel;
         odomMessage.twist.twist.linear.y = 0.0;
@@ -174,8 +177,8 @@ public class DiffDriveController : MonoBehaviour
         odomMessage.twist.twist.angular.y = 0.0;
         odomMessage.twist.twist.angular.z = angularVel;
 
-        odomMessage.twist.covariance = new double[] {0.001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000.0};
-        
+        odomMessage.twist.covariance = new double[] { 0.001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000.0 };
+
         if (timeElapsed >= publishMessageInterval)
         {
             odomMessage.header.frame_id = robotName + "_tf/odom";
@@ -200,7 +203,8 @@ public class DiffDriveController : MonoBehaviour
 
         /* Set targetVelocity in xDrive in wheels */
         var ts = TimeSpan.FromSeconds(deltaTime);
-        for (var i = 0; i < leftWheelColliders.Count; i++) {
+        for (var i = 0; i < leftWheelColliders.Count; i++)
+        {
             var left = leftWheelColliders[i];
             var pid = leftWheelControllers[i];
             var v = (float)pid.PID_iterate(leftVelCmd, leftVelMes, ts);
@@ -238,6 +242,7 @@ public class DiffDriveController : MonoBehaviour
         //Debug.Log("RightJointVelocityDiff:" + (rightVelCmd - rightTrackVel));
 
         previousTime = time;
+        Debug.Log("Diff Move");
     }
 
     void ExecuteTwist(TwistMsg msg)
@@ -245,5 +250,6 @@ public class DiffDriveController : MonoBehaviour
         twist = msg;
         //Debug.Log("Linear Velocity:"+twist.linear.x);
         //Debug.Log("Angular Velocity:"+twist.angular.z);
+        //Debug.Log("Diff Subscrive");
     }
 }

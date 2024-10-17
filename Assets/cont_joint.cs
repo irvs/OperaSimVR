@@ -15,7 +15,7 @@ using RosMessageTypes.Nav;
 
 public class cont_joint : MonoBehaviour
 {
-    public ParentObjectName laiser;
+    public ControllerLay laiser;
     int cmd_operation = 0;
     float movespeed = 0.01f;
     ROSConnection ros;
@@ -50,11 +50,26 @@ public class cont_joint : MonoBehaviour
     public int sw = 1;
 
     //
+    public GameObject Player;
     public GameObject targetObject;
+    //
+    //call back
+    private JointStateMsg twist;
+    //private double pos_of_swing_joint;
+    //private double pos_of_boom_joint;
+    //private double pos_of_arm_joint;
+    //private double pos_of_bucket_joint;
+    //private double pos_of_end_joint;
+    private List<ArticulationBody> joints;
+    private List<string> jointNames;
+    //
+    //private List<ArticulationBody> targetjoints;
+    //private List<string> targetjointNames;
+    //private double targetPos;
 
     void Start()
     {
-        laiser = FindObjectOfType<ParentObjectName>();
+        laiser = FindObjectOfType<ControllerLay>();
         if (laiser != null)
         {
             Debug.Log("Player's health is: " + laiser.num);
@@ -73,7 +88,7 @@ public class cont_joint : MonoBehaviour
     }
     void Update()
     {
-        OVRPlayerController scriptA = targetObject.GetComponent<OVRPlayerController>();
+        OVRPlayerController scriptA = Player.GetComponent<OVRPlayerController>();
         if (laiser != null && laiser.geton_zx200 == 1 || sw == 1)
         {
 
@@ -327,7 +342,7 @@ public class cont_joint : MonoBehaviour
                             var drive = joint.xDrive;//targetjoints[i].xDrive;
                             drive.target = (float)(targetPos * Mathf.Rad2Deg);
                             joint.xDrive = drive;//targetjoints[i].xDrive = drive;
-                            Debug.Log(j + "abcd" + joint + " " + targetPos);
+                            //Debug.Log(j + "abcd" + joint + " " + targetPos);
                             j += 1;
                         }
                     }
@@ -345,28 +360,7 @@ public class cont_joint : MonoBehaviour
         }
         */
     }
-}
-
-
-
-
-//using MyStringMsg = RosMessageTypes.HelloInterfaces.MyStringMsg;
-public class swing_ChatterSubscriber_zx200 : MonoBehaviour
-{
-    private JointStateMsg twist;
-    private double pos_of_swing_joint;
-    private double pos_of_boom_joint;
-    private double pos_of_arm_joint;
-    private double pos_of_bucket_joint;
-    private double pos_of_end_joint;
-    private List<ArticulationBody> joints;
-    private List<string> jointNames;
-    //
-    private List<ArticulationBody> targetjoints;
-    private List<string> targetjointNames;
-    private double targetPos;
-    GameObject targetObject;
-    
+    /*
     void Callback(JointStateMsg msg)
     {
         //
@@ -413,6 +407,7 @@ public class swing_ChatterSubscriber_zx200 : MonoBehaviour
                 }
             }
         }
-        
-    }
+
+    }*/
 }
+
