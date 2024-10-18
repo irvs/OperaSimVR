@@ -76,8 +76,8 @@ public class JoyStickMove : MonoBehaviour
                 //Vector3 forwardDirection = PlayerObject.forward;
                 // x, y, z •ûŒü‚É‘Î‚µ‚Ä‰ñ“]‚³‚¹‚½‚¢Šp“x‚ğİ’è
                 float rotationAmountX = 1f; // x •ûŒü‚É‰ñ“]‚·‚éŠp“x
-                float rotationAmountY = 1f; // y •ûŒü‚É‰ñ“]‚·‚éŠp“x
-                float rotationAmountZ = 1f;  // z •ûŒü‚É‰ñ“]‚·‚éŠp“x
+                //float rotationAmountY = 1f; // y •ûŒü‚É‰ñ“]‚·‚éŠp“x
+                //float rotationAmountZ = 1f;  // z •ûŒü‚É‰ñ“]‚·‚éŠp“x
                 // ƒIƒuƒWƒFƒNƒg‚Ì Transform ‚É‘Î‚µ‚Ä‰ñ“]‚ğ“K—p‚·‚é
                 PlayerObject.transform.RotateAround(PlayerObject.transform.position, PlayerObject.transform.TransformDirection(Vector3.right), rotationAmountX);
                 //PlayerObject.transform.RotateAround(PlayerObject.transform.position, PlayerObject.transform.TransformDirection(Vector3.up), rotationAmountY);
@@ -89,8 +89,8 @@ public class JoyStickMove : MonoBehaviour
             {
                 // x, y, z •ûŒü‚É‘Î‚µ‚Ä‰ñ“]‚³‚¹‚½‚¢Šp“x‚ğİ’è
                 float rotationAmountX = 1f; // x •ûŒü‚É‰ñ“]‚·‚éŠp“x
-                float rotationAmountY = 1f; // y •ûŒü‚É‰ñ“]‚·‚éŠp“x
-                float rotationAmountZ = 1f;  // z •ûŒü‚É‰ñ“]‚·‚éŠp“x
+                //float rotationAmountY = 1f; // y •ûŒü‚É‰ñ“]‚·‚éŠp“x
+               // float rotationAmountZ = 1f;  // z •ûŒü‚É‰ñ“]‚·‚éŠp“x
                 // ƒIƒuƒWƒFƒNƒg‚Ì Transform ‚É‘Î‚µ‚Ä‰ñ“]‚ğ“K—p‚·‚é
                 PlayerObject.transform.RotateAround(PlayerObject.transform.position, PlayerObject.transform.TransformDirection(Vector3.right), -rotationAmountX);
                 //PlayerObject.transform.RotateAround(PlayerObject.transform.position, PlayerObject.transform.TransformDirection(Vector3.up), rotationAmountY);

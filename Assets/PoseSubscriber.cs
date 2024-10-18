@@ -8,6 +8,7 @@ using RosMessageTypes.Geometry;
 using RosMessageTypes.Nav;
 using Unity.Robotics.Core;
 using System;
+using static UnityEditor.PlayerSettings;
 //using MyStringMsg = RosMessageTypes.HelloInterfaces.MyStringMsg;
 public class PoseSubscriber : MonoBehaviour
 {
@@ -18,34 +19,27 @@ public class PoseSubscriber : MonoBehaviour
     public float offset_x = 0;
     public float offset_y = 0;
     public float offset_z = 0;
-    //GameObject unitychan; //Unityちゃんそのものが入る変数
-    //private mood_selector mode;
-    //public ParentObjectName laiser;
     private mood_selector mode;
-    //selector script; //UnityChanScriptが入る変数
-    //public mood_selector Baselinkpose; 
+    ROSConnection ros;
     void Start()
     {
+        ros = ROSConnection.GetOrCreateInstance();
         //Debug.Log("aaaaaaaa");
         twist = new PoseStampedMsg();
         Debug.Log("check:baselink/pose");
         // ROSコネクションへのサブスクライバーの登録
-        //ROSConnection.instance.Subscribe<TwistMsg>("/ic120/tracks/cmd_vel", Callback);
-        ROSConnection.instance.Subscribe<PoseStampedMsg>(Subscribe_topic_name, Callback);
+        ros.Subscribe<PoseStampedMsg>(Subscribe_topic_name, Callback);
         Debug.Log("already:baselink/pose");
         //
-        
-        //unitychan = GameObject.Find("selector");
-        //script = unitychan.GetComponent<Mood_selector>();
+
     }
     void Callback(PoseStampedMsg msg)
     {
-        //mood_selector Baselinkpose_mode = unitychan.GetComponent<mood_selector>();
         mode = FindObjectOfType<mood_selector>();
 
         if (mode.mood == 1) //Visual tool
         {
-            Debug.Log("zxcvbnm");
+            //Debug.Log("zxcvbnm");
             //Debug.Log(msg.pose.orientation);
             //
             Vector3 newPosition = new Vector3(((float)msg.pose.position.y * (-1) + offset_x), ((float)msg.pose.position.z) + offset_z, ((float)msg.pose.position.x) + offset_y);

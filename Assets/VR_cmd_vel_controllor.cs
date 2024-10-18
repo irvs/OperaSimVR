@@ -1,10 +1,10 @@
 using UnityEngine;
 using System.Collections;
-using System.Collections;
 using System.Collections.Generic;
 using System;
 using Unity.Robotics.ROSTCPConnector;
 using RosMessageTypes.Geometry;
+using System.Drawing.Printing;
 public class vrcmdvelcontroller : MonoBehaviour
 {
     public int sw = 0;
@@ -22,8 +22,11 @@ public class vrcmdvelcontroller : MonoBehaviour
     private Vector3 diff_rot;
     private Quaternion rotation_for_list;
     public GameObject targetObject;
+    public int synchronization_sw = 0;
     //
     public float adopt_time = 1.0f;
+    public float intervalInMilliseconds = 1000.0f; // 時間間隔（ミリ秒）
+    private DateTime nextActionTime;
     //
     public int key = 1;
     //
@@ -41,7 +44,7 @@ public class vrcmdvelcontroller : MonoBehaviour
     private float timeElapsed;
     private float timeElapsed_CMD;
     private float timeElapsed_Pose;
-    private float timeElapsed_adopt;
+    private float timeElapsed_adopt = 0.0f;
     private float timeElapsed_adopt_starter = 0.0f;
     private float timeElapsed_start = 0.0f;
 
@@ -57,7 +60,7 @@ public class vrcmdvelcontroller : MonoBehaviour
     Vector3Msg linear = new Vector3Msg(0f, 0f, 0f);
     Vector3Msg angular = new Vector3Msg(0f, 0f, 0f);
     private mood_selector mode;
-
+    public float Margin = 0.2f;
     // Start is called before the first frame update
     void Start()
     {
@@ -68,7 +71,7 @@ public class vrcmdvelcontroller : MonoBehaviour
             Debug.Log("Player's health is: " + laiser.num);
         }
         // start the ROS connection
-        ros = ROSConnection.instance;
+        ros = ROSConnection.GetOrCreateInstance();
         ros.RegisterPublisher<TwistMsg>("ic120/tracks/cmd_vel");
         //cube = GetComponent<Rigidbody>();
         //
@@ -77,8 +80,10 @@ public class vrcmdvelcontroller : MonoBehaviour
         Debug.Log("check:baselink/pose");
         // ROSコネクションへのサブスクライバーの登録
         //ROSConnection.instance.Subscribe<TwistMsg>("/ic120/tracks/cmd_vel", Callback);
-        ROSConnection.instance.Subscribe<PoseStampedMsg>("/ic120/base_link/pose", Callback);
+        ros.Subscribe<PoseStampedMsg>("/ic120/base_link/pose", Callback);
         Debug.Log("already:baselink/pose");
+        //
+        nextActionTime = DateTime.Now.AddMilliseconds(intervalInMilliseconds);
     }
     // Update is called once per frame
     void Update()
@@ -235,7 +240,7 @@ public class vrcmdvelcontroller : MonoBehaviour
                         //linear.x = linear.x + (-0.1);
                     }
                 }
-                Debug.Log("x" + frontback + "z" + rotation);
+               // Debug.Log("x" + frontback + "z" + rotation);
 
                 //print(linear);
                 //
@@ -266,7 +271,7 @@ public class vrcmdvelcontroller : MonoBehaviour
                     if (zerocounter <= 20 && timeElapsed >= publishMessageInterval)
                     {
                         Debug.Log("Publish On Time");
-                        ros.Send("ic120/tracks/cmd_vel", Twist);
+                        ros.Publish("ic120/tracks/cmd_vel", Twist);
                         timeElapsed = 0.0f;
                     }
                     previousTime = time;
@@ -297,7 +302,7 @@ public class vrcmdvelcontroller : MonoBehaviour
                         int CMD_time = Mathf.RoundToInt(Time_Delay / publishMessageInterval);
                         linear.x = CMD_linear_list[CMD_linear_list.Count-(CMD_time)];
                         angular.z = CMD_anglar_list[CMD_anglar_list.Count-(CMD_time)];
-                        Debug.Log(CMD_time_list[CMD_time_list.Count - (CMD_time)]);
+                        //Debug.Log(CMD_time_list[CMD_time_list.Count - (CMD_time)]);
                         //Send untiy_odom to turtlebot_control
                         TwistMsg Twist = new TwistMsg(
                           linear,
@@ -309,8 +314,8 @@ public class vrcmdvelcontroller : MonoBehaviour
                         // Finally send the message to server_endpoint.py running in ROS
                         if (zerocounter <= 20 && timeElapsed >= publishMessageInterval)
                         {
-                            Debug.Log("Publish After Delay Time");
-                            ros.Send("ic120/tracks/cmd_vel", Twist);
+                           // Debug.Log("Publish After Delay Time");
+                            ros.Publish("ic120/tracks/cmd_vel", Twist);
                             timeElapsed = 0.0f;
                         }
                         previousTime = time;
@@ -329,11 +334,14 @@ public class vrcmdvelcontroller : MonoBehaviour
 
         if (mode.mood == 2) //Controll mode (Pose modify)
         {
-
+            //Debug.Log("moooovercallback");
+            DateTime currentTime = DateTime.Now;
             timeElapsed_adopt += Time.deltaTime;
             //double time_adopt = Time.fixedTimeAsDouble;
-            if (timeElapsed_adopt >= adopt_time)
+            //Debug.Log(timeElapsed_adopt);
+            if (currentTime >= nextActionTime)//(timeElapsed_adopt >= adopt_time)
             {
+                //Debug.Log("mooooverget");
                 posi_list.Add(GameObject.Find("ic120").transform.position);
                 rotation_for_list = GameObject.Find("ic120").transform.rotation;
                 rotation_list.Add(rotation_for_list.eulerAngles);
@@ -345,16 +353,45 @@ public class vrcmdvelcontroller : MonoBehaviour
 
                 if (timeElapsed_adopt_starter >= Time_Delay)
                 {
+                   // Debug.Log("mooooverst");
                     last_time = Mathf.RoundToInt(Time_Delay / adopt_time);
                     last_pose = posi_list[posi_list.Count - last_time];
                     last_rotation = rotation_list[rotation_list.Count - last_time];
                     diff_pose = last_pose - newPosition;
                     diff_rot = last_rotation - NewRotation;
-                    GameObject.Find("ic120").GetComponent<Rigidbody>().isKinematic = false;
-                    //GameObject.Find("ic120").transform.position += diff_pose;
-                    //GameObject.Find("ic120").transform.rotation = Quaternion.Euler(diff_rot + rotation_for_list.eulerAngles);
-                    GameObject.Find("ic120").GetComponent<Rigidbody>().isKinematic = true;
-                    Debug.Log("moooover");
+                    Debug.Log("Diffpose"+diff_pose);
+                    //Debug.Log(last_rotation);
+                    if (synchronization_sw == 1) 
+                    {
+                        GameObject.Find("ic120").GetComponent<Rigidbody>().isKinematic = true;
+                        GameObject.Find("ic120").GetComponent<Rigidbody>().drag = 100000000000000;
+                        if (Mathf.Abs(diff_pose[0]) >= Margin) 
+                        {
+                            Debug.Log("x");
+                            GameObject.Find("ic120").transform.position -= new Vector3(diff_pose[0],0.0f,0.0f);
+                        }
+                        if (Mathf.Abs(diff_pose[1]) >= Margin)
+                        {
+                            Debug.Log("y");
+                            GameObject.Find("ic120").transform.position -= new Vector3(0.0f, diff_pose[1], 0.0f);
+                        }
+                        if (Mathf.Abs(diff_pose[2]) >= Margin)
+                        {
+                            Debug.Log("z");
+                            GameObject.Find("ic120").transform.position -= new Vector3(0.0f, 0.0f, diff_pose[2]);
+                        }
+
+                        //GameObject.Find("ic120").transform.position -= diff_pose;
+                        //GameObject.Find("ic120").transform.rotation = Quaternion.Euler(diff_rot + rotation_for_list.eulerAngles);
+                        GameObject.Find("ic120").GetComponent<Rigidbody>().isKinematic = false;
+                        // Debug.Log("moooover");
+                        GameObject.Find("ic120").GetComponent<Rigidbody>().drag = 0;
+                    }
+                    diff_pose=new Vector3(0,0,0);
+                    nextActionTime = currentTime.AddMilliseconds(intervalInMilliseconds);
+                   // Debug.Log(posi_list);
+                   // Debug.Log(newPosition);
+
                 }
 
 

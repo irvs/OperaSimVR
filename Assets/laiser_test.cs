@@ -98,7 +98,7 @@ public class ControllerLay : MonoBehaviour
     Vector3 difang;
     Vector3 dif_rot_zx200;
     //
-    float clock = 0;
+    //float clock = 0;
     //static string targetmachine = (parentObjectName + "_cam");
     Quaternion origin_rot_zx200;// = GameObject.Find("zx200_cam").transform.rotation;
     Vector3 dif_rot_zx200_forcube;
@@ -194,7 +194,7 @@ public class ControllerLay : MonoBehaviour
             if (timesec != Mathf.Floor((System.DateTime.Now.Millisecond) / 10) && (conum_zx200 > 0))
             {
 
-                clock = 0;
+                //clock = 0;
                 Quaternion rot_zx200_changed_forcube = GameObject.Find(parentObjectName + "_cam").transform.rotation;
                 dif_rot_zx200_forcube = rot_zx200_changed_forcube.eulerAngles - origin_rot_zx200.eulerAngles;
                 //Debug.Log("delta"+dif_rot_zx200_forcube);

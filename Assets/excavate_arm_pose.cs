@@ -9,7 +9,6 @@ using Unity.Robotics.UrdfImporter;
 using Unity.Robotics.Core;
 using RosMessageTypes.Geometry;
 using RosMessageTypes.Nav;
-using RosMessageTypes.Sensor;
 using System;
 //using MyStringMsg = RosMessageTypes.HelloInterfaces.MyStringMsg;
 public class JointSubscriber : MonoBehaviour
@@ -31,15 +30,16 @@ public class JointSubscriber : MonoBehaviour
     public GameObject targetObject;
     public string Subscribe_topic_name = "subscribe_topic";
     private mood_selector mode;
+    ROSConnection ros;
 
     void Start()
     {
         twist = new JointStateMsg();
-        
+        ros = ROSConnection.GetOrCreateInstance();
         Debug.Log("check:joint_states_pub");
         // ROSコネクションへのサブスクライバーの登録
         //ROSConnection.instance.Subscribe<TwistMsg>("/ic120/tracks/cmd_vel", Callback);
-        ROSConnection.instance.Subscribe<JointStateMsg>(Subscribe_topic_name, Callback);
+        ros.Subscribe<JointStateMsg>(Subscribe_topic_name, Callback);
         Debug.Log("already:joint_states_pub");
         ///
         ///
@@ -71,6 +71,7 @@ public class JointSubscriber : MonoBehaviour
     void Callback(JointStateMsg msg)
     {
         //
+        //Debug.Log("joint_subscribe");
         mode = FindObjectOfType<mood_selector>();
 
         if (mode.mood == 1)//Visual tool
@@ -113,7 +114,7 @@ public class JointSubscriber : MonoBehaviour
                         var drive = joint.xDrive;//targetjoints[i].xDrive;
                         drive.target = (float)(targetPos * Mathf.Rad2Deg);
                         joint.xDrive = drive;//targetjoints[i].xDrive = drive;
-                                             //  Debug.Log("abcd" + joint + " " + targetPos);
+                       // Debug.Log("abcd" + joint + " " + targetPos);
                         j += 1;
                     }
                 }

@@ -217,13 +217,13 @@ public class JointAnglePublisher : MonoBehaviour
                     );
                     //
                     Debug.Log(goalpose_swing + "  :  " + goalpose_boom + "  :  " + goalpose_arm + "  :  " + goalpose_bucket);
-                    ros.Send(topicName_swing, angleMessage_swing);
-                    ros.Send(topicName_boom, angleMessage_boom);
-                    ros.Send(topicName_arm, angleMessage_arm);
-                    ros.Send(topicName_bucket, angleMessage_bucket);
+                    ros.Publish(topicName_swing, angleMessage_swing);
+                    ros.Publish(topicName_boom, angleMessage_boom);
+                    ros.Publish(topicName_arm, angleMessage_arm);
+                    ros.Publish(topicName_bucket, angleMessage_bucket);
                     if (zerocounter <= 20) 
                     {
-                        ros.Send(topicName_cmd_vel, Twist);
+                        ros.Publish(topicName_cmd_vel, Twist);
                     }
                     
                     timeElapsed = 0;

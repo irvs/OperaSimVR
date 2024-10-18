@@ -1,6 +1,5 @@
 using UnityEngine;
 using System.Collections;
-using System.Collections;
 using System.Collections.Generic;
 using System;
 using Unity.Robotics.ROSTCPConnector;
@@ -39,7 +38,7 @@ public class vrcmdc30rvelcontroller : MonoBehaviour
             Debug.Log("Player's health is: " + laiser.num);
         }
         // start the ROS connection
-        ros = ROSConnection.instance;
+        ros = ROSConnection.GetOrCreateInstance();
         ros.RegisterPublisher<TwistMsg>("c30r/tracks/cmd_vel");
         //cube = GetComponent<Rigidbody>();
     }
@@ -184,7 +183,7 @@ public class vrcmdc30rvelcontroller : MonoBehaviour
                 if (zerocounter <= 20 && timeElapsed >= publishMessageInterval)
                 {
                     Debug.Log("Publish");
-                    ros.Send("c30r/tracks/cmd_vel", Twist);
+                    ros.Publish("c30r/tracks/cmd_vel", Twist);
                     timeElapsed = 0.0f;
                 }
                 previousTime = time;

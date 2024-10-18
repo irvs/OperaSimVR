@@ -104,7 +104,7 @@ public class mood_selector : MonoBehaviour
             GameObject.Find("zx200").transform.Find("base_link/body_link/boom_link/arm_link/bucket_link").gameObject.GetComponent<JointPosController>().enabled = false;
             //ic120 controllor
             GameObject.Find("ic120").GetComponent<cont_crowlar>().enabled = true;
-            GameObject.Find("ic120").GetComponent<Rigidbody>().isKinematic = false;
+            //GameObject.Find("ic120").GetComponent<Rigidbody>().isKinematic = false;
             //zx200 controllor
             GameObject.Find("zx200").GetComponent<cont_joint>().enabled = true;
             GameObject.Find("zx200").GetComponent<Rigidbody>().isKinematic = false;
