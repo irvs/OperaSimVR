@@ -5,6 +5,7 @@ using System;
 using Unity.Robotics.ROSTCPConnector;
 using RosMessageTypes.Geometry;
 using System.Drawing.Printing;
+using System.Linq;
 public class vrcmdvelcontroller : MonoBehaviour
 {
     public int sw = 0;
@@ -14,6 +15,7 @@ public class vrcmdvelcontroller : MonoBehaviour
     List<float> CMD_anglar_list = new List<float>();
     List<string> CMD_time_list = new List<string>();
     List<Vector3> posi_list = new List<Vector3>();
+    List<float> posi_list_z = new List<float>();/////////////////////////////////////
     List<Vector3> rotation_list = new List<Vector3>();
     private Vector3 last_pose;
     private Vector3 last_rotation;
@@ -175,7 +177,7 @@ public class vrcmdvelcontroller : MonoBehaviour
 
                 Vector2 stickL = movespeed * OVRInput.Get(OVRInput.RawAxis2D.LThumbstick);
                 //
-                float frontback= stickL.y;
+                float frontback = stickL.y;
                 //linear.x = stickL.y;
                 //Vector2 stickL = movespeed * OVRInput.Get(OVRInput.RawAxis2D.LThumbstick);
                 float rotation = -stickL.x;
@@ -240,7 +242,7 @@ public class vrcmdvelcontroller : MonoBehaviour
                         //linear.x = linear.x + (-0.1);
                     }
                 }
-               // Debug.Log("x" + frontback + "z" + rotation);
+                // Debug.Log("x" + frontback + "z" + rotation);
 
                 //print(linear);
                 //
@@ -296,12 +298,12 @@ public class vrcmdvelcontroller : MonoBehaviour
 
 
                     }
-                    if (timeElapsed_start > (Time_Delay+5.0f)) 
+                    if (timeElapsed_start > (Time_Delay + 5.0f))
                     {
                         //
                         int CMD_time = Mathf.RoundToInt(Time_Delay / publishMessageInterval);
-                        linear.x = CMD_linear_list[CMD_linear_list.Count-(CMD_time)];
-                        angular.z = CMD_anglar_list[CMD_anglar_list.Count-(CMD_time)];
+                        linear.x = CMD_linear_list[CMD_linear_list.Count - (CMD_time)];
+                        angular.z = CMD_anglar_list[CMD_anglar_list.Count - (CMD_time)];
                         //Debug.Log(CMD_time_list[CMD_time_list.Count - (CMD_time)]);
                         //Send untiy_odom to turtlebot_control
                         TwistMsg Twist = new TwistMsg(
@@ -314,7 +316,7 @@ public class vrcmdvelcontroller : MonoBehaviour
                         // Finally send the message to server_endpoint.py running in ROS
                         if (zerocounter <= 20 && timeElapsed >= publishMessageInterval)
                         {
-                           // Debug.Log("Publish After Delay Time");
+                            // Debug.Log("Publish After Delay Time");
                             ros.Publish("ic120/tracks/cmd_vel", Twist);
                             timeElapsed = 0.0f;
                         }
@@ -323,7 +325,7 @@ public class vrcmdvelcontroller : MonoBehaviour
 
                     }
                 }
-                
+
             }//
         }//
     }
@@ -343,6 +345,7 @@ public class vrcmdvelcontroller : MonoBehaviour
             {
                 //Debug.Log("mooooverget");
                 posi_list.Add(GameObject.Find("ic120").transform.position);
+                posi_list_z.Add(GameObject.Find("ic120").transform.position.z);
                 rotation_for_list = GameObject.Find("ic120").transform.rotation;
                 rotation_list.Add(rotation_for_list.eulerAngles);
 
@@ -353,44 +356,79 @@ public class vrcmdvelcontroller : MonoBehaviour
 
                 if (timeElapsed_adopt_starter >= Time_Delay)
                 {
-                   // Debug.Log("mooooverst");
+                    // Debug.Log("mooooverst");
+                    //
+                    Debug.Log(string.Join(",", posi_list.Select(n => n.ToString())));
+                    //
                     last_time = Mathf.RoundToInt(Time_Delay / adopt_time);
                     last_pose = posi_list[posi_list.Count - last_time];
                     last_rotation = rotation_list[rotation_list.Count - last_time];
                     diff_pose = last_pose - newPosition;
                     diff_rot = last_rotation - NewRotation;
-                    Debug.Log("Diffpose"+diff_pose);
+                    Debug.Log("Diffpose" + diff_pose);
+                    Debug.Log("Modelpose" + last_pose);
                     //Debug.Log(last_rotation);
-                    if (synchronization_sw == 1) 
+                    if (synchronization_sw == 1)
                     {
                         GameObject.Find("ic120").GetComponent<Rigidbody>().isKinematic = true;
+                        //GameObject.Find("ic120").GetComponent<ArticulationBody>().enabled = false;
+                        GameObject.Find("ic120").transform.Find("base_link").gameObject.GetComponent<ArticulationBody>().enabled = false;
                         GameObject.Find("ic120").GetComponent<Rigidbody>().drag = 100000000000000;
-                        if (Mathf.Abs(diff_pose[0]) >= Margin) 
-                        {
-                            Debug.Log("x");
-                            GameObject.Find("ic120").transform.position -= new Vector3(diff_pose[0],0.0f,0.0f);
-                        }
-                        if (Mathf.Abs(diff_pose[1]) >= Margin)
-                        {
-                            Debug.Log("y");
-                            GameObject.Find("ic120").transform.position -= new Vector3(0.0f, diff_pose[1], 0.0f);
-                        }
+
+                        //            if (Mathf.Abs(diff_pose[0]) >= Margin) 
+                        //              {
+                        //                    Debug.Log("x");
+                        //                      GameObject.Find("ic120").transform.position -= new Vector3(diff_pose[0],0.0f,0.0f);
+                        //                    }
+                        //    if (Mathf.Abs(diff_pose[0]) >= Margin)
+                        //    {
+                        //        //Debug.Log("x");
+                        //        targetObject.transform.position -= new Vector3(diff_pose[0], 0.0f, 0.0f);
+                        //        for (int i = posi_list.Count - 1; i > (posi_list.Count - last_time); i--)
+                        //        {
+                        //            Vector3 point = posi_list[i];
+                        //            point = point - new Vector3(diff_pose[0], 0.0f, 0.0f);
+                        //            posi_list[i] = point;
+                        //float point = posi_list[i][0];
+                        //point = point + diff_pose[0];
+                        //posi_list[i][0] = point;
+                        // }
+                        // }
+                        // if (Mathf.Abs(diff_pose[1]) >= Margin)
+                        // {
+                        //       Debug.Log("y");
+                        //         GameObject.Find("ic120").transform.position -= new Vector3(0.0f, diff_pose[1], 0.0f);
+                        //       }
                         if (Mathf.Abs(diff_pose[2]) >= Margin)
                         {
-                            Debug.Log("z");
-                            GameObject.Find("ic120").transform.position -= new Vector3(0.0f, 0.0f, diff_pose[2]);
+                            // Debug.Log("z");
+                            GameObject.Find("ic120").transform.position = GameObject.Find("ic120").transform.position + new Vector3(0.0f, 0.10f, 0.0f);
+                            
+                            Vector3 goal_pose = targetObject.transform.position - new Vector3(0.0f, 0.0f, diff_pose[2]);
+                           // GameObject.Find("ic120").GetComponent<Rigidbody>().position = goal_pose;//-= new Vector3(0.0f, 0.0f, diff_pose[2]);
+                           // GameObject.Find("zx200").GetComponent<Rigidbody>().position = new Vector3(10.0f,0.0f, 10.0f);
+                            targetObject.transform.position = goal_pose;
+                            for (int i = posi_list.Count - 1; i > (posi_list.Count - last_time); i--)
+                            {
+                                Vector3 point = posi_list[i];
+                                point = point - new Vector3(0.0f, 0.0f, diff_pose[2]);
+                                posi_list[i] = point;
+                                //float point = posi_list[i][0];
+                                //point = point + diff_pose[0];
+                                //posi_list[i][0] = point;
+                            }
                         }
-
+                        Debug.Log("model" + GameObject.Find("ic120").transform.position + "real" + newPosition);
                         //GameObject.Find("ic120").transform.position -= diff_pose;
                         //GameObject.Find("ic120").transform.rotation = Quaternion.Euler(diff_rot + rotation_for_list.eulerAngles);
                         GameObject.Find("ic120").GetComponent<Rigidbody>().isKinematic = false;
                         // Debug.Log("moooover");
                         GameObject.Find("ic120").GetComponent<Rigidbody>().drag = 0;
                     }
-                    diff_pose=new Vector3(0,0,0);
+                    diff_pose = new Vector3(0, 0, 0);
                     nextActionTime = currentTime.AddMilliseconds(intervalInMilliseconds);
-                   // Debug.Log(posi_list);
-                   // Debug.Log(newPosition);
+                    // Debug.Log(posi_list);
+                    // Debug.Log(newPosition);
 
                 }
 
