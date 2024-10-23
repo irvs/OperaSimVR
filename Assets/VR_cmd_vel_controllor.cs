@@ -33,6 +33,8 @@ public class vrcmdvelcontroller : MonoBehaviour
     public int key = 1;
     //
     public ControllerLay laiser;
+    mood_selector selected_mode;
+    cont_crowlar crawler_controllor;
     int cmd_operation = 0;
 
     int publishersw = 0;
@@ -44,11 +46,16 @@ public class vrcmdvelcontroller : MonoBehaviour
     private double previousTime = 0.0;
     private double previousTime_adopt = 0.0;
     private float timeElapsed;
-    private float timeElapsed_CMD;
-    private float timeElapsed_Pose;
+    private float timeElapsed_CMD = 0.0f;
+    private float timeElapsed_Pose = 0.0f;
     private float timeElapsed_adopt = 0.0f;
     private float timeElapsed_adopt_starter = 0.0f;
     private float timeElapsed_start = 0.0f;
+    private int starter_acsel = 0;
+    private float acsel = 0.0f;
+    private float vel_linear_acceleration;
+    public float max_lnear_accelaration=2.5f;
+    private float max_lnear_accel_per_pub;
 
     // Publish the cube's position and rotation every N seconds
     public float publishMessageInterval = 0.02f;//50Hz
@@ -86,11 +93,15 @@ public class vrcmdvelcontroller : MonoBehaviour
         Debug.Log("already:baselink/pose");
         //
         nextActionTime = DateTime.Now.AddMilliseconds(intervalInMilliseconds);
+        //
+        CMD_linear_list.Add(0.0f);
+        max_lnear_accel_per_pub = publishMessageInterval * max_lnear_accelaration;
     }
     // Update is called once per frame
     void Update()
     {
         //
+        laiser = FindObjectOfType<ControllerLay>();
         //Debug.Log("vrcmdvelcont");
         if (laiser != null && laiser.geton_ic120 == 1 || sw == 1)
         {
@@ -106,16 +117,23 @@ public class vrcmdvelcontroller : MonoBehaviour
                 //Debug.Log("geton");
                 //}
                 // }
-
+                double time = Time.fixedTimeAsDouble;
+                double deltaTime = time - previousTime;
+                selected_mode = FindObjectOfType<mood_selector>();
                 //
                 timeElapsed += Time.deltaTime;
                 timeElapsed_Pose += Time.deltaTime;
-                timeElapsed_CMD += Time.deltaTime;
-                timeElapsed_adopt_starter += Time.deltaTime;
-                timeElapsed_start += Time.deltaTime;
+                
+                if (selected_mode.mood == 2)
+                {
+                    timeElapsed_CMD += Time.deltaTime;
+                    timeElapsed_adopt_starter += Time.deltaTime;
+                    timeElapsed_start += Time.deltaTime;
+                }
+                
 
-                double time = Time.fixedTimeAsDouble;
-                double deltaTime = time - previousTime;
+                //double time = Time.fixedTimeAsDouble;
+                //double deltaTime = time - previousTime;
                 /*
                 //初期化
                 if (Input.GetKey(KeyCode.Space))
@@ -279,18 +297,31 @@ public class vrcmdvelcontroller : MonoBehaviour
                     previousTime = time;
 
                 }
-                if (control_mode == 1)
+                
+                if (control_mode == 1 && selected_mode.mood == 2)
                 {
+                    //Debug.Log("cont_mode1");
                     if (timeElapsed_CMD >= publishMessageInterval)
                     {
+                        vel_linear_acceleration = (frontback- CMD_linear_list[CMD_linear_list.Count - 1]) / (publishMessageInterval);
+                        if ((vel_linear_acceleration) > max_lnear_accel_per_pub )
+                        {
+                            frontback = CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_accel_per_pub;
+                        }
+                        //if (CMD_linear_list.Count >= 1 && CMD_linear_list[CMD_linear_list.Count - 1] == 0 && frontback >= 3 )
+                        //{
+                        //    starter_acsel = 1;
+                        //    frontback = 0.5f;
+                        //}
                         CMD_linear_list.Add(frontback);
                         CMD_anglar_list.Add(rotation);
                         timeElapsed_CMD = 0.0f;
+                        
                         //TodayNow = DateTime.Now;
 
                         //テキストUIに年・月・日・秒を表示させる
                         CMD_time_list.Add(DateTime.Now.ToLongTimeString());
-
+                        //Debug.Log("cont_mode1_add_list");
 
                     }
                     if (timeElapsed_Pose >= adopt_time)
@@ -298,7 +329,7 @@ public class vrcmdvelcontroller : MonoBehaviour
 
 
                     }
-                    if (timeElapsed_start > (Time_Delay + 5.0f))
+                    if (timeElapsed_start > (Time_Delay + 5.0f) && CMD_linear_list.Count - (Mathf.RoundToInt(Time_Delay / publishMessageInterval)) >=0)
                     {
                         //
                         int CMD_time = Mathf.RoundToInt(Time_Delay / publishMessageInterval);
@@ -310,11 +341,11 @@ public class vrcmdvelcontroller : MonoBehaviour
                           linear,
                           angular
                           );
-
+                        //Debug.Log("cont_mode1_read_list");
                         //
                         //
                         // Finally send the message to server_endpoint.py running in ROS
-                        if (zerocounter <= 20 && timeElapsed >= publishMessageInterval)
+                        if (timeElapsed >= publishMessageInterval)
                         {
                             // Debug.Log("Publish After Delay Time");
                             ros.Publish("ic120/tracks/cmd_vel", Twist);
