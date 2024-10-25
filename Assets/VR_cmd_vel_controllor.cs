@@ -11,7 +11,7 @@ public class vrcmdvelcontroller : MonoBehaviour
     public int sw = 0;
     public int control_mode = 0;
     public float Time_Delay = 5.0f;
-    List<float> CMD_linear_list = new List<float>();
+    public List<float> CMD_linear_list = new List<float>();
     List<float> CMD_anglar_list = new List<float>();
     List<string> CMD_time_list = new List<string>();
     List<Vector3> posi_list = new List<Vector3>();
@@ -33,6 +33,7 @@ public class vrcmdvelcontroller : MonoBehaviour
     public int key = 1;
     //
     public ControllerLay laiser;
+    vessel_kinametic vessel_joint_kinametic;
     mood_selector selected_mode;
     cont_crowlar crawler_controllor;
     int cmd_operation = 0;
@@ -56,7 +57,13 @@ public class vrcmdvelcontroller : MonoBehaviour
     private float vel_linear_acceleration;
     public float max_lnear_accelaration=2.5f;
     private float max_lnear_accel_per_pub;
-
+    public float max_lnear_deceleration = -2.5f;
+    private float max_lnear_deceleration_per_pub;
+    private float diff_pose_distance;
+    //
+    private float point_theta;
+    private float point_distance;
+    //
     // Publish the cube's position and rotation every N seconds
     public float publishMessageInterval = 0.02f;//50Hz
 
@@ -70,6 +77,7 @@ public class vrcmdvelcontroller : MonoBehaviour
     Vector3Msg angular = new Vector3Msg(0f, 0f, 0f);
     private mood_selector mode;
     public float Margin = 0.2f;
+    public float Angular_Margin = 0.2f;
     // Start is called before the first frame update
     void Start()
     {
@@ -96,6 +104,7 @@ public class vrcmdvelcontroller : MonoBehaviour
         //
         CMD_linear_list.Add(0.0f);
         max_lnear_accel_per_pub = publishMessageInterval * max_lnear_accelaration;
+        max_lnear_deceleration_per_pub =  publishMessageInterval * max_lnear_deceleration;
     }
     // Update is called once per frame
     void Update()
@@ -304,9 +313,16 @@ public class vrcmdvelcontroller : MonoBehaviour
                     if (timeElapsed_CMD >= publishMessageInterval)
                     {
                         vel_linear_acceleration = (frontback- CMD_linear_list[CMD_linear_list.Count - 1]) / (publishMessageInterval);
-                        if ((vel_linear_acceleration) > max_lnear_accel_per_pub )
+
+                        if (vel_linear_acceleration > max_lnear_accel_per_pub && frontback>= (CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_accel_per_pub))
                         {
+                            //Debug.Log(Mathf.Abs(frontback) + "  a  " + (CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_accel_per_pub));
                             frontback = CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_accel_per_pub;
+                            //Debug.Log("accel");
+                        }
+                        else if (vel_linear_acceleration < max_lnear_deceleration_per_pub && frontback <= (CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_accel_per_pub))
+                        {
+                            frontback = CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_deceleration_per_pub;
                         }
                         //if (CMD_linear_list.Count >= 1 && CMD_linear_list[CMD_linear_list.Count - 1] == 0 && frontback >= 3 )
                         //{
@@ -395,14 +411,17 @@ public class vrcmdvelcontroller : MonoBehaviour
                     last_pose = posi_list[posi_list.Count - last_time];
                     last_rotation = rotation_list[rotation_list.Count - last_time];
                     diff_pose = last_pose - newPosition;
+                    diff_pose_distance = (float)Math.Sqrt(((Math.Pow((newPosition[0] - posi_list[posi_list.Count - last_time][0]), 2)) + (Math.Pow((newPosition[1] - posi_list[posi_list.Count - last_time][1]), 2))));
                     diff_rot = last_rotation - NewRotation;
                     Debug.Log("Diffpose" + diff_pose);
                     Debug.Log("Modelpose" + last_pose);
                     //Debug.Log(last_rotation);
-                    if (synchronization_sw == 1)
+                    vessel_joint_kinametic = FindObjectOfType<vessel_kinametic>();
+                    if (synchronization_sw == 1)// && vessel_joint_kinametic.joint_sw == 1)
                     {
                         GameObject.Find("ic120").GetComponent<Rigidbody>().isKinematic = true;
                         //GameObject.Find("ic120").GetComponent<ArticulationBody>().enabled = false;
+                        GameObject.Find("ic120").transform.Find("base_link/vessel_link").gameObject.GetComponent<ArticulationBody>().enabled = false;
                         GameObject.Find("ic120").transform.Find("base_link").gameObject.GetComponent<ArticulationBody>().enabled = false;
                         GameObject.Find("ic120").GetComponent<Rigidbody>().drag = 100000000000000;
 
@@ -430,10 +449,29 @@ public class vrcmdvelcontroller : MonoBehaviour
                         //       Debug.Log("y");
                         //         GameObject.Find("ic120").transform.position -= new Vector3(0.0f, diff_pose[1], 0.0f);
                         //       }
+                        if (Mathf.Abs(diff_pose[0]) >= Margin)
+                        {
+                            // Debug.Log("z");
+                            GameObject.Find("ic120").transform.position = GameObject.Find("ic120").transform.position + new Vector3(0.0f, 0.030f, 0.0f);
+
+                            Vector3 goal_pose = targetObject.transform.position - new Vector3(diff_pose[0], 0.0f, 0.0f);
+                            // GameObject.Find("ic120").GetComponent<Rigidbody>().position = goal_pose;//-= new Vector3(0.0f, 0.0f, diff_pose[2]);
+                            // GameObject.Find("zx200").GetComponent<Rigidbody>().position = new Vector3(10.0f,0.0f, 10.0f);
+                            targetObject.transform.position = goal_pose;
+                            for (int i = posi_list.Count - 1; i > (posi_list.Count - last_time); i--)
+                            {
+                                Vector3 point = posi_list[i];
+                                point = point - new Vector3(diff_pose[0], 0.0f, 0.0f);
+                                posi_list[i] = point;
+                                //float point = posi_list[i][0];
+                                //point = point + diff_pose[0];
+                                //posi_list[i][0] = point;
+                            }
+                        }
                         if (Mathf.Abs(diff_pose[2]) >= Margin)
                         {
                             // Debug.Log("z");
-                            GameObject.Find("ic120").transform.position = GameObject.Find("ic120").transform.position + new Vector3(0.0f, 0.10f, 0.0f);
+                            GameObject.Find("ic120").transform.position = GameObject.Find("ic120").transform.position + new Vector3(0.0f, 0.03f, 0.0f);
                             
                             Vector3 goal_pose = targetObject.transform.position - new Vector3(0.0f, 0.0f, diff_pose[2]);
                            // GameObject.Find("ic120").GetComponent<Rigidbody>().position = goal_pose;//-= new Vector3(0.0f, 0.0f, diff_pose[2]);
@@ -449,6 +487,27 @@ public class vrcmdvelcontroller : MonoBehaviour
                                 //posi_list[i][0] = point;
                             }
                         }
+                        //
+                        if (Mathf.Abs(diff_rot[1]) >= Angular_Margin)
+                        {
+                            //now_pose = targetObject.transform.position;
+                            targetObject.transform.position = GameObject.Find("ic120").transform.position + new Vector3(0.0f, 0.030f, 0.0f);
+                            Quaternion goal_angule = Quaternion.Euler(- new Vector3(0.0f, diff_rot[1], 0.0f) + rotation_for_list.eulerAngles);
+                            targetObject.transform.rotation = goal_angule;
+                            for (int i = rotation_list.Count - 1; i > (rotation_list.Count - last_time); i--)
+                            {
+                                //for rotation
+                                Vector3 point = rotation_list[i];
+                                point = point - new Vector3(0.0f, diff_rot[1], 0.0f);
+                                rotation_list[i] = point;
+                                //for move
+                                point_theta = (float)Math.Atan2((posi_list[i][1] - newPosition[1]), (posi_list[i][0] - newPosition[0]));
+                                point_distance = (float)Math.Sqrt(((Math.Pow((newPosition[0] - posi_list[i][0]), 2)) + (Math.Pow((newPosition[1] - posi_list[i][1]), 2))));
+                                Vector3 pose_point = posi_list[i];
+                                point = new Vector3(point_distance * (float)Math.Sin(point_theta + diff_rot[1]), 0.0f, point_distance * (float)Math.Cos(point_theta + diff_rot[1]));//point - new Vector3(0.0f, 0.0f, diff_pose[2]);
+                            }
+                        }
+                        //
                         Debug.Log("model" + GameObject.Find("ic120").transform.position + "real" + newPosition);
                         //GameObject.Find("ic120").transform.position -= diff_pose;
                         //GameObject.Find("ic120").transform.rotation = Quaternion.Euler(diff_rot + rotation_for_list.eulerAngles);

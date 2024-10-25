@@ -69,6 +69,7 @@ public class cont_crowlar : MonoBehaviour
     // Used to determine how much time has elapsed since the last message was published
     private float timeElapsed;
     private float timeElapsed_for_pub;
+    vrcmdvelcontroller controller_cmd;
 
     // Start is called before the first frame update
     void Start()
@@ -211,8 +212,15 @@ public class cont_crowlar : MonoBehaviour
         ///}
 
         /* Calculate velocity command value based on inverse kinematics */
+        //
+        controller_cmd = FindObjectOfType<vrcmdvelcontroller>();
+        //
         ///var cmdLinearVel = twist.linear.x;
-        var cmdLinearVel = linear.x;
+        //var cmdLinearVel = linear.x;
+        var cmdLinearVel = (double)(controller_cmd.CMD_linear_list[controller_cmd.CMD_linear_list.Count - 1]* linearspeed);
+        //
+
+        //
         cmdLinearVel = Math.Min(cmdLinearVel, maxLinearVelocity);
         cmdLinearVel = Math.Max(cmdLinearVel, -maxLinearVelocity);
         ///var cmdAngularVel = twist.angular.z;

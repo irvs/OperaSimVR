@@ -112,6 +112,14 @@ public class JointSubscriber : MonoBehaviour
                         //
                         targetPos = msg.position[j];
                         var drive = joint.xDrive;//targetjoints[i].xDrive;
+                        //
+                        //if (drive.stiffness == 0)
+                            drive.stiffness = 20000000;
+                        //if (drive.damping == 0)
+                            drive.damping = 10000000;
+                        //if (drive.forceLimit == 0)
+                            drive.forceLimit = 10000000;
+                        //
                         drive.target = (float)(targetPos * Mathf.Rad2Deg);
                         joint.xDrive = drive;//targetjoints[i].xDrive = drive;
                        // Debug.Log("abcd" + joint + " " + targetPos);
