@@ -118,7 +118,7 @@ public class mood_selector : MonoBehaviour
             //GameObject.Find("c30r").GetComponent<PoseSubscriber>().enabled = false;
 
             //vr controller
-            GameObject.Find("vr_cmd_vel_cont").GetComponent<vrcmdvelcontroller>().enabled = true;
+            //GameObject.Find("vr_cmd_vel_cont").GetComponent<vrcmdvelcontroller>().enabled = true;
 
 
             //clock

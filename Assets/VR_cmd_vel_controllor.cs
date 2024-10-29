@@ -381,7 +381,7 @@ public class vrcmdvelcontroller : MonoBehaviour
     {
         mode = FindObjectOfType<mood_selector>();
 
-        if (mode.mood == 2) //Controll mode (Pose modify)
+        if (mode.mood == -2) //Controll mode (Pose modify)
         {
             //Debug.Log("moooovercallback");
             DateTime currentTime = DateTime.Now;
@@ -419,11 +419,11 @@ public class vrcmdvelcontroller : MonoBehaviour
                     vessel_joint_kinametic = FindObjectOfType<vessel_kinametic>();
                     if (synchronization_sw == 1)// && vessel_joint_kinametic.joint_sw == 1)
                     {
-                        GameObject.Find("ic120").GetComponent<Rigidbody>().isKinematic = true;
+                    //    GameObject.Find("ic120").GetComponent<Rigidbody>().isKinematic = true;
                         //GameObject.Find("ic120").GetComponent<ArticulationBody>().enabled = false;
-                        GameObject.Find("ic120").transform.Find("base_link/vessel_link").gameObject.GetComponent<ArticulationBody>().enabled = false;
-                        GameObject.Find("ic120").transform.Find("base_link").gameObject.GetComponent<ArticulationBody>().enabled = false;
-                        GameObject.Find("ic120").GetComponent<Rigidbody>().drag = 100000000000000;
+                    //    GameObject.Find("ic120").transform.Find("base_link/vessel_link").gameObject.GetComponent<ArticulationBody>().enabled = false;
+                    //    GameObject.Find("ic120").transform.Find("base_link").gameObject.GetComponent<ArticulationBody>().enabled = false;
+                    //    GameObject.Find("ic120").GetComponent<Rigidbody>().drag = 100000000000000;
 
                         //            if (Mathf.Abs(diff_pose[0]) >= Margin) 
                         //              {
@@ -451,6 +451,10 @@ public class vrcmdvelcontroller : MonoBehaviour
                         //       }
                         if (Mathf.Abs(diff_pose[0]) >= Margin)
                         {
+                            GameObject.Find("ic120").GetComponent<Rigidbody>().isKinematic = true;
+                            GameObject.Find("ic120").transform.Find("base_link/vessel_link").gameObject.GetComponent<ArticulationBody>().enabled = false;
+                            GameObject.Find("ic120").transform.Find("base_link").gameObject.GetComponent<ArticulationBody>().enabled = false;
+                            GameObject.Find("ic120").GetComponent<Rigidbody>().drag = 100000000000000;
                             // Debug.Log("z");
                             GameObject.Find("ic120").transform.position = GameObject.Find("ic120").transform.position + new Vector3(0.0f, 0.030f, 0.0f);
 
@@ -470,6 +474,10 @@ public class vrcmdvelcontroller : MonoBehaviour
                         }
                         if (Mathf.Abs(diff_pose[2]) >= Margin)
                         {
+                            GameObject.Find("ic120").GetComponent<Rigidbody>().isKinematic = true;
+                            GameObject.Find("ic120").transform.Find("base_link/vessel_link").gameObject.GetComponent<ArticulationBody>().enabled = false;
+                            GameObject.Find("ic120").transform.Find("base_link").gameObject.GetComponent<ArticulationBody>().enabled = false;
+                            GameObject.Find("ic120").GetComponent<Rigidbody>().drag = 100000000000000;
                             // Debug.Log("z");
                             GameObject.Find("ic120").transform.position = GameObject.Find("ic120").transform.position + new Vector3(0.0f, 0.03f, 0.0f);
                             
@@ -490,6 +498,10 @@ public class vrcmdvelcontroller : MonoBehaviour
                         //
                         if (Mathf.Abs(diff_rot[1]) >= Angular_Margin)
                         {
+                            GameObject.Find("ic120").GetComponent<Rigidbody>().isKinematic = true;
+                            GameObject.Find("ic120").transform.Find("base_link/vessel_link").gameObject.GetComponent<ArticulationBody>().enabled = false;
+                            GameObject.Find("ic120").transform.Find("base_link").gameObject.GetComponent<ArticulationBody>().enabled = false;
+                            GameObject.Find("ic120").GetComponent<Rigidbody>().drag = 100000000000000;
                             //now_pose = targetObject.transform.position;
                             targetObject.transform.position = GameObject.Find("ic120").transform.position + new Vector3(0.0f, 0.030f, 0.0f);
                             Quaternion goal_angule = Quaternion.Euler(- new Vector3(0.0f, diff_rot[1], 0.0f) + rotation_for_list.eulerAngles);
