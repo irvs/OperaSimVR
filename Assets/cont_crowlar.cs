@@ -18,7 +18,7 @@ public class cont_crowlar : MonoBehaviour
     int publishersw = 0;
     int zerocounter = 0;
     public float linearspeed = 1.0f;
-    public float rotspeed = 20.0f;
+    public float rotspeed = 1.0f;
     //Oculus Touch Information
     // public OVRInput.Controller controlL;
     // public OVRInput.Controller controlR;
@@ -228,7 +228,8 @@ public class cont_crowlar : MonoBehaviour
         cmdLinearVel = Math.Min(cmdLinearVel, maxLinearVelocity);
         cmdLinearVel = Math.Max(cmdLinearVel, -maxLinearVelocity);
         ///var cmdAngularVel = twist.angular.z;
-        var cmdAngularVel = angular.z;
+        //var cmdAngularVel = angular.z;
+        var cmdAngularVel = (double)(cont_VR_2_cmd.CMD_anglar_list_for_cyber[cont_VR_2_cmd.CMD_anglar_list_for_cyber.Count - 1] * rotspeed);
         cmdAngularVel = Math.Min(cmdAngularVel, maxAngularVelocity);
         cmdAngularVel = Math.Max(cmdAngularVel, -maxAngularVelocity);
         leftVelCmd = (float)(cmdLinearVel - tread_half * cmdAngularVel); // Unit is [m/s]
