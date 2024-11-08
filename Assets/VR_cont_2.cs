@@ -528,8 +528,8 @@ public class VR_cont_2 : MonoBehaviour
 
 
                         
-                       // if (Math.Abs(side_diff) > Margin)
-                       // {
+                        if (Math.Abs(side_diff) > Margin)
+                        {
                             Vector3 Real_forward = (real_posi_list[real_posi_list.Count - 1] - real_posi_list[real_posi_list.Count - 2]);
                             float direction = Vector2.Dot(new Vector2(Real_forwardVector[0], Real_forwardVector[2]), new Vector2(Real_forward[0], Real_forward[2]));
                            // Vector3 localOffset = new Vector3(-side_diff, 0, real_pose_length);  // 前方から見て進むオフセット
@@ -539,14 +539,7 @@ public class VR_cont_2 : MonoBehaviour
                         // float Cyber_angle = Vector3.SignedAngle(targetObject.transform.rotation * Vector3.forward, worldOffset, Vector3.up);
                         //float Cyber_angle = Vector3.SignedAngle(targetObject.transform.rotation * Vector3.forward, -targetdirection, Vector3.up);
                         float Cyber_angle = Vector3.SignedAngle(newRotation * Vector3.forward, -targetdirection, Vector3.up);
-                        if (Cyber_angle < -90)
-                            {
-                                //Cyber_angle= Cyber_angle+180;
-                            }
-                            else if(Cyber_angle > 90)
-                            {
-                                //Cyber_angle= Cyber_angle-180;
-                            }
+
                             //Debug.Log("------角度の差は---^---^--- " + (targetObject.transform.position - (newPosition + (Real_forwardVector_normal * (Real_Cyber_future_length_pose + 2 * real_pose_length)))));
                             Debug.Log("------実機前方---^---^--- " + (newRotation * Vector3.forward) +" 目標ベクトル "+ -targetdirection);
                             if (direction >= 0)//yellow
@@ -580,7 +573,7 @@ public class VR_cont_2 : MonoBehaviour
                                     Debug.Log("4:rotadapter -= 0.1f "+ rotadapter + "角度の差は " + Cyber_angle);
                                 }
                             }
-                      //  }
+                        }
                         
 
 
