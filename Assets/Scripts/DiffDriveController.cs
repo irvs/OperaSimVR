@@ -242,7 +242,7 @@ public class DiffDriveController : MonoBehaviour
         //Debug.Log("RightJointVelocityDiff:" + (rightVelCmd - rightTrackVel));
 
         previousTime = time;
-        Debug.Log("Diff Move");
+       // Debug.Log("Diff Move");
     }
 
     void ExecuteTwist(TwistMsg msg)

@@ -478,7 +478,7 @@ public class VR_cont_2 : MonoBehaviour
                         real_pose_length_z = 0.0f;
                         cyber_pose_length = 0.0f;
                         counter = 0;
-                        for (int i = real_posi_length_list.Count - 1; i > (real_posi_length_list.Count - last_time); i--)
+                        for (int i = real_posi_length_list.Count - 1; i > (real_posi_length_list.Count - last_time - 1); i--)
                         {
                             real_pose_length = real_pose_length + real_posi_length_list[i];
                             real_pose_length_x = real_pose_length_x + real_posi_length_list_x[i];
@@ -499,6 +499,7 @@ public class VR_cont_2 : MonoBehaviour
                         //Real_Cyber_future_length_pose = Vector2.Dot(new Vector2((float)Math.Sin(-NewRotation[1]), (float)Math.Cos(-NewRotation[1])), Real_Cyber_future_diff_pose);
                         Real_Cyber_future_length_pose = Vector2.Dot(new Vector2(Real_forwardVector_normal[0], Real_forwardVector_normal[2]), Real_Cyber_future_diff_pose);
 
+                        /*
                         if (Math.Abs(Real_Cyber_future_length_pose) < Margin)
                         {
                             Real_Cyber_future_length_pose = 0.0f;
@@ -525,52 +526,99 @@ public class VR_cont_2 : MonoBehaviour
                         float angle = Vector3.SignedAngle(Real_forwardVector, toTarget, Vector3.up);
                         // Debug.Log("角の差 " + angle);
                         side_diff = (Vector3.Distance(newPosition, targetObject.transform.position)) * (float)Math.Sin(angle * Math.PI / 180);
+                        */
+                        ///
+                        ///
+
+                        Real_Cyber_future_length_pose_compare.Add(Real_Cyber_future_length_pose);
+
+                        Debug.Log("diffpose" + Real_Cyber_future_length_pose + "  bector_length   " + Real_Cyber_future_diff_pose);
+                        if (Real_Cyber_future_length_pose_compare[Real_Cyber_future_length_pose_compare.Count - 1] > Real_Cyber_future_length_pose_compare[Real_Cyber_future_length_pose_compare.Count - 2] && Real_Cyber_future_length_pose > 0)
+                        {
+                            //adapter1 = 0.5f;
+                            if (Math.Abs(Real_Cyber_future_length_pose) >= Margin)
+                            {
+                                adapter2 -= 0.1f;
+                            }
+                            else if (Math.Abs(Real_Cyber_future_length_pose)>0.01 && Math.Abs(Real_Cyber_future_length_pose) < Margin)
+                            {
+                                adapter2 -= 0.01f;
+                            }
+                            
+
+                            Debug.Log("deceler:" + adapter2);
+                        }
+                        else if (Real_Cyber_future_length_pose_compare[Real_Cyber_future_length_pose_compare.Count - 1] < Real_Cyber_future_length_pose_compare[Real_Cyber_future_length_pose_compare.Count - 2] && Real_Cyber_future_length_pose < 0)
+                        {
+                            //adapter1 = 1.5f;
+                            if (Math.Abs(Real_Cyber_future_length_pose) >= Margin)
+                            {
+                                adapter2 += 0.1f;
+                            }
+                            else if (Math.Abs(Real_Cyber_future_length_pose) > 0.01 && Math.Abs(Real_Cyber_future_length_pose) < Margin)
+                            {
+                                adapter2 += 0.01f;
+                            }
+                           // adapter2 += 0.1f;
+
+                            Debug.Log("accel:" + adapter2);
+                        }
+                        //Vector3 forwardDirection = newRotation * Vector3.forward;
+                        Vector3 toTarget = targetObject.transform.position - newPosition;
+                        float angle = Vector3.SignedAngle(Real_forwardVector, toTarget, Vector3.up);
+                        // Debug.Log("角の差 " + angle);
+                        side_diff = (Vector3.Distance(newPosition, targetObject.transform.position)) * (float)Math.Sin(angle * Math.PI / 180);
+                        ///
+                        ///
 
 
-                        
                         if (Math.Abs(side_diff) > Margin)
                         {
                             Vector3 Real_forward = (real_posi_list[real_posi_list.Count - 1] - real_posi_list[real_posi_list.Count - 2]);
                             float direction = Vector2.Dot(new Vector2(Real_forwardVector[0], Real_forwardVector[2]), new Vector2(Real_forward[0], Real_forward[2]));
-                           // Vector3 localOffset = new Vector3(-side_diff, 0, real_pose_length);  // 前方から見て進むオフセット
-                           // Vector3 worldOffset = targetObject.transform.TransformDirection(localOffset);
+                            // Vector3 localOffset = new Vector3(-side_diff, 0, real_pose_length);  // 前方から見て進むオフセット
+                            // Vector3 worldOffset = targetObject.transform.TransformDirection(localOffset);
                             //Vector3 newPosition = targetObject.transform.position + worldOffset;
-                            Vector3 targetdirection = targetObject.transform.position - (newPosition + (Real_forwardVector_normal * (Real_Cyber_future_length_pose + 2*real_pose_length)));
-                        // float Cyber_angle = Vector3.SignedAngle(targetObject.transform.rotation * Vector3.forward, worldOffset, Vector3.up);
-                        //float Cyber_angle = Vector3.SignedAngle(targetObject.transform.rotation * Vector3.forward, -targetdirection, Vector3.up);
-                        float Cyber_angle = Vector3.SignedAngle(newRotation * Vector3.forward, -targetdirection, Vector3.up);
+                            Vector3 targetdirection = targetObject.transform.position - (newPosition + (Real_forwardVector_normal * (Real_Cyber_future_length_pose + 2 * real_pose_length)));
+                            // float Cyber_angle = Vector3.SignedAngle(targetObject.transform.rotation * Vector3.forward, worldOffset, Vector3.up);
+                            //float Cyber_angle = Vector3.SignedAngle(targetObject.transform.rotation * Vector3.forward, -targetdirection, Vector3.up);
+                            //float Cyber_angle = Vector3.SignedAngle(newRotation * Vector3.forward, -targetdirection, Vector3.up);
+                            float Cyber_angle = Vector3.SignedAngle(targetObject.transform.rotation * Vector3.forward, -targetdirection, Vector3.up);
 
                             //Debug.Log("------角度の差は---^---^--- " + (targetObject.transform.position - (newPosition + (Real_forwardVector_normal * (Real_Cyber_future_length_pose + 2 * real_pose_length)))));
-                            Debug.Log("------実機前方---^---^--- " + (newRotation * Vector3.forward) +" 目標ベクトル "+ -targetdirection);
-                            if (direction >= 0)//yellow
+                            Debug.Log("------実機前方---^---^--- " + (newRotation * Vector3.forward) + " 目標ベクトル " + -targetdirection);
+                            if (Math.Abs(side_diff) < Margin && Math.Abs(Cyber_angle) > Angular_Margin)
                             {
+                                if (direction >= 0)//yellow
+                                {
 
-                                if (-Cyber_angle < 0)
-                                {
-                                    //rotadapter = -0.1f;
-                                    rotadapter = -Cyber_angle * (float)((Math.PI) / 180.0f);
-                                    Debug.Log("1:rotadapter -= 0.1f " + rotadapter + "角度の差は " + Cyber_angle);
+                                    if (-Cyber_angle < 0)
+                                    {
+                                        //rotadapter = -0.1f;
+                                        rotadapter = -Cyber_angle * (float)((Math.PI) / 180.0f);
+                                        Debug.Log("1:rotadapter -= 0.1f " + rotadapter + "角度の差は " + Cyber_angle);
+                                    }
+                                    else if (-Cyber_angle >= 0)
+                                    {
+                                        //rotadapter = +0.1f;
+                                        rotadapter = -Cyber_angle * (float)((Math.PI) / 180.0f);
+                                        Debug.Log("2:rotadapter += 0.1f " + rotadapter + "角度の差は " + Cyber_angle);
+                                    }
                                 }
-                                else if (-Cyber_angle >= 0)
+                                else if (direction < 0)//blue
                                 {
-                                    //rotadapter = +0.1f;
-                                    rotadapter = -Cyber_angle * (float)((Math.PI) / 180.0f);
-                                    Debug.Log("2:rotadapter += 0.1f "+ rotadapter + "角度の差は " + Cyber_angle);
-                                }
-                            }
-                            else if (direction < 0)//blue
-                            {
-                                if (-Cyber_angle < 0)
-                                {
-                                    //rotadapter = +0.1f;
-                                    rotadapter = -Cyber_angle * (float)((Math.PI) / 180.0f);
-                                    Debug.Log("3:rotadapter += 0.1f "+ rotadapter + "角度の差は " + Cyber_angle);
-                                }
-                                else if (-Cyber_angle >= 0)
-                                {
-                                   // rotadapter = -0.1f;
-                                    rotadapter = -Cyber_angle * (float)((Math.PI) / 180.0f);
-                                    Debug.Log("4:rotadapter -= 0.1f "+ rotadapter + "角度の差は " + Cyber_angle);
+                                    if (-Cyber_angle < 0)
+                                    {
+                                        //rotadapter = +0.1f;
+                                        rotadapter = -Cyber_angle * (float)((Math.PI) / 180.0f);
+                                        Debug.Log("3:rotadapter += 0.1f " + rotadapter + "角度の差は " + Cyber_angle);
+                                    }
+                                    else if (-Cyber_angle >= 0)
+                                    {
+                                        // rotadapter = -0.1f;
+                                        rotadapter = -Cyber_angle * (float)((Math.PI) / 180.0f);
+                                        Debug.Log("4:rotadapter -= 0.1f " + rotadapter + "角度の差は " + Cyber_angle);
+                                    }
                                 }
                             }
                         }

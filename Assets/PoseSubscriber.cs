@@ -47,11 +47,26 @@ public class PoseSubscriber : MonoBehaviour
             //Debug.Log(newPosition);
             //Debug.Log(newRotation.eulerAngles);
             //
-            targetObject.GetComponent<Rigidbody>().isKinematic = false;
+           // targetObject.GetComponent<Rigidbody>().isKinematic = false;
             targetObject.transform.position = newPosition;
+            //
+            /*
+            float Real_Cyber_angle_diff = Vector3.SignedAngle(targetObject.transform.rotation * Vector3.forward, newRotation * Vector3.forward, Vector3.up);
+            if (Math.Abs(Real_Cyber_angle_diff) >= 0.5)
+            {
+                targetObject.transform.position = new Vector3(0.0f, newPosition[1] + 0.5f, 0.0f);
+                for (int i = 0; 2.5f * i < (Math.Abs(Real_Cyber_angle_diff)); i++)
+                {
+                    targetObject.transform.Rotate(0, 2.5f, 0);
+                    Debug.Log("rot_change->"+i);
+                }
+
+            }*/
+            //
             targetObject.transform.rotation = newRotation;
             targetObject.GetComponent<Rigidbody>().isKinematic = true;
             //
+            //Debug.Log("rot_change_strange" + Real_Cyber_angle_diff);
         }
 
     }
