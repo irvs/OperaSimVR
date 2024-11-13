@@ -21,11 +21,11 @@ public class path_get_test : MonoBehaviour
     public float offset_y = 0;
     public float offset_z = 0;
     private mood_selector mode;
-    private List<Vector3> path_list = new List<Vector3>();
+    public List<Vector3> path_list = new List<Vector3>();
     private List<Quaternion> path_angular_list = new List<Quaternion>();
     private Quaternion angular;
     ROSConnection ros;
-    public List<Vector3> pathPoints;  // 経路の座標リスト
+    //public List<Vector3> pathPoints;  // 経路の座標リスト
     private LineRenderer lineRenderer;
 
     // Start is called before the first frame update
@@ -40,8 +40,9 @@ public class path_get_test : MonoBehaviour
         Debug.Log("already:baselink/pose");
         //
         //
+        lineRenderer = gameObject.AddComponent<LineRenderer>();
         // LineRendererコンポーネントの取得
-        lineRenderer = GetComponent<LineRenderer>();
+       // lineRenderer = GetComponent<LineRenderer>();
 
         // LineRendererの設定
         lineRenderer.positionCount = path_list.Count;  // 頂点の数を設定
@@ -125,7 +126,7 @@ public class path_get_test : MonoBehaviour
             
             lineRenderer.positionCount = path_list.Count;
 
-            for (int i = 0; i < pathPoints.Count; i++)
+            for (int i = 0; i < path_list.Count; i++)
             {
                 lineRenderer.SetPosition(i, path_list[i]);
             }
