@@ -25,6 +25,9 @@ public class path_get_test : MonoBehaviour
     private List<Quaternion> path_angular_list = new List<Quaternion>();
     private Quaternion angular;
     ROSConnection ros;
+    public List<Vector3> pathPoints;  // 経路の座標リスト
+    private LineRenderer lineRenderer;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -36,7 +39,38 @@ public class path_get_test : MonoBehaviour
         ros.Subscribe<PathMsg>(Subscribe_topic_name, Callback);
         Debug.Log("already:baselink/pose");
         //
+        //
+        // LineRendererコンポーネントの取得
+        lineRenderer = GetComponent<LineRenderer>();
+
+        // LineRendererの設定
+        lineRenderer.positionCount = path_list.Count;  // 頂点の数を設定
+        lineRenderer.startWidth = 0.1f;  // 線の太さ（開始）
+        lineRenderer.endWidth = 0.1f;    // 線の太さ（終了）
+        lineRenderer.material = new Material(Shader.Find("Sprites/Default"));  // マテリアル設定（デフォルトのシェーダ）
+        lineRenderer.startColor = Color.red; // 線の開始色
+        lineRenderer.endColor = Color.green; // 線の終了色
+
+        // 各座標をLineRendererに設定
+        for (int i = 0; i < path_list.Count; i++)
+        {
+            lineRenderer.SetPosition(i, path_list[i]);
+        }
+        //
+        //
     }
+    /*
+    void UpdatePath(List<Vector3> newPath)
+    {
+        pathPoints = newPath;
+        lineRenderer.positionCount = path_list.Count;
+
+        for (int i = 0; i < pathPoints.Count; i++)
+        {
+            lineRenderer.SetPosition(i, path_list[i]);
+        }
+    }
+    */
 
     void Callback(PathMsg msg)
     {
@@ -44,7 +78,7 @@ public class path_get_test : MonoBehaviour
         Debug.Log("path_get");
         Debug.Log(msg.ToString());
         Debug.Log(msg.poses.ToString());
-        Debug.Log(msg.poses[10].ToString());
+       // Debug.Log(msg.poses[10].ToString());
         path_list.Clear();
         path_angular_list.Clear();
         Debug.Log($"Received path with {msg.poses.Length} waypoints"); // 受信したパスのデータを表示
@@ -66,7 +100,7 @@ public class path_get_test : MonoBehaviour
             targetObject.transform.position = path_list[path_list.Count-1];
             targetObject.transform.rotation = path_angular_list[path_angular_list.Count - 1];
         }
-        
+
         /*
         if (mode.mood == 1) //Visual tool
         {
@@ -87,6 +121,15 @@ public class path_get_test : MonoBehaviour
             //
             //Debug.Log("rot_change_strange" + Real_Cyber_angle_diff);
         }*/
+        
+            
+            lineRenderer.positionCount = path_list.Count;
+
+            for (int i = 0; i < pathPoints.Count; i++)
+            {
+                lineRenderer.SetPosition(i, path_list[i]);
+            }
+        
 
     }
 

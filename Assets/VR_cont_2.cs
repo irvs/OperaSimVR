@@ -11,6 +11,9 @@ public class VR_cont_2 : MonoBehaviour
 {
     public int sw = 0;
     public int control_mode = 0;
+    public bool emergency;
+    public string PublishTopicName;
+    public string SubscribeTopicName;
     public float Time_Delay = 5.0f;
     public List<float> CMD_linear_list_for_cyber = new List<float>();
     public List<float> CMD_linear_list = new List<float>();
@@ -46,7 +49,7 @@ public class VR_cont_2 : MonoBehaviour
     //
     public int key = 1;
     //
-    public ControllerLay laiser;
+    public Controller_manager VRManager;
     vessel_kinametic vessel_joint_kinametic;
     mood_selector selected_mode;
     cont_crowlar crawler_controllor;
@@ -100,9 +103,7 @@ public class VR_cont_2 : MonoBehaviour
     // Publish the cube's position and rotation every N seconds
     public float publishMessageInterval = 0.02f;//50Hz
 
-    //Oculus Touch Information
-    // public OVRInput.Controller controlL;
-    // public OVRInput.Controller controlR;
+
     ROSConnection ros;
     private PoseStampedMsg twist;
     //Twist
@@ -112,26 +113,24 @@ public class VR_cont_2 : MonoBehaviour
     public float Margin = 0.2f;
     public float Angular_Margin = 0.2f;
     private float Stop_time = 0.0f;
+    private float frontback = 0.0f;
+    private float rotation = 0.0f;
     // Start is called before the first frame update
     void Start()
     {
         //
-        laiser = FindObjectOfType<ControllerLay>();
-        if (laiser != null)
+        VRManager = FindObjectOfType<Controller_manager>();
+        if (VRManager != null)
         {
-            Debug.Log("Player's health is: " + laiser.num);
+            Debug.Log("Player's health is: " + VRManager.num);
         }
         // start the ROS connection
-        ros = ROSConnection.GetOrCreateInstance();
-        ros.RegisterPublisher<TwistMsg>("ic120/tracks/cmd_vel");
-        //cube = GetComponent<Rigidbody>();
-        //
-        //Debug.Log("aaaaaaaa");
-        twist = new PoseStampedMsg();
         Debug.Log("check:baselink/pose");
-
-        //ROSConnection.instance.Subscribe<TwistMsg>("/ic120/tracks/cmd_vel", Callback);
-        ros.Subscribe<PoseStampedMsg>("/ic120/base_link/pose", Callback);
+        ros = ROSConnection.GetOrCreateInstance();
+        ros.RegisterPublisher<TwistMsg>(PublishTopicName);
+        //
+        twist = new PoseStampedMsg();
+        ros.Subscribe<PoseStampedMsg>(SubscribeTopicName, Callback);
         Debug.Log("already:baselink/pose");
         //
         nextActionTime = DateTime.Now.AddMilliseconds(intervalInMilliseconds);
@@ -153,285 +152,324 @@ public class VR_cont_2 : MonoBehaviour
     void Update()
     {
         //
-        laiser = FindObjectOfType<ControllerLay>();
-        //Debug.Log("vrcmdvelcont");
-        if (laiser != null && laiser.geton_ic120 == 1 || sw == 1)
+        if (emergency == true)
         {
-            // Debug.Log("get: " + laiser.conum_zx200);
-            if (laiser.conum_zx200 == 0 && sw != 1)
+            timeElapsed += Time.deltaTime;
+            linear.x = 0.00f;
+            angular.z = 0.00f;
+            TwistMsg Twist = new TwistMsg(
+              linear,
+              angular
+              );
+            //Debug.Log("cont_mode1_read_list");
+            //
+            if (timeElapsed >= publishMessageInterval / 2.0f)
             {
-                cmd_operation = 0;
-
+                // Debug.Log("Publish After Delay Time");
+                ros.Publish(PublishTopicName, Twist);
+                timeElapsed = 0.0f;
             }
-            else if (laiser.conum_zx200 > 0 || sw == 1)
+            CMD_linear_list_for_cyber.Clear();
+            CMD_anglar_list_for_cyber.Clear();
+            CMD_linear_list.Clear();
+            CMD_anglar_list.Clear();
+            CMD_linear_list_for_cyber.Add(0.00f);
+            CMD_anglar_list_for_cyber.Add(0.00f);
+            CMD_linear_list.Add(0.00f);
+            CMD_anglar_list.Add(0.00f);
+            linear_or_rot = 0;
+        }
+        else if (emergency == false)
+        {
+
+            VRManager = FindObjectOfType<Controller_manager>();
+            //Debug.Log("vrcmdvelcont");
+           // if (VRManager != null && VRManager.geton_ic120 == 1 || sw == 1)
+            if (sw == 1)
             {
-                cmd_operation = 1;
-                //Debug.Log("geton");
-                //}
-                // }
-                double time = Time.fixedTimeAsDouble;
-                double deltaTime = time - previousTime;
-                selected_mode = FindObjectOfType<mood_selector>();
-                //
-                timeElapsed += Time.deltaTime;
-                timeElapsed_Pose += Time.deltaTime;
-
-                if (selected_mode.mood == 2)
+                // Debug.Log("get: " + laiser.conum_zx200);
+                if (VRManager.Player_posi_mover_SW == 0 && sw != 1)
                 {
-                    timeElapsed_CMD += Time.deltaTime;
-                    timeElapsed_adopt_starter += Time.deltaTime;
-                    timeElapsed_start += Time.deltaTime;
-                    zerotime += Time.deltaTime;
-                    Stop_time += Time.deltaTime;
+                    cmd_operation = 0;
+
                 }
-
-
-                Vector2 stickL = movespeed * OVRInput.Get(OVRInput.RawAxis2D.LThumbstick);
-                //
-                float frontback = stickL.y;
-                //linear.x = stickL.y;
-                //Vector2 stickL = movespeed * OVRInput.Get(OVRInput.RawAxis2D.LThumbstick);
-                float rotation = -stickL.x;
-                //angular.z = -stickL.x;
-                //Debug.Log("x" + linear.x + "z" + angular.z);
-
-                if (key == 1)
+                else if (VRManager.Player_posi_mover_SW > 0 || sw == 1)
                 {
+                    cmd_operation = 1;
+                    //Debug.Log("geton");
+
+                    selected_mode = FindObjectOfType<mood_selector>();
+                    //
+                    timeElapsed += Time.deltaTime;
+                    timeElapsed_Pose += Time.deltaTime;
+
+                    if (selected_mode.mood == 2)
+                    {
+                        timeElapsed_CMD += Time.deltaTime;
+                        timeElapsed_adopt_starter += Time.deltaTime;
+                        timeElapsed_start += Time.deltaTime;
+                        zerotime += Time.deltaTime;
+                        Stop_time += Time.deltaTime;
+                    }
+
+
+                    Vector2 stickL = movespeed * OVRInput.Get(OVRInput.RawAxis2D.LThumbstick);
                     if (linear_or_rot == 0)
                     {
-                        if ((Input.GetKey(KeyCode.UpArrow)) || (Input.GetKey(KeyCode.DownArrow)))
+                        if (Math.Abs(stickL.y) > 0.2) 
                         {
                             linear_or_rot = 1;
+                            Debug.Log("linear");
                         }
-                        if ((Input.GetKey(KeyCode.LeftArrow)) || (Input.GetKeyUp(KeyCode.RightArrow)))
+                        else if (Math.Abs(stickL.x) > 0.2)
                         {
                             linear_or_rot = 2;
+                            Debug.Log("angular");
                         }
-                    }
-
-                    if (Input.GetKey(KeyCode.Space))
-                    {
-                        // OVRManager.display.RecenterPose();
-                        frontback = 0.0f;
-                        rotation = 0.0f;
-                        adapter1 = 0.0f;
-                        adapter2 = 0.0f;
                     }
                     //
-                    if (Input.GetKey(KeyCode.LeftArrow) && linear_or_rot == 2 || Input.GetKey(KeyCode.LeftArrow) && selected_mode.mood == 1 || Input.GetKey(KeyCode.LeftArrow) && control_mode == 0)
+                    if (linear_or_rot == 1 || selected_mode.mood == 1|| control_mode == 0)
                     {
-                        rotation = rotspeed;
-                        //angular.z = angular.z + 0.1;
+                        frontback = stickL.y;
                     }
-                    if (Input.GetKeyUp(KeyCode.LeftArrow))
-                    {
-                        rotation = 0;
-                        //angular.z = angular.z + 0.1;
-                    }
-
-                    if (Input.GetKey(KeyCode.RightArrow) && linear_or_rot == 2 || Input.GetKey(KeyCode.RightArrow) && selected_mode.mood == 1 || Input.GetKey(KeyCode.RightArrow) && control_mode == 0)
-                    {
-                        rotation = -rotspeed;
-                        //angular.z = angular.z + (-0.1);
-                    }
-                    if (Input.GetKeyUp(KeyCode.RightArrow))
-                    {
-                        rotation = 0;
-                        //angular.z = angular.z + (-0.1);
-                    }
-
-                    if (Input.GetKey(KeyCode.UpArrow) && linear_or_rot == 1 || Input.GetKey(KeyCode.UpArrow) && selected_mode.mood == 1 || Input.GetKey(KeyCode.UpArrow) && control_mode == 0)
-                    {
-                        frontback = linearspeed;
-                        //linear.x = linear.x + 0.1;
-                    }
-
-                    if (Input.GetKeyUp(KeyCode.UpArrow))
-                    {
-                        frontback = 0;
-                        //linear.x = linear.x + 0.1;
-                    }
-
-                    if (Input.GetKey(KeyCode.DownArrow) && linear_or_rot == 1 || Input.GetKey(KeyCode.DownArrow) && selected_mode.mood == 1 || Input.GetKey(KeyCode.DownArrow) && control_mode == 0)
-                    {
-                        frontback = -linearspeed;
-                        //linear.x = linear.x + (-0.1);
-                    }
-                    if (Input.GetKeyUp(KeyCode.DownArrow))
-                    {
-                        frontback = 0;
-                        //linear.x = linear.x + (-0.1);
-                    }
-                }
-                // Debug.Log("x" + frontback + "z" + rotation);
-                //
-                if (control_mode == 0)
-                {
-                    moover_sw = 1; 
-                   
-
-                    if (linear.x == 0 && angular.z == 0)
-                    {
-                        zerocounter += 1;
-                    }
-                    if ((zerocounter != 0 && frontback != 0) | (zerocounter != 0 && rotation != 0))
-                    {
-                        zerocounter = 0;
-                    }
-                    //
-                    
-
-                    //
-                    //
-                    // Finally send the message to server_endpoint.py running in ROS
-                    if (zerocounter <= 20 && timeElapsed >= publishMessageInterval)
-                    {
-                        vel_linear_acceleration = (frontback - CMD_linear_list[CMD_linear_list.Count - 1]) / (publishMessageInterval);
-                        if (vel_linear_acceleration > max_lnear_accel_per_pub && frontback >= (CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_accel_per_pub))
-                        {
-                            //Debug.Log(Mathf.Abs(frontback) + "  a  " + (CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_accel_per_pub));
-                            frontback = CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_accel_per_pub;
-                            //Debug.Log("accel");
-                        }
-                        else if (vel_linear_acceleration < max_lnear_deceleration_per_pub && frontback <= (CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_accel_per_pub))
-                        {
-                            frontback = CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_deceleration_per_pub;
-                        }
-                        vel_angular_acceleration = (rotation - CMD_anglar_list[CMD_anglar_list.Count - 1]) / (publishMessageInterval);
-                        if (vel_angular_acceleration > max_angular_accel_per_pub && rotation >= (CMD_anglar_list[CMD_anglar_list.Count - 1] + max_angular_accel_per_pub))
-                        {
-                            //Debug.Log(Mathf.Abs(frontback) + "  a  " + (CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_accel_per_pub));
-                            rotation = CMD_anglar_list[CMD_anglar_list.Count - 1] + max_angular_accel_per_pub;
-                            Debug.Log("accel");
-                        }
-                        else if (vel_angular_acceleration < max_angular_deceleration_per_pub && rotation <= (CMD_anglar_list[CMD_anglar_list.Count - 1] + max_angular_accel_per_pub))
-                        {
-                            rotation = CMD_anglar_list[CMD_anglar_list.Count - 1] + max_angular_deceleration_per_pub;
-                            Debug.Log("decel");
-                        }
-                        CMD_linear_list.Add(frontback);
-                        CMD_linear_list_for_cyber.Add(frontback);
-                        CMD_anglar_list.Add(rotation);
-                        CMD_anglar_list_for_cyber.Add(rotation);
-                        linear.x = frontback;
-                        angular.z = rotation;
-                        //Send untiy_odom to turtlebot_control
-                        TwistMsg Twist = new TwistMsg(
-                          linear,
-                          angular
-                          );
-                        Debug.Log("linear " + linear.x);
-                        Debug.Log("anglar" + angular.z);
-                        Debug.Log("Publish On Time");
-                        ros.Publish("ic120/tracks/cmd_vel", Twist);
-                        timeElapsed = 0.0f;
-                    }
-                    previousTime = time;
-
-                }
-
-                if (control_mode == 1 && selected_mode.mood == 2)
-                {
-                    //Debug.Log("cont_mode1");
-                    if (linear_or_rot == 1 && frontback != 0 && moover_sw == 1)
-                    {
-                        zerotime = 0.0f;
-                    }
-                    if (linear_or_rot == 2 && rotation != 0 && moover_sw == 1)
-                    {
-                        zerotime = 0.0f;
-                    }
-                    if (frontback == 0 && rotation == 0)
-                    {
-                        adapter1 = 1.0f;
-                        adapter2 = 0.0f;
-                        rotadapter = 0.0f;
-                    }
-                    /*
-                    if (zerotime >= Time_Delay+3.0f)
-                    {
-                        moover_sw = 0;
-                        frontback = 0.0f;
-                        rotation = 0.0f;
-                        adapter1 = 1.0f;
-                        adapter2 = 0.0f;
-                        rotadapter = 0.0f;
-                        linear_or_rot = 0;
-                        if (zerotime >= Time_Delay)
-                        {
-                            moover_sw = 2;
-                        }
-
-                    }
-                    */
-                    if (moover_sw != 1)
+                    else if (linear_or_rot == 2)
                     {
                         frontback = 0.0f;
+                    }
+                    if (linear_or_rot == 2 || selected_mode.mood == 1 || control_mode == 0)
+                    {
+                        rotation = -stickL.x;
+                    }
+                    else if(linear_or_rot == 1)
+                    {
                         rotation = 0.0f;
                     }
-                    if (timeElapsed_CMD >= publishMessageInterval)
-                    {
-                        vel_linear_acceleration = (frontback - CMD_linear_list[CMD_linear_list.Count - 1]) / (publishMessageInterval);
 
-                        if (vel_linear_acceleration > max_lnear_accel_per_pub && frontback >= (CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_accel_per_pub))
+                    //Debug.Log("x" + linear.x + "z" + angular.z);
+
+                    if (key == 1)
+                    {
+                        if (linear_or_rot == 0)
                         {
-                            //Debug.Log(Mathf.Abs(frontback) + "  a  " + (CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_accel_per_pub));
-                            frontback = CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_accel_per_pub;
-                            //Debug.Log("accel");
+                            if ((Input.GetKey(KeyCode.UpArrow)) || (Input.GetKey(KeyCode.DownArrow)))
+                            {
+                                linear_or_rot = 1;
+                            }
+                            if ((Input.GetKey(KeyCode.LeftArrow)) || (Input.GetKeyUp(KeyCode.RightArrow)))
+                            {
+                                linear_or_rot = 2;
+                            }
                         }
-                        else if (vel_linear_acceleration < max_lnear_deceleration_per_pub && frontback <= (CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_accel_per_pub))
+
+                        if (Input.GetKey(KeyCode.Space))
                         {
-                            frontback = CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_deceleration_per_pub;
+                            // OVRManager.display.RecenterPose();
+                            frontback = 0.0f;
+                            rotation = 0.0f;
+                            adapter1 = 0.0f;
+                            adapter2 = 0.0f;
                         }
-                        //if (CMD_linear_list.Count >= 1 && CMD_linear_list[CMD_linear_list.Count - 1] == 0 && frontback >= 3 )
-                        //{
-                        //    starter_acsel = 1;
-                        //    frontback = 0.5f;
-                        //}
-                        CMD_linear_list.Add(frontback);
-                        CMD_linear_list_for_cyber.Add(frontback * adapter1 + adapter2);
-                        CMD_anglar_list.Add(rotation);
-                        CMD_anglar_list_for_cyber.Add(rotation + rotadapter);
-                        timeElapsed_CMD = 0.0f;
-
-                        //TodayNow = DateTime.Now;
-
-                        //CMD_time_list.Add(DateTime.Now.ToLongTimeString());
-                        //Debug.Log("cont_mode1_add_list");
-
-                    }
-                    if (timeElapsed_Pose >= adopt_time)
-                    {
-
-
-                    }
-                    if (timeElapsed_start > (Time_Delay + 5.0f) && CMD_linear_list.Count - (Mathf.RoundToInt(Time_Delay / publishMessageInterval)) >= 0)
-                    {
                         //
-                        int CMD_time = Mathf.RoundToInt(Time_Delay / publishMessageInterval);
-                        linear.x = CMD_linear_list[CMD_linear_list.Count - (CMD_time)];
-                        angular.z = CMD_anglar_list[CMD_anglar_list.Count - (CMD_time)];
-                        //Debug.Log(CMD_time_list[CMD_time_list.Count - (CMD_time)]);
-                        TwistMsg Twist = new TwistMsg(
-                          linear,
-                          angular
-                          );
-                        //Debug.Log("cont_mode1_read_list");
-                        //
-                        if (timeElapsed >= publishMessageInterval)
+                        if (Input.GetKey(KeyCode.LeftArrow) && linear_or_rot == 2 || Input.GetKey(KeyCode.LeftArrow) && selected_mode.mood == 1 || Input.GetKey(KeyCode.LeftArrow) && control_mode == 0)
                         {
-                            // Debug.Log("Publish After Delay Time");
-                            ros.Publish("ic120/tracks/cmd_vel", Twist);
+                            rotation = rotspeed;
+                        }
+                        if (Input.GetKeyUp(KeyCode.LeftArrow))
+                        {
+                            rotation = 0;
+                        }
+                        if (Input.GetKey(KeyCode.RightArrow) && linear_or_rot == 2 || Input.GetKey(KeyCode.RightArrow) && selected_mode.mood == 1 || Input.GetKey(KeyCode.RightArrow) && control_mode == 0)
+                        {
+                            rotation = -rotspeed;
+                        }
+                        if (Input.GetKeyUp(KeyCode.RightArrow))
+                        {
+                            rotation = 0;
+                        }
+                        if (Input.GetKey(KeyCode.UpArrow) && linear_or_rot == 1 || Input.GetKey(KeyCode.UpArrow) && selected_mode.mood == 1 || Input.GetKey(KeyCode.UpArrow) && control_mode == 0)
+                        {
+                            frontback = linearspeed;
+                        }
+                        if (Input.GetKeyUp(KeyCode.UpArrow))
+                        {
+                            frontback = 0;
+                        }
+                        if (Input.GetKey(KeyCode.DownArrow) && linear_or_rot == 1 || Input.GetKey(KeyCode.DownArrow) && selected_mode.mood == 1 || Input.GetKey(KeyCode.DownArrow) && control_mode == 0)
+                        {
+                            frontback = -linearspeed;
+                        }
+                        if (Input.GetKeyUp(KeyCode.DownArrow))
+                        {
+                            frontback = 0;
+                        }
+                    }
+                    // Debug.Log("x" + frontback + "z" + rotation);
+                    //
+                    if (control_mode == 0)
+                    {
+                        moover_sw = 1;
+
+
+                        if (linear.x == 0 && angular.z == 0)
+                        {
+                            zerocounter += 1;
+                        }
+                        if ((zerocounter != 0 && frontback != 0) | (zerocounter != 0 && rotation != 0))
+                        {
+                            zerocounter = 0;
+                        }
+                        //
+                        //
+                        // Finally send the message to server_endpoint.py running in ROS
+                        if (zerocounter <= 20 && timeElapsed >= publishMessageInterval)
+                        {
+                            vel_linear_acceleration = (frontback - CMD_linear_list[CMD_linear_list.Count - 1]) / (publishMessageInterval);
+                            if (vel_linear_acceleration > max_lnear_accel_per_pub && frontback >= (CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_accel_per_pub))
+                            {
+                                //Debug.Log(Mathf.Abs(frontback) + "  a  " + (CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_accel_per_pub));
+                                frontback = CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_accel_per_pub;
+                                //Debug.Log("accel");
+                            }
+                            else if (vel_linear_acceleration < max_lnear_deceleration_per_pub && frontback <= (CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_accel_per_pub))
+                            {
+                                frontback = CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_deceleration_per_pub;
+                            }
+                            vel_angular_acceleration = (rotation - CMD_anglar_list[CMD_anglar_list.Count - 1]) / (publishMessageInterval);
+                            if (vel_angular_acceleration > max_angular_accel_per_pub && rotation >= (CMD_anglar_list[CMD_anglar_list.Count - 1] + max_angular_accel_per_pub))
+                            {
+                                //Debug.Log(Mathf.Abs(frontback) + "  a  " + (CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_accel_per_pub));
+                                rotation = CMD_anglar_list[CMD_anglar_list.Count - 1] + max_angular_accel_per_pub;
+                                Debug.Log("accel");
+                            }
+                            else if (vel_angular_acceleration < max_angular_deceleration_per_pub && rotation <= (CMD_anglar_list[CMD_anglar_list.Count - 1] + max_angular_accel_per_pub))
+                            {
+                                rotation = CMD_anglar_list[CMD_anglar_list.Count - 1] + max_angular_deceleration_per_pub;
+                                Debug.Log("decel");
+                            }
+                            CMD_linear_list.Add(frontback);
+                            CMD_linear_list_for_cyber.Add(frontback);
+                            CMD_anglar_list.Add(rotation);
+                            CMD_anglar_list_for_cyber.Add(rotation);
+                            linear.x = frontback;
+                            angular.z = rotation;
+                            //Send untiy_odom to turtlebot_control
+                            TwistMsg Twist = new TwistMsg(
+                              linear,
+                              angular
+                              );
+                            //  Debug.Log("linear " + linear.x);
+                            //   Debug.Log("anglar" + angular.z);
+                            //  Debug.Log("Publish On Time");
+                            ros.Publish(PublishTopicName, Twist);
                             timeElapsed = 0.0f;
                         }
-                        previousTime = time;
-
+                        //   previousTime = time;
 
                     }
-                }
 
+                    if (control_mode == 1 && selected_mode.mood == 2)
+                    {
+                        //Debug.Log("cont_mode1");
+                        if (linear_or_rot == 1 && frontback != 0 && moover_sw == 1)
+                        {
+                            zerotime = 0.0f;
+                        }
+                        if (linear_or_rot == 2 && rotation != 0 && moover_sw == 1)
+                        {
+                            zerotime = 0.0f;
+                        }
+                        if (frontback == 0 && rotation == 0)
+                        {
+                            adapter1 = 1.0f;
+                            adapter2 = 0.0f;
+                            rotadapter = 0.0f;
+                        }
+                        /*
+                        if (zerotime >= Time_Delay+3.0f)
+                        {
+                            moover_sw = 0;
+                            frontback = 0.0f;
+                            rotation = 0.0f;
+                            adapter1 = 1.0f;
+                            adapter2 = 0.0f;
+                            rotadapter = 0.0f;
+                            linear_or_rot = 0;
+                            if (zerotime >= Time_Delay)
+                            {
+                                moover_sw = 2;
+                            }
+
+                        }
+                        */
+                        if (moover_sw != 1)
+                        {
+                            frontback = 0.0f;
+                            rotation = 0.0f;
+                        }
+                        if (timeElapsed_CMD >= publishMessageInterval)
+                        {
+                            vel_linear_acceleration = (frontback - CMD_linear_list[CMD_linear_list.Count - 1]) / (publishMessageInterval);
+
+                            if (vel_linear_acceleration > max_lnear_accel_per_pub && frontback >= (CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_accel_per_pub))
+                            {
+                                //Debug.Log(Mathf.Abs(frontback) + "  a  " + (CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_accel_per_pub));
+                                frontback = CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_accel_per_pub;
+                                //Debug.Log("accel");
+                            }
+                            else if (vel_linear_acceleration < max_lnear_deceleration_per_pub && frontback <= (CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_accel_per_pub))
+                            {
+                                frontback = CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_deceleration_per_pub;
+                            }
+                            //if (CMD_linear_list.Count >= 1 && CMD_linear_list[CMD_linear_list.Count - 1] == 0 && frontback >= 3 )
+                            //{
+                            //    starter_acsel = 1;
+                            //    frontback = 0.5f;
+                            //}
+                            CMD_linear_list.Add(frontback);
+                            CMD_linear_list_for_cyber.Add(frontback * adapter1 + adapter2);
+                            CMD_anglar_list.Add(rotation);
+                            CMD_anglar_list_for_cyber.Add(rotation + rotadapter);
+                            timeElapsed_CMD = 0.0f;
+
+                            //TodayNow = DateTime.Now;
+
+                            //CMD_time_list.Add(DateTime.Now.ToLongTimeString());
+                            //Debug.Log("cont_mode1_add_list");
+
+                        }
+                        if (timeElapsed_Pose >= adopt_time)
+                        {
+
+
+                        }
+                        if (timeElapsed_start > (Time_Delay + 5.0f) && CMD_linear_list.Count - (Mathf.RoundToInt(Time_Delay / publishMessageInterval)) >= 0)
+                        {
+                            //
+                            int CMD_time = Mathf.RoundToInt(Time_Delay / publishMessageInterval);
+                            linear.x = CMD_linear_list[CMD_linear_list.Count - (CMD_time)];
+                            angular.z = CMD_anglar_list[CMD_anglar_list.Count - (CMD_time)];
+                            //Debug.Log(CMD_time_list[CMD_time_list.Count - (CMD_time)]);
+                            TwistMsg Twist = new TwistMsg(
+                              linear,
+                              angular
+                              );
+                            //Debug.Log("cont_mode1_read_list");
+                            //
+                            if (timeElapsed >= publishMessageInterval)
+                            {
+                                // Debug.Log("Publish After Delay Time");
+                                ros.Publish(PublishTopicName, Twist);
+                                timeElapsed = 0.0f;
+                            }
+                            //      previousTime = time;
+
+
+                        }
+                    }
+
+                }//
             }//
-        }//
+        }
     }
 
     void Callback(PoseStampedMsg msg)
@@ -540,11 +578,11 @@ public class VR_cont_2 : MonoBehaviour
                             {
                                 adapter2 -= 0.1f;
                             }
-                            else if (Math.Abs(Real_Cyber_future_length_pose)>0.01 && Math.Abs(Real_Cyber_future_length_pose) < Margin)
+                            else if (Math.Abs(Real_Cyber_future_length_pose) > 0.01 && Math.Abs(Real_Cyber_future_length_pose) < Margin)
                             {
                                 adapter2 -= 0.01f;
                             }
-                            
+
 
                             Debug.Log("deceler:" + adapter2);
                         }
@@ -559,7 +597,7 @@ public class VR_cont_2 : MonoBehaviour
                             {
                                 adapter2 += 0.01f;
                             }
-                           // adapter2 += 0.1f;
+                            // adapter2 += 0.1f;
 
                             Debug.Log("accel:" + adapter2);
                         }
@@ -622,7 +660,7 @@ public class VR_cont_2 : MonoBehaviour
                                 }
                             }
                         }
-                        
+
 
 
                     }
@@ -652,18 +690,18 @@ public class VR_cont_2 : MonoBehaviour
                         Real_Cyber_future_length_anglar_compare.Add(Real_Cyber_future_anglar_diff);
                         //if (Mathf.Abs(diff_rot[1]) >= Angular_Margin)
                         //{
-                        
+
                         //if (diff_rot[1] < -180)
                         //{
                         //    diff_rot[1] = diff_rot[1] + 360.0f;
                         //}
                         //if (diff_rot[1] > 0 && Real_Cyber_future_length_anglar_compare[Real_Cyber_future_length_anglar_compare.Count - 1] > Real_Cyber_future_length_anglar_compare[Real_Cyber_future_length_anglar_compare.Count - 2])
-                        if (real_anglar_length + angle < 0) 
+                        if (real_anglar_length + angle < 0)
                         {
                             rotadapter += 0.01f;
                         }
                         //else if (diff_rot[1] < 0 && Real_Cyber_future_length_anglar_compare[Real_Cyber_future_length_anglar_compare.Count - 1] < Real_Cyber_future_length_anglar_compare[Real_Cyber_future_length_anglar_compare.Count - 2])
-                        else if(real_anglar_length +angle >= 0)
+                        else if (real_anglar_length + angle >= 0)
                         {
                             rotadapter -= 0.01f;
                         }

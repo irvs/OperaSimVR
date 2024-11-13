@@ -48,7 +48,7 @@ public class mood_selector : MonoBehaviour
             //clock
             GameObject.Find("ROS").transform.Find("WorldClock").gameObject.GetComponent<ROSClockPublisher>().enabled = true;
             //vr controller
-            GameObject.Find("vr_cmd_vel_cont").GetComponent<vrcmdvelcontroller>().enabled = true;
+            GameObject.Find("vr_cmd_vel_cont").GetComponent<vrcmdvelcontroller>().enabled = false;
             GameObject.Find("vr_cmd_vel_cont").GetComponent<JointAnglePublisher>().enabled = false;
             GameObject.Find("vr_cmd_vel_cont").GetComponent<vrcmdc30rvelcontroller>().enabled = false;
 
