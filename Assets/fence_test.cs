@@ -11,6 +11,7 @@ public class Fence_test : MonoBehaviour
     public float raycastDistance = 10f; // レイキャストの距離
     public LayerMask collisionLayer; // 衝突を検出するレイヤー
     string parentObjectName;
+    public GameObject targetObject;
 
     void Start()
     {
@@ -57,6 +58,15 @@ public class Fence_test : MonoBehaviour
             if (parentTransform != null)
             {
                 Debug.Log("親オブジェクトの名前: " + parentObjectName);
+                //
+                if (parentObjectName == "ic120")
+                {
+                    targetObject = GameObject.Find("ic120");
+                    VR_cont_2 scriptA = targetObject.GetComponent<VR_cont_2>();
+                    scriptA.emergency = true;
+                    Debug.Log("emergency");
+                }
+                //
             }
         }
         else
