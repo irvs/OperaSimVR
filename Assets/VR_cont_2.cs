@@ -62,8 +62,8 @@ public class VR_cont_2 : MonoBehaviour
     int publishersw = 0;
     int zerocounter = 0;
     float movespeed = 5.0f;
-    public float linearspeed = 5.0f;
-    public float rotspeed = 20.0f;
+    public float linearspeed = 1.00f;
+    public float rotspeed = 0.50f;
     //
     private double previousTime = 0.0;
     private double previousTime_adopt = 0.0;

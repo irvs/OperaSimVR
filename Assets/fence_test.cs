@@ -12,6 +12,7 @@ public class Fence_test : MonoBehaviour
     public LayerMask collisionLayer; // 衝突を検出するレイヤー
     string parentObjectName;
     public GameObject targetObject;
+    Model_name name_space_of_model;
 
     void Start()
     {
@@ -59,13 +60,25 @@ public class Fence_test : MonoBehaviour
             {
                 Debug.Log("親オブジェクトの名前: " + parentObjectName);
                 //
+                targetObject = GameObject.Find(parentObjectName);
+                //targetObject = GameObject.Find("vr_cmd_vel_cont");
+                VR_cont_2 scriptA = targetObject.GetComponent<VR_cont_2>();
+                if (scriptA != null)
+                {
+                    scriptA.emergency = true;
+                    Debug.Log("emergency");
+                }
+                /*
                 if (parentObjectName == "ic120")
                 {
-                    targetObject = GameObject.Find("ic120");
+                    // targetObject = GameObject.Find("ic120");
+                    targetObject = GameObject.Find("vr_cmd_vel_cont");
+                    Debug.Log("fence " + targetObject);
                     VR_cont_2 scriptA = targetObject.GetComponent<VR_cont_2>();
                     scriptA.emergency = true;
                     Debug.Log("emergency");
                 }
+                */
                 //
             }
         }

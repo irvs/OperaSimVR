@@ -216,11 +216,13 @@ public class cont_crowlar : MonoBehaviour
         //
         controller_cmd = FindObjectOfType<vrcmdvelcontroller>();
         cont_VR_2_cmd = FindObjectOfType<VR_cont_2>();
+        VR_cont_2 VRdirective = GetComponent<VR_cont_2>();
         //
         ///var cmdLinearVel = twist.linear.x;
         //var cmdLinearVel = linear.x;
         //var cmdLinearVel = (double)(controller_cmd.CMD_linear_list[controller_cmd.CMD_linear_list.Count - 1]* linearspeed);
-        var cmdLinearVel = (double)(cont_VR_2_cmd.CMD_linear_list_for_cyber[cont_VR_2_cmd.CMD_linear_list_for_cyber.Count - 1] * linearspeed);
+        //var cmdLinearVel = (double)(cont_VR_2_cmd.CMD_linear_list_for_cyber[cont_VR_2_cmd.CMD_linear_list_for_cyber.Count - 1] * linearspeed);
+        var cmdLinearVel = (double)(VRdirective.CMD_linear_list_for_cyber[VRdirective.CMD_linear_list_for_cyber.Count - 1] * linearspeed);
         //Debug.Log("contcrawler"+ cmdLinearVel);
         //
 
@@ -229,7 +231,8 @@ public class cont_crowlar : MonoBehaviour
         cmdLinearVel = Math.Max(cmdLinearVel, -maxLinearVelocity);
         ///var cmdAngularVel = twist.angular.z;
         //var cmdAngularVel = angular.z;
-        var cmdAngularVel = (double)(cont_VR_2_cmd.CMD_anglar_list_for_cyber[cont_VR_2_cmd.CMD_anglar_list_for_cyber.Count - 1] * rotspeed);
+        //var cmdAngularVel = (double)(cont_VR_2_cmd.CMD_anglar_list_for_cyber[cont_VR_2_cmd.CMD_anglar_list_for_cyber.Count - 1] * rotspeed);
+        var cmdAngularVel = (double)(VRdirective.CMD_anglar_list_for_cyber[VRdirective.CMD_anglar_list_for_cyber.Count - 1] * rotspeed);
         cmdAngularVel = Math.Min(cmdAngularVel, maxAngularVelocity);
         cmdAngularVel = Math.Max(cmdAngularVel, -maxAngularVelocity);
         leftVelCmd = (float)(cmdLinearVel - tread_half * cmdAngularVel); // Unit is [m/s]

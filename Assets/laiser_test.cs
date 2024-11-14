@@ -44,8 +44,8 @@ public class ControllerLay : MonoBehaviour
             //
             //Debug.Log(GameObject.Find(parentObjectName).transform.position);
             //
-            if (parentObjectName != "OVRPlayerController")
-            {
+            if (parentObjectName != "OVRPlayerController" && parentObjectName != null)
+                {
                 GetOnVehicle = parentObjectName;
                 if (OVRInput.Get(OVRInput.RawButton.LIndexTrigger))
                 {
