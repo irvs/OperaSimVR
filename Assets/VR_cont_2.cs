@@ -48,6 +48,7 @@ public class VR_cont_2 : MonoBehaviour
     private DateTime nextActionTime;
     //
     public int key = 1;
+    public bool TimeSynchronize;
     //
     public Controller_manager VRManager;
     vessel_kinametic vessel_joint_kinametic;
@@ -115,6 +116,8 @@ public class VR_cont_2 : MonoBehaviour
     private float Stop_time = 0.0f;
     private float frontback = 0.0f;
     private float rotation = 0.0f;
+    private long real_unix_time;
+    private System.DateTime real_now_time;
     // Start is called before the first frame update
     void Start()
     {
@@ -472,9 +475,17 @@ public class VR_cont_2 : MonoBehaviour
         }
     }
 
+    DateTime UnixTimeToDateTime(long unixTime)
+    {
+        // Unixエポックは1970年1月1日 00:00:00 UTCからの秒数なので、それを基にDateTimeを作成
+        DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        return epoch.AddSeconds(unixTime).ToLocalTime(); // ローカルタイムに変換
+    }
+
     void Callback(PoseStampedMsg msg)
     {
         mode = FindObjectOfType<mood_selector>();
+        
 
         if (mode.mood == 2 && control_mode == 1) //Controll mode (Pose modify)
         {
@@ -491,6 +502,12 @@ public class VR_cont_2 : MonoBehaviour
                 rotation_for_list = targetObject.transform.rotation;
                 rotation_list.Add(rotation_for_list.eulerAngles);
 
+                if (TimeSynchronize == true)
+                {
+                    real_unix_time = msg.header.stamp.sec;
+                    real_now_time = UnixTimeToDateTime(real_unix_time);
+                    //Debug.Log(real_now_time);
+                }
 
                 Vector3 newPosition = new Vector3((float)msg.pose.position.y * (-1), (float)msg.pose.position.z, (float)msg.pose.position.x);
                 Quaternion newRotation = new((float)msg.pose.orientation.y * (-1), (float)msg.pose.orientation.z, (float)msg.pose.orientation.x, (float)msg.pose.orientation.w * (-1));
