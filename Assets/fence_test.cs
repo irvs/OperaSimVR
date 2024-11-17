@@ -58,7 +58,7 @@ public class Fence_test : MonoBehaviour
             parentObjectName = parentTransform.gameObject.name;
             if (parentTransform != null)
             {
-                Debug.Log("親オブジェクトの名前: " + parentObjectName);
+                Debug.Log("衝突したオブジェクト: " + parentObjectName);
                 //
                 targetObject = GameObject.Find(parentObjectName);
                 //targetObject = GameObject.Find("vr_cmd_vel_cont");
@@ -67,6 +67,16 @@ public class Fence_test : MonoBehaviour
                 {
                     scriptA.emergency = true;
                     Debug.Log("emergency");
+                }
+                Model_name scriptB = targetObject.GetComponent<Model_name>();
+                if (scriptB != null && scriptB.ObjectTypeIsPaperMachine == true) 
+                {
+                    VR_cont_2 scriptC = GameObject.Find(scriptB.ParentMachine).GetComponent<VR_cont_2>();
+                    if (scriptC != null)
+                    {
+                        scriptC.emergency = true;
+                        Debug.Log("emergency");
+                    }
                 }
                 /*
                 if (parentObjectName == "ic120")

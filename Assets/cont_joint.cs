@@ -15,7 +15,9 @@ using RosMessageTypes.Nav;
 
 public class cont_joint : MonoBehaviour
 {
-    public ControllerLay laiser;
+    Controller_manager VRManager;
+    mood_selector selected_mode;
+    public int sw = 0;
     int cmd_operation = 0;
     float movespeed = 0.01f;
     ROSConnection ros;
@@ -47,7 +49,6 @@ public class cont_joint : MonoBehaviour
     private double pos_of_arm_joint;
     private double pos_of_bucket_joint;
     private double pos_of_end_joint;
-    public int sw = 1;
 
     //
     public GameObject Player;
@@ -69,46 +70,28 @@ public class cont_joint : MonoBehaviour
 
     void Start()
     {
-        laiser = FindObjectOfType<ControllerLay>();
-        if (laiser != null)
-        {
-            Debug.Log("Player's health is: " + laiser.num);
-        }
-        //
-
-      //  ros = ROSConnection.GetOrCreateInstance();
-    //    ros.RegisterPublisher<TwistMsg>(topicName_cmd_vel);
-     //   ros.RegisterPublisher<Float64Msg>(topicName_swing);
-     //   ros.RegisterPublisher<Float64Msg>(topicName_boom);
-      //  ros.RegisterPublisher<Float64Msg>(topicName_arm);
-      //  ros.RegisterPublisher<Float64Msg>(topicName_bucket);
-
-
 
     }
     void Update()
     {
-        OVRPlayerController scriptA = Player.GetComponent<OVRPlayerController>();
-        if (laiser != null && laiser.geton_zx200 == 1 || sw == 1)
+        VRManager = FindObjectOfType<Controller_manager>();
+        if (sw == 1)
         {
 
-            //Debug.Log("get: " + laiser.conum_zx200);
-            // Debug.Log("laiser: " + laiser.conum_zx200 + " : " + laiser.geton_zx200);
-            if (laiser.conum_zx200 == 0 &&  sw != 1)
+            if (VRManager.Player_posi_mover_SW == 0 && sw != 1)
             {
                 cmd_operation = 0;
 
             }
-            else if (laiser.conum_zx200 > 0 || sw == 1)
+            else if (VRManager.Player_posi_mover_SW > 0 || sw == 1)
             {
                 cmd_operation = 1;
-                //Debug.Log("geton_zx200");
-                //}
-                // }
-                //
+                //Debug.Log("geton");
 
-                //GameObject.Find("OVRPlayerController").transform.rotation = (GameObject.Find(parentObjectName + "_cam").transform.rotation);
+                selected_mode = FindObjectOfType<mood_selector>();
 
+
+                OVRPlayerController scriptA = targetObject.GetComponent<OVRPlayerController>();
                 if (scriptA != null)
                 {
                     //Debug.Log("kaitennha" + scriptA.RotationRatchet);
@@ -118,49 +101,41 @@ public class cont_joint : MonoBehaviour
                 }
                 //
 
-                
+
                 //
                 if (Input.GetKey(KeyCode.Y))
                 {
-                    //Debug.Log("get.H");
                     goalpose_swing += 0.005f;
                 }
                 if (Input.GetKey(KeyCode.H))
                 {
-                    // Debug.Log("get.G");
                     goalpose_swing -= 0.005f;
                 }
                 if (Input.GetKey(KeyCode.U) && goalpose_boom <= 0.9594)
                 {
-                    //Debug.Log("get.H");
                     goalpose_boom += 0.005f;
                 }
                 if (Input.GetKey(KeyCode.J) && goalpose_boom >= -1.2211)
                 {
-                    // Debug.Log("get.G");
                     goalpose_boom -= 0.005f;
                 }
                 if (Input.GetKey(KeyCode.I) && goalpose_arm <= 2.5294)
                 {
-                    //Debug.Log("get.H");
                     goalpose_arm += 0.005f;
                 }
                 if (Input.GetKey(KeyCode.K) && goalpose_arm >= 0.785)
                 {
-                    // Debug.Log("get.G");
                     goalpose_arm -= 0.005f;
                 }
                 if (Input.GetKey(KeyCode.O) && goalpose_bucket <= 1.39555)
                 {
-                    //Debug.Log("get.H");
                     goalpose_bucket += 0.005f;
                 }
                 if (Input.GetKey(KeyCode.L) && goalpose_bucket >= -1.2211)
                 {
-                    // Debug.Log("get.G");
                     goalpose_bucket -= 0.005f;
                 }
-                
+
                 //
                 RBack = OVRInput.Get(OVRInput.RawAxis1D.RHandTrigger);
                 RFront = OVRInput.Get(OVRInput.RawAxis1D.RIndexTrigger);
@@ -285,13 +260,10 @@ public class cont_joint : MonoBehaviour
                     );
                     //
                     Debug.Log(goalpose_swing + "  :  " + goalpose_boom + "  :  " + goalpose_arm + "  :  " + goalpose_bucket);
-                 //   ros.Send(topicName_swing, angleMessage_swing);
-                  //  ros.Send(topicName_boom, angleMessage_boom);
-                  //  ros.Send(topicName_arm, angleMessage_arm);
-                   // ros.Send(topicName_bucket, angleMessage_bucket);
+
                     if (zerocounter <= 20)
                     {
-                       // ros.Send(topicName_cmd_vel, Twist);
+                        // ros.Send(topicName_cmd_vel, Twist);
                     }
 
                     timeElapsed = 0;
@@ -313,11 +285,11 @@ public class cont_joint : MonoBehaviour
                 //
                 targetObject = GameObject.Find("zx200");
                 //Debug.Log(msg.position[0]);
-             //   pos_of_swing_joint = msg[0];
-             //   pos_of_boom_joint = msg[1];
-             //   pos_of_arm_joint = msg[2];
-             //   pos_of_bucket_joint = msg[3];
-             //   pos_of_end_joint = msg[4];
+                //   pos_of_swing_joint = msg[0];
+                //   pos_of_boom_joint = msg[1];
+                //   pos_of_arm_joint = msg[2];
+                //   pos_of_bucket_joint = msg[3];
+                //   pos_of_end_joint = msg[4];
                 //Debug.Log(pos_of_bucket_joint);
                 //Debug.Log(msg.velocity[0]);
                 //Debug.Log(msg.effort[0]);

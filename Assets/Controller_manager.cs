@@ -100,7 +100,6 @@ public class Controller_manager : MonoBehaviour
             VehicletargetObject = GameObject.Find(Machine_name);
         }
 
-        //   sw_zx200 = 0;
         if (Machine_name != null && Machine_name != "OVRPlayerController")
         {
             //
@@ -122,7 +121,6 @@ public class Controller_manager : MonoBehaviour
 
                 PlayertargetObject.transform.position = GameObject.Find(Machine_name + "_cam").transform.position;
 
-                // sw_zx200 = 0;
                 num = 1;
             }
             //
@@ -134,7 +132,6 @@ public class Controller_manager : MonoBehaviour
                 scriptA.RotationAmount = 0.5f;
 
                 //
-                // sw_zx200 = 0;
                 Player_posi_mover_SW = 0;
                 num = 0;
                 controller_sw = false;
@@ -143,10 +140,15 @@ public class Controller_manager : MonoBehaviour
                 //geton_zx200 = 0;
                 //geton_c30r = 0;
                 GetOnMachine = 0;
-                VR_cont_2 scriptB = GameObject.Find(Machine_name).GetComponent<VR_cont_2>();
-                if (scriptB != null)
+                VR_cont_2 scriptB_c = GameObject.Find(Machine_name).GetComponent<VR_cont_2>();
+                if (scriptB_c != null)
                 {
-                    scriptB.sw = 0;
+                    scriptB_c.sw = 0;
+                }
+                JointAnglePublisher scriptB_b = GameObject.Find(Machine_name).GetComponent<JointAnglePublisher>();
+                if (scriptB_b != null)
+                {
+                    scriptB_b.sw = 0;
                 }
                 PlayertargetObject.transform.position = posiorigin;
                 PlayertargetObject.transform.rotation = rotrigin;
@@ -180,10 +182,17 @@ public class Controller_manager : MonoBehaviour
 
             if (((Player_posi_mover_SW > 0) && OVRInput.GetDown(OVRInput.RawButton.X) && (num == 1)) || ((Player_posi_mover_SW > 0) && (num == 1)) && Input.GetKeyDown(KeyCode.X))
             {
-                VR_cont_2 scriptB = GameObject.Find(Machine_name).GetComponent<VR_cont_2>();
-                if (scriptB != null)
+                VR_cont_2 scriptB_c = GameObject.Find(Machine_name).GetComponent<VR_cont_2>();
+                if (scriptB_c != null)
                 {
-                    scriptB.sw = 1;
+                    scriptB_c.sw = 1;
+                    Debug.Log("controller on");
+                    controller_sw = true;
+                }
+                JointAnglePublisher scriptB_b = GameObject.Find(Machine_name).GetComponent<JointAnglePublisher>();
+                if (scriptB_b != null)
+                {
+                    scriptB_b.sw = 1;
                     Debug.Log("controller on");
                     controller_sw = true;
                 }
@@ -191,6 +200,9 @@ public class Controller_manager : MonoBehaviour
             
             if (outside_sw == true)
             {
+                OVRPlayerController scriptA = PlayertargetObject.GetComponent<OVRPlayerController>();
+                scriptA.RotationRatchet = 45;
+                scriptA.RotationAmount = 0.5f;
                 //左ジョイスティックの情報取得
                 Vector2 stickR = movespeed * OVRInput.Get(OVRInput.RawAxis2D.RThumbstick);
                 Playerlinear = stickR.y;
@@ -222,6 +234,9 @@ public class Controller_manager : MonoBehaviour
                     outside_sw = false;
                     num = 1;
                     Debug.Log("REgeton");
+                    OVRPlayerController scriptB = PlayertargetObject.GetComponent<OVRPlayerController>();
+                    scriptB.RotationRatchet = 0;
+                    scriptB.RotationAmount = 0.0f;
                 }
             }
 

@@ -5,6 +5,8 @@ using UnityEngine;
 public class Model_name : MonoBehaviour
 {
     public GameObject targetObject;
+    public bool ObjectTypeIsPaperMachine;
+    public string ParentMachine;
     public string Modelname;
     public string KindsOfHeavyMachinery;
     

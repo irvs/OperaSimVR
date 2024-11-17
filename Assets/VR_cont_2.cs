@@ -50,7 +50,7 @@ public class VR_cont_2 : MonoBehaviour
     public int key = 1;
     public bool TimeSynchronize;
     //
-    public Controller_manager VRManager;
+    Controller_manager VRManager;
     vessel_kinametic vessel_joint_kinametic;
     mood_selector selected_mode;
     cont_crowlar crawler_controllor;
