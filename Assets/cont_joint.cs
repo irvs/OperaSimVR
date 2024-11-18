@@ -63,6 +63,7 @@ public class cont_joint : MonoBehaviour
     //private double pos_of_end_joint;
     private List<ArticulationBody> joints;
     private List<string> jointNames;
+    public float targetVelocity;
     //
     //private List<ArticulationBody> targetjoints;
     //private List<string> targetjointNames;
@@ -311,10 +312,20 @@ public class cont_joint : MonoBehaviour
                             targetjointNames.Add(targetujoint.jointName);
                             //
                             targetPos = msg[j];
+
                             var drive = joint.xDrive;//targetjoints[i].xDrive;
+
+                            
                             drive.target = (float)(targetPos * Mathf.Rad2Deg);
                             joint.xDrive = drive;//targetjoints[i].xDrive = drive;
                             //Debug.Log(j + "abcd" + joint + " " + targetPos);
+                            
+                            //
+                            /*
+                            //targetVelocity = 1.1f;
+                            drive.targetVelocity = targetVelocity;
+                            joint.xDrive = drive;
+                            */
                             j += 1;
                         }
                     }
