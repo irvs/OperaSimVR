@@ -15,10 +15,10 @@ public class Controller_manager : MonoBehaviour
     ControllerLay From_VRcont;
     public bool designate_vehicle;
     bool controller_sw;
-    bool outside_sw;
+    bool outside_sw =false;
     public string Machine_name;
     GameObject VehicletargetObject;
-    public int GetOnMachine;
+    public int GetOnMachine = 0;
     List<string> Machine_Name_List = new List<string>();
     
     public int Player_posi_mover_SW = 0;
@@ -33,6 +33,7 @@ public class Controller_manager : MonoBehaviour
     float deltatimesec = System.DateTime.Now.Millisecond;
     public GameObject PlayertargetObject;
     private float Playerlinear;
+    private bool button;
     //
 
     // Start is called before the first frame update
@@ -45,6 +46,7 @@ public class Controller_manager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        
         if (designate_vehicle == false)
         {
             From_VRcont = FindObjectOfType<ControllerLay>();
@@ -61,7 +63,7 @@ public class Controller_manager : MonoBehaviour
         }
 
         //GetOnMachine = From_VRcont.GetOn;
-        if (OVRInput.Get(OVRInput.RawButton.LIndexTrigger))
+        if (OVRInput.Get(OVRInput.RawButton.LIndexTrigger) && GetOnMachine == 0)
         {
             /*
             warp_triger = 1;
@@ -103,6 +105,7 @@ public class Controller_manager : MonoBehaviour
         if (Machine_name != null && Machine_name != "OVRPlayerController")
         {
             //
+            button = true;
             if ((GetOnMachine == 1) && (Player_posi_mover_SW == 0))
             {
                 Debug.Log("INPUT_BBBBBBBBBBBBB");
@@ -124,7 +127,7 @@ public class Controller_manager : MonoBehaviour
                 num = 1;
             }
             //
-            if (((Player_posi_mover_SW > 0) && OVRInput.GetDown(OVRInput.RawButton.B) && (num == 1)) || ((Player_posi_mover_SW > 0) && (num == 1)) && GetOnMachine == 0)
+            if (((Player_posi_mover_SW > 0) && OVRInput.GetDown(OVRInput.RawButton.B) && (num == 1)) || ((Player_posi_mover_SW > 0) && (num == 1)) && Input.GetKeyDown(KeyCode.B))
             {
                 //
                 OVRPlayerController scriptA = PlayertargetObject.GetComponent<OVRPlayerController>();
@@ -150,8 +153,16 @@ public class Controller_manager : MonoBehaviour
                 {
                     scriptB_b.sw = 0;
                 }
-                PlayertargetObject.transform.position = posiorigin;
-                PlayertargetObject.transform.rotation = rotrigin;
+
+                if (outside_sw == false)
+                {
+                    PlayertargetObject.transform.position = posiorigin;
+                    PlayertargetObject.transform.rotation = rotrigin;
+                }
+                else
+                {
+                    outside_sw = false;
+                }
                 PlayertargetObject.GetComponent<Collider>().enabled = true;
                 PlayertargetObject.GetComponent<CharacterController>().enabled = true;
                 Debug.Log("BAAABBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB");
@@ -173,14 +184,9 @@ public class Controller_manager : MonoBehaviour
                 }
             }
 
-            if (((controller_sw == true) && OVRInput.GetDown(OVRInput.RawButton.X)) || ((controller_sw == true) && Input.GetKeyDown(KeyCode.X)))
-            {
-                Debug.Log("outside");
-                outside_sw = true;
-                
-            }
+            
 
-            if (((Player_posi_mover_SW > 0) && OVRInput.GetDown(OVRInput.RawButton.X) && (num == 1)) || ((Player_posi_mover_SW > 0) && (num == 1)) && Input.GetKeyDown(KeyCode.X))
+            if (((Player_posi_mover_SW > 0) && OVRInput.GetDown(OVRInput.RawButton.X) && (num == 1) && OVRInput.Get(OVRInput.RawButton.LIndexTrigger) == true) || ((Player_posi_mover_SW > 0) && (num == 1)) && Input.GetKeyDown(KeyCode.X))
             {
                 VR_cont_2 scriptB_c = GameObject.Find(Machine_name).GetComponent<VR_cont_2>();
                 if (scriptB_c != null)
@@ -229,7 +235,7 @@ public class Controller_manager : MonoBehaviour
                     GameObject.Find("OVRPlayerController").transform.Rotate(0, stickR.x, 0);
                 }
 
-                if (OVRInput.GetDown(OVRInput.RawButton.B) || Input.GetKeyDown(KeyCode.B))
+                if ((OVRInput.GetDown(OVRInput.RawButton.X) && OVRInput.Get(OVRInput.RawButton.LIndexTrigger) == false && outside_sw == true) || (Input.GetKeyDown(KeyCode.Z) && outside_sw == true))
                 {
                     outside_sw = false;
                     num = 1;
@@ -237,7 +243,17 @@ public class Controller_manager : MonoBehaviour
                     OVRPlayerController scriptB = PlayertargetObject.GetComponent<OVRPlayerController>();
                     scriptB.RotationRatchet = 0;
                     scriptB.RotationAmount = 0.0f;
+                    button = false;
                 }
+
+                
+            }
+
+            if ((OVRInput.GetDown(OVRInput.RawButton.X) && OVRInput.Get(OVRInput.RawButton.LIndexTrigger) == false && outside_sw == false && button == true) || (Input.GetKeyDown(KeyCode.Z) && outside_sw == false && button == true))
+            {
+                Debug.Log("outside");
+                outside_sw = true;
+
             }
 
         }//

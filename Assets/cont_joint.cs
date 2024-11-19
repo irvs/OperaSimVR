@@ -35,7 +35,7 @@ public class cont_joint : MonoBehaviour
     private List<ArticulationBody> targetjoints;
     private List<string> targetjointNames;
     private double targetPos;
-
+    public string JointContorollerMode;
     //Twist
     Vector3Msg linear = new Vector3Msg(0f, 0f, 0f);
     Vector3Msg angular = new Vector3Msg(0f, 0f, 0f);
@@ -49,6 +49,18 @@ public class cont_joint : MonoBehaviour
     private double pos_of_arm_joint;
     private double pos_of_bucket_joint;
     private double pos_of_end_joint;
+
+    private float swing_upper_limit;
+    private float swing_lower_limit;
+    private float boom_upper_limit = 0.9594f;
+    private float boom_lower_limit = -1.2211f;
+    private float arm_upper_limit = 2.5294f;
+    private float arm_lower_limit = 0.785f;
+    private float bucket_upper_limit = 1.39555f;
+    private float bucket_lower_limit = -1.2211f;
+    private float joint_angular_upper_limit;
+    private float joint_angular_lower_limit;
+
 
     //
     public GameObject Player;
@@ -315,16 +327,26 @@ public class cont_joint : MonoBehaviour
 
                             var drive = joint.xDrive;//targetjoints[i].xDrive;
 
-                            
-                            drive.target = (float)(targetPos * Mathf.Rad2Deg);
-                            joint.xDrive = drive;//targetjoints[i].xDrive = drive;
-                            //Debug.Log(j + "abcd" + joint + " " + targetPos);
-                            
+
+                            if (JointContorollerMode == "velocity") 
+                            {
+                                //targetVelocity = 1.1f;
+                                drive.driveType = ArticulationDriveType.Velocity;// = targetVelocity;
+                                drive.targetVelocity = (float)targetPos;
+                                joint.xDrive = drive;
+                            }
+                            else
+                            {
+                                drive.driveType = ArticulationDriveType.Force;
+                                drive.target = (float)(targetPos * Mathf.Rad2Deg);
+                                joint.xDrive = drive;//targetjoints[i].xDrive = drive;
+                                                     //Debug.Log(j + "abcd" + joint + " " + targetPos);
+                            }
+
+
                             //
                             /*
-                            //targetVelocity = 1.1f;
-                            drive.targetVelocity = targetVelocity;
-                            joint.xDrive = drive;
+                            
                             */
                             j += 1;
                         }

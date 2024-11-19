@@ -4,16 +4,24 @@ using System.Collections.Generic;
 using System;
 using Unity.Robotics.ROSTCPConnector;
 using RosMessageTypes.Geometry;
+using RosMessageTypes.Std;
 using System.Drawing.Printing;
 using System.Linq;
 using static UnityEngine.GraphicsBuffer;
+
 public class VR_cont_2 : MonoBehaviour
 {
     public int sw = 0;
     public int control_mode = 0;
     public bool emergency;
-    public string PublishTopicName;
-    public string SubscribeTopicName;
+    public bool SimORReal;
+    public string SimPublishTopicName;
+    public string RealPublishTopicName;
+    private string SRPublishTopicName;
+    public string SimSubscribeTopicName;
+    public string RealSubscribeTopicName;
+    private string SRSubscribeTopicName;
+    public string controller_swTopicName;
     public float Time_Delay = 5.0f;
     public List<float> CMD_linear_list_for_cyber = new List<float>();
     public List<float> CMD_linear_list = new List<float>();
@@ -74,6 +82,8 @@ public class VR_cont_2 : MonoBehaviour
     private float timeElapsed_adopt = 0.0f;
     private float timeElapsed_adopt_starter = 0.0f;
     private float timeElapsed_start = 0.0f;
+    private float sw_timeElapsed = 0.0f;
+    private float dissconnect_timer = 0.0f;
     private int starter_acsel = 0;
     private float acsel = 0.0f;
     private float vel_linear_acceleration;
@@ -106,7 +116,7 @@ public class VR_cont_2 : MonoBehaviour
 
 
     ROSConnection ros;
-    private PoseStampedMsg twist;
+   // private PoseStampedMsg twist;
     //Twist
     Vector3Msg linear = new Vector3Msg(0f, 0f, 0f);
     Vector3Msg angular = new Vector3Msg(0f, 0f, 0f);
@@ -130,10 +140,22 @@ public class VR_cont_2 : MonoBehaviour
         // start the ROS connection
         Debug.Log("check:baselink/pose");
         ros = ROSConnection.GetOrCreateInstance();
-        ros.RegisterPublisher<TwistMsg>(PublishTopicName);
+        ros.RegisterPublisher<BoolMsg>(controller_swTopicName);
+        if (SimORReal == true)
+        {
+            SRPublishTopicName = RealPublishTopicName;
+            SRSubscribeTopicName = RealSubscribeTopicName;
+        }
+        else if (SimORReal == false)
+        {
+            SRPublishTopicName = SimPublishTopicName;
+            SRSubscribeTopicName = SimSubscribeTopicName;
+        }
+        ros.RegisterPublisher<TwistMsg>(SRPublishTopicName);
         //
-        twist = new PoseStampedMsg();
-        ros.Subscribe<PoseStampedMsg>(SubscribeTopicName, Callback);
+        //   twist = new PoseStampedMsg();
+        ros.Subscribe<PoseStampedMsg>(SRSubscribeTopicName, Callback);
+
         Debug.Log("already:baselink/pose");
         //
         nextActionTime = DateTime.Now.AddMilliseconds(intervalInMilliseconds);
@@ -169,7 +191,7 @@ public class VR_cont_2 : MonoBehaviour
             if (timeElapsed >= publishMessageInterval / 2.0f)
             {
                 // Debug.Log("Publish After Delay Time");
-                ros.Publish(PublishTopicName, Twist);
+                ros.Publish(SRPublishTopicName, Twist);
                 timeElapsed = 0.0f;
             }
             CMD_linear_list_for_cyber.Clear();
@@ -184,13 +206,26 @@ public class VR_cont_2 : MonoBehaviour
         }
         else if (emergency == false)
         {
-
+            if (dissconnect_timer >= 3.0f) 
+            {
+                //emergency = true;
+            }
+            
             VRManager = FindObjectOfType<Controller_manager>();
             //Debug.Log("vrcmdvelcont");
            // if (VRManager != null && VRManager.geton_ic120 == 1 || sw == 1)
             if (sw == 1)
             {
+                
                 // Debug.Log("get: " + laiser.conum_zx200);
+                if (sw_timeElapsed >= publishMessageInterval * 50.0f)
+                {
+                    // Debug.Log("Publish After Delay Time");
+                    BoolMsg message = new BoolMsg { data = true };
+                    ros.Publish(controller_swTopicName, message);
+                    sw_timeElapsed = 0.0f;
+                }
+                
                 if (VRManager.Player_posi_mover_SW == 0 && sw != 1)
                 {
                     cmd_operation = 0;
@@ -205,6 +240,7 @@ public class VR_cont_2 : MonoBehaviour
                     //
                     timeElapsed += Time.deltaTime;
                     timeElapsed_Pose += Time.deltaTime;
+                    sw_timeElapsed += Time.deltaTime;
 
                     if (selected_mode.mood == 2)
                     {
@@ -213,6 +249,7 @@ public class VR_cont_2 : MonoBehaviour
                         timeElapsed_start += Time.deltaTime;
                         zerotime += Time.deltaTime;
                         Stop_time += Time.deltaTime;
+                        dissconnect_timer += Time.deltaTime;
                     }
 
 
@@ -358,7 +395,7 @@ public class VR_cont_2 : MonoBehaviour
                             //  Debug.Log("linear " + linear.x);
                             //   Debug.Log("anglar" + angular.z);
                             //  Debug.Log("Publish On Time");
-                            ros.Publish(PublishTopicName, Twist);
+                            ros.Publish(SRPublishTopicName, Twist);
                             timeElapsed = 0.0f;
                         }
                         //   previousTime = time;
@@ -465,13 +502,14 @@ public class VR_cont_2 : MonoBehaviour
                             if (timeElapsed >= publishMessageInterval)
                             {
                                 // Debug.Log("Publish After Delay Time");
-                                ros.Publish(PublishTopicName, Twist);
+                                ros.Publish(SRPublishTopicName, Twist);
                                 timeElapsed = 0.0f;
                             }
                             //      previousTime = time;
 
 
                         }
+
                     }
 
                 }//
@@ -489,9 +527,9 @@ public class VR_cont_2 : MonoBehaviour
     void Callback(PoseStampedMsg msg)
     {
         mode = FindObjectOfType<mood_selector>();
-        
+        dissconnect_timer = 0.0f;
 
-        if (mode.mood == 2 && control_mode == 1) //Controll mode (Pose modify)
+        if (mode.mood == 2 && control_mode == 1 && sw == 1) //Controll mode (Pose modify)
         {
             //Debug.Log("moooovercallback");
             DateTime currentTime = DateTime.Now;
