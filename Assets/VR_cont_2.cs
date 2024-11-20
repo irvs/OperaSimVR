@@ -21,7 +21,7 @@ public class VR_cont_2 : MonoBehaviour
     public string SimSubscribeTopicName;
     public string RealSubscribeTopicName;
     private string SRSubscribeTopicName;
-    public string controller_swTopicName;
+    public string controller_swTopicName="controller_sw";
     public float Time_Delay = 5.0f;
     public List<float> CMD_linear_list_for_cyber = new List<float>();
     public List<float> CMD_linear_list = new List<float>();
@@ -140,7 +140,7 @@ public class VR_cont_2 : MonoBehaviour
         // start the ROS connection
         Debug.Log("check:baselink/pose");
         ros = ROSConnection.GetOrCreateInstance();
-        ros.RegisterPublisher<BoolMsg>(controller_swTopicName);
+        //ros.RegisterPublisher<BoolMsg>(controller_swTopicName);
         if (SimORReal == true)
         {
             SRPublishTopicName = RealPublishTopicName;
@@ -221,7 +221,9 @@ public class VR_cont_2 : MonoBehaviour
                 if (sw_timeElapsed >= publishMessageInterval * 50.0f)
                 {
                     // Debug.Log("Publish After Delay Time");
-                    BoolMsg message = new BoolMsg { data = true };
+                    BoolMsg message = new BoolMsg (
+                        true 
+                        );
                     ros.Publish(controller_swTopicName, message);
                     sw_timeElapsed = 0.0f;
                 }
