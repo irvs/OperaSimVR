@@ -12,6 +12,7 @@ using static UnityEngine.GraphicsBuffer;
 public class VR_cont_2 : MonoBehaviour
 {
     public int sw = 0;
+    private int prev_sw = 0;
     public int control_mode = 0;
     public bool emergency;
     public bool SimORReal;
@@ -21,7 +22,8 @@ public class VR_cont_2 : MonoBehaviour
     public string SimSubscribeTopicName;
     public string RealSubscribeTopicName;
     private string SRSubscribeTopicName;
-    public string controller_swTopicName="controller_sw";
+    public string controller_swTopicName = "controller_sw";
+    private string controller_sw_return_TopicName;
     public float Time_Delay = 5.0f;
     public List<float> CMD_linear_list_for_cyber = new List<float>();
     public List<float> CMD_linear_list = new List<float>();
@@ -111,12 +113,12 @@ public class VR_cont_2 : MonoBehaviour
 
     private float cyber_pose_length = 0.0f;
     private int counter;
-    // Publish the cube's position and rotation every N seconds
+    private bool unconfined = true;
     public float publishMessageInterval = 0.02f;//50Hz
 
 
     ROSConnection ros;
-   // private PoseStampedMsg twist;
+    // private PoseStampedMsg twist;
     //Twist
     Vector3Msg linear = new Vector3Msg(0f, 0f, 0f);
     Vector3Msg angular = new Vector3Msg(0f, 0f, 0f);
@@ -140,7 +142,9 @@ public class VR_cont_2 : MonoBehaviour
         // start the ROS connection
         Debug.Log("check:baselink/pose");
         ros = ROSConnection.GetOrCreateInstance();
-        //ros.RegisterPublisher<BoolMsg>(controller_swTopicName);
+        ros.RegisterPublisher<BoolMsg>(controller_swTopicName);
+        controller_sw_return_TopicName = controller_swTopicName + "_return";
+        ros.Subscribe<BoolMsg>(controller_sw_return_TopicName, SW_Callback);
         if (SimORReal == true)
         {
             SRPublishTopicName = RealPublishTopicName;
@@ -177,6 +181,22 @@ public class VR_cont_2 : MonoBehaviour
     void Update()
     {
         //
+        if (prev_sw == 1 && sw == 0)
+        {
+            sw_timeElapsed += Time.deltaTime;
+            if (sw_timeElapsed >= publishMessageInterval * 50.0f)
+            {
+                // Debug.Log("Publish After Delay Time");
+                BoolMsg message = new BoolMsg(
+                    false
+                    );
+                ros.Publish(controller_swTopicName, message);
+                sw_timeElapsed = 0.0f;
+                timeElapsed = 0.0f;
+                unconfined = true;
+            }
+
+        }
         if (emergency == true)
         {
             timeElapsed += Time.deltaTime;
@@ -206,28 +226,28 @@ public class VR_cont_2 : MonoBehaviour
         }
         else if (emergency == false)
         {
-            if (dissconnect_timer >= 3.0f) 
+            if (dissconnect_timer >= 3.0f)
             {
                 //emergency = true;
             }
-            
+
             VRManager = FindObjectOfType<Controller_manager>();
             //Debug.Log("vrcmdvelcont");
-           // if (VRManager != null && VRManager.geton_ic120 == 1 || sw == 1)
+            // if (VRManager != null && VRManager.geton_ic120 == 1 || sw == 1)
             if (sw == 1)
             {
-                
+                prev_sw = 1;
                 // Debug.Log("get: " + laiser.conum_zx200);
-                if (sw_timeElapsed >= publishMessageInterval * 50.0f)
+                if (sw_timeElapsed >= publishMessageInterval * 50.0f && unconfined == true)
                 {
                     // Debug.Log("Publish After Delay Time");
-                    BoolMsg message = new BoolMsg (
-                        true 
+                    BoolMsg message = new BoolMsg(
+                        true
                         );
                     ros.Publish(controller_swTopicName, message);
                     sw_timeElapsed = 0.0f;
                 }
-                
+
                 if (VRManager.Player_posi_mover_SW == 0 && sw != 1)
                 {
                     cmd_operation = 0;
@@ -258,7 +278,7 @@ public class VR_cont_2 : MonoBehaviour
                     Vector2 stickL = movespeed * OVRInput.Get(OVRInput.RawAxis2D.LThumbstick);
                     if (linear_or_rot == 0)
                     {
-                        if (Math.Abs(stickL.y) > 0.2) 
+                        if (Math.Abs(stickL.y) > 0.2)
                         {
                             linear_or_rot = 1;
                             Debug.Log("linear");
@@ -270,7 +290,7 @@ public class VR_cont_2 : MonoBehaviour
                         }
                     }
                     //
-                    if (linear_or_rot == 1 || selected_mode.mood == 1|| control_mode == 0)
+                    if (linear_or_rot == 1 || selected_mode.mood == 1 || control_mode == 0)
                     {
                         frontback = stickL.y;
                     }
@@ -282,7 +302,7 @@ public class VR_cont_2 : MonoBehaviour
                     {
                         rotation = -stickL.x;
                     }
-                    else if(linear_or_rot == 1)
+                    else if (linear_or_rot == 1)
                     {
                         rotation = 0.0f;
                     }
@@ -847,5 +867,19 @@ public class VR_cont_2 : MonoBehaviour
             }
             //previousTime_adopt = time_adopt;
         }
+    }
+
+    void SW_Callback(BoolMsg msg)
+    {
+        if (msg.data == true && sw == 1)
+        {
+            unconfined = false;
+        }
+        else if (msg.data == false && sw == 0)
+        {
+            unconfined = true;
+            prev_sw = 0;
+        }
+
     }
 }

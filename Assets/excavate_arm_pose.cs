@@ -29,7 +29,9 @@ public class JointSubscriber : MonoBehaviour
     public string robotName = "robot_name";
     public GameObject targetObject;
     public string Subscribe_topic_name = "subscribe_topic";
+    public string RealSubscribeTopicName;
     private mood_selector mode;
+    public bool SimORReal;
     ROSConnection ros;
 
     void Start()
@@ -39,7 +41,14 @@ public class JointSubscriber : MonoBehaviour
         Debug.Log("check:joint_states_pub");
         // ROSコネクションへのサブスクライバーの登録
         //ROSConnection.instance.Subscribe<TwistMsg>("/ic120/tracks/cmd_vel", Callback);
-        ros.Subscribe<JointStateMsg>(Subscribe_topic_name, Callback);
+        if (SimORReal == true)
+        {
+            ros.Subscribe<JointStateMsg>(RealSubscribeTopicName, Callback);
+        }
+        if (SimORReal == false)
+        {
+            ros.Subscribe<JointStateMsg>(Subscribe_topic_name, Callback);
+        }
         Debug.Log("already:joint_states_pub");
         ///
         ///

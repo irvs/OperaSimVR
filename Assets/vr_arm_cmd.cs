@@ -38,8 +38,11 @@ public class JointAnglePublisher : MonoBehaviour
     public string topicName_bucket = "/zx200/bucket/cmd";
     public string topicname_joint = "/zx200/front_cmd";
     public string Real_topicName_joint_velocity = "/zx200/front_cmd/for_ROS";
+    public string controller_swTopicName = "controller_sw_zx200";
     public float publishMessageFrequency = 0.5f;
+    public float publishMessageInterval = 0.02f;//50Hz
     private float timeElapsed;
+    private float sw_timeElapsed = 0.0f;
     private float frontback;
     private float rotation;
     float goalpose_swing = 0.0f;
@@ -77,13 +80,13 @@ public class JointAnglePublisher : MonoBehaviour
         //
         
         ros = ROSConnection.GetOrCreateInstance();
+        ros.RegisterPublisher<BoolMsg>(controller_swTopicName);
         ros.RegisterPublisher<TwistMsg>(topicName_cmd_vel);
         ros.RegisterPublisher<Float64Msg>(topicName_swing);
         ros.RegisterPublisher<Float64Msg>(topicName_boom);
         ros.RegisterPublisher<Float64Msg>(topicName_arm);
         ros.RegisterPublisher<Float64Msg>(topicName_bucket);
         ros.RegisterPublisher<JointStateMsg>(Real_topicName_joint_velocity);
-        //  ros.RegisterPublisher<Com3_Msg>(topicname_joint);
         //
         // ジョイント名、位置、速度、力の初期化
         jointNames = new List<string> { "swing_joint", "boom_joint", "arm_joint", "bucket_joint", "bucket_end_joint" }; 
@@ -125,6 +128,15 @@ public class JointAnglePublisher : MonoBehaviour
             VRManager = FindObjectOfType<Controller_manager>();
             if (sw == 1)
             {
+                if (sw_timeElapsed >= publishMessageInterval * 50.0f)
+                {
+                    // Debug.Log("Publish After Delay Time");
+                    BoolMsg message = new BoolMsg(
+                        true
+                        );
+                    ros.Publish(controller_swTopicName, message);
+                    sw_timeElapsed = 0.0f;
+                }
 
                 if (VRManager.Player_posi_mover_SW == 0 && sw != 1)
                 {
@@ -328,52 +340,7 @@ public class JointAnglePublisher : MonoBehaviour
                             velocity_of_bucket -= 0.005f;
                         }
 
-                        //key
-                        if (key == 1)
-                        {
-
-                            if (Input.GetKey(KeyCode.Space))
-                            {
-                                // OVRManager.display.RecenterPose();
-                                frontback = 0.0f;
-                                rotation = 0.0f;
-                            }
-                            //
-                            if (Input.GetKey(KeyCode.LeftArrow))
-                            {
-                                rotation = rotspeed;
-                            }
-                            if (Input.GetKeyUp(KeyCode.LeftArrow))
-                            {
-                                rotation = 0;
-                            }
-                            if (Input.GetKey(KeyCode.RightArrow))
-                            {
-                                rotation = -rotspeed;
-                            }
-                            if (Input.GetKeyUp(KeyCode.RightArrow))
-                            {
-                                rotation = 0;
-                            }
-                            if (Input.GetKey(KeyCode.UpArrow))
-                            {
-                                frontback = linearspeed;
-                            }
-                            if (Input.GetKeyUp(KeyCode.UpArrow))
-                            {
-                                frontback = 0;
-                            }
-                            if (Input.GetKey(KeyCode.DownArrow))
-                            {
-                                frontback = -linearspeed;
-                            }
-                            if (Input.GetKeyUp(KeyCode.DownArrow))
-                            {
-                                frontback = 0;
-                            }
-                            linear.x = frontback;
-                            angular.x = rotation;
-                        }
+                        
 
                         //
                         //for joint
@@ -465,8 +432,56 @@ public class JointAnglePublisher : MonoBehaviour
                             linear.x = 0;
                             angular.x = 0;
                         }
-                        //for twist
-                        if (linear.x == 0 && angular.z == 0)
+
+                    //key
+                    if (key == 1)
+                    {
+
+                        if (Input.GetKey(KeyCode.Space))
+                        {
+                            // OVRManager.display.RecenterPose();
+                            frontback = 0.0f;
+                            rotation = 0.0f;
+                        }
+                        //
+                        if (Input.GetKey(KeyCode.LeftArrow))
+                        {
+                            rotation = rotspeed;
+                        }
+                        if (Input.GetKeyUp(KeyCode.LeftArrow))
+                        {
+                            rotation = 0;
+                        }
+                        if (Input.GetKey(KeyCode.RightArrow))
+                        {
+                            rotation = -rotspeed;
+                        }
+                        if (Input.GetKeyUp(KeyCode.RightArrow))
+                        {
+                            rotation = 0;
+                        }
+                        if (Input.GetKey(KeyCode.UpArrow))
+                        {
+                            frontback = linearspeed;
+                        }
+                        if (Input.GetKeyUp(KeyCode.UpArrow))
+                        {
+                            frontback = 0;
+                        }
+                        if (Input.GetKey(KeyCode.DownArrow))
+                        {
+                            frontback = -linearspeed;
+                        }
+                        if (Input.GetKeyUp(KeyCode.DownArrow))
+                        {
+                            frontback = 0;
+                        }
+                        linear.x = frontback;
+                        angular.x = rotation;
+                    }
+
+                    //for twist
+                    if (linear.x == 0 && angular.z == 0)
                     {
                         zerocounter += 1;
                     }
@@ -477,6 +492,7 @@ public class JointAnglePublisher : MonoBehaviour
                     //
 
                     timeElapsed += Time.deltaTime;
+                    sw_timeElapsed += Time.deltaTime;
                     if (timeElapsed > publishMessageFrequency)
                     {
                         if (SimORReal == false)
@@ -511,7 +527,7 @@ public class JointAnglePublisher : MonoBehaviour
                             if (zerocounter <= 20)
                             {
                                 ros.Publish(topicName_cmd_vel, Twist);
-                                //Debug.Log("linear " + linear);
+                                Debug.Log("linear " + linear);
                             }
 
                             timeElapsed = 0;
