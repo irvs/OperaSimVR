@@ -32,12 +32,22 @@ public class JointSubscriber : MonoBehaviour
     public string RealSubscribeTopicName;
     private mood_selector mode;
     public bool SimORReal;
+    FieldMainManager SimORRealSelecter;
     ROSConnection ros;
 
     void Start()
     {
         twist = new JointStateMsg();
         ros = ROSConnection.GetOrCreateInstance();
+        SimORRealSelecter = FindObjectOfType<FieldMainManager>();
+        if (SimORRealSelecter.ForSimOrReal.ToString() == "ForSimulater")
+        {
+            SimORReal = false;
+        }
+        else if (SimORRealSelecter.ForSimOrReal.ToString() == "ForReal")
+        {
+            SimORReal = true;
+        }
         Debug.Log("check:joint_states_pub");
         // ROSコネクションへのサブスクライバーの登録
         //ROSConnection.instance.Subscribe<TwistMsg>("/ic120/tracks/cmd_vel", Callback);
@@ -56,24 +66,6 @@ public class JointSubscriber : MonoBehaviour
         //joints = new List<ArticulationBody>();
         //jointNames = new List<string>();
         //Debug.Log("jointNames");
-        //Debug.Log("aabb");
-        /*
-        foreach (var joint in targetObject.GetComponentsInChildren<ArticulationBody>())
-        {
-            if (joint.isActiveAndEnabled)
-            {
-                var ujoint = joint.GetComponent<UrdfJoint>();
-                if (ujoint && !(ujoint is UrdfJointFixed))
-                {
-                    joints.Add(joint);
-                    jointNames.Add(ujoint.jointName);
-                   // Debug.Log("jjjjjjjjjjj");
-                }
-            }
-        }
-        Debug.Log(jointNames[0]);
-        Debug.Log(joints[0]);
-        */
         //joint = this.GetComponent<ArticulationBody>();
         //targetPos = new Float64Msg();
     }

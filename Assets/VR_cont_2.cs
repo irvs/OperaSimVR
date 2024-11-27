@@ -16,6 +16,9 @@ public class VR_cont_2 : MonoBehaviour
     public int control_mode = 0;
     public bool emergency;
     public bool SimORReal;
+    public float offset_x = 0;
+    public float offset_y = 0;
+    public float offset_z = 0;
     public string SimPublishTopicName;
     public string RealPublishTopicName;
     private string SRPublishTopicName;
@@ -61,7 +64,8 @@ public class VR_cont_2 : MonoBehaviour
     public bool TimeSynchronize;
     //
     Controller_manager VRManager;
-    vessel_kinametic vessel_joint_kinametic;
+    FieldMainManager SimORRealSelecter;
+    Model_name model_name_space;
     mood_selector selected_mode;
     cont_crowlar crawler_controllor;
     int cmd_operation = 0;
@@ -135,6 +139,16 @@ public class VR_cont_2 : MonoBehaviour
     {
         //
         VRManager = FindObjectOfType<Controller_manager>();
+        SimORRealSelecter = FindObjectOfType<FieldMainManager>();
+        if (SimORRealSelecter.ForSimOrReal.ToString() == "ForSimulater")
+        {
+            SimORReal = false;
+        }
+        else if (SimORRealSelecter.ForSimOrReal.ToString() == "ForReal")
+        {
+            SimORReal = true;
+        }
+
         if (VRManager != null)
         {
             Debug.Log("Player's health is: " + VRManager.num);
@@ -553,6 +567,10 @@ public class VR_cont_2 : MonoBehaviour
 
         if (mode.mood == 2 && control_mode == 1 && sw == 1) //Controll mode (Pose modify)
         {
+            model_name_space = FindObjectOfType<Model_name>();
+            offset_x = model_name_space.OffsetList[0];
+            offset_y = model_name_space.OffsetList[1];
+            offset_z = model_name_space.OffsetList[2];
             //Debug.Log("moooovercallback");
             DateTime currentTime = DateTime.Now;
             timeElapsed_adopt += Time.deltaTime;
@@ -573,7 +591,7 @@ public class VR_cont_2 : MonoBehaviour
                     //Debug.Log(real_now_time);
                 }
 
-                Vector3 newPosition = new Vector3((float)msg.pose.position.y * (-1), (float)msg.pose.position.z, (float)msg.pose.position.x);
+                Vector3 newPosition = new Vector3(((float)msg.pose.position.y * (-1) + offset_x), ((float)msg.pose.position.z) + offset_z, ((float)msg.pose.position.x) + offset_y);
                 Quaternion newRotation = new((float)msg.pose.orientation.y * (-1), (float)msg.pose.orientation.z, (float)msg.pose.orientation.x, (float)msg.pose.orientation.w * (-1));
                 Vector3 NewRotation = newRotation.eulerAngles;
                 real_posi_list.Add(newPosition);

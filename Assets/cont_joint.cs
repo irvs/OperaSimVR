@@ -35,7 +35,9 @@ public class cont_joint : MonoBehaviour
     private List<ArticulationBody> targetjoints;
     private List<string> targetjointNames;
     private double targetPos;
-    public string JointContorollerMode;
+    public enum JointContorollerModeOption { Velocity, Fource }
+
+    public JointContorollerModeOption JointContorollerMode;
     //Twist
     Vector3Msg linear = new Vector3Msg(0f, 0f, 0f);
     Vector3Msg angular = new Vector3Msg(0f, 0f, 0f);
@@ -75,7 +77,7 @@ public class cont_joint : MonoBehaviour
     //private double pos_of_end_joint;
     private List<ArticulationBody> joints;
     private List<string> jointNames;
-    public float targetVelocity;
+    float targetVelocity;
     //
     //private List<ArticulationBody> targetjoints;
     //private List<string> targetjointNames;
@@ -328,7 +330,7 @@ public class cont_joint : MonoBehaviour
                             var drive = joint.xDrive;//targetjoints[i].xDrive;
 
 
-                            if (JointContorollerMode == "velocity") 
+                            if (JointContorollerMode.ToString() == "velocity") 
                             {
                                 //targetVelocity = 1.1f;
                                 drive.driveType = ArticulationDriveType.Velocity;// = targetVelocity;
