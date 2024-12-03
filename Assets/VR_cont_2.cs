@@ -5,6 +5,7 @@ using System;
 using Unity.Robotics.ROSTCPConnector;
 using RosMessageTypes.Geometry;
 using RosMessageTypes.Std;
+using RosMessageTypes.Nav;
 using System.Drawing.Printing;
 using System.Linq;
 using static UnityEngine.GraphicsBuffer;
@@ -15,14 +16,16 @@ public class VR_cont_2 : MonoBehaviour
     private int prev_sw = 0;
     public int control_mode = 0;
     public bool emergency;
-    public bool SimORReal;
+    public int SimORReal;
     public float offset_x = 0;
     public float offset_y = 0;
     public float offset_z = 0;
-    public string SimPublishTopicName;
+    public string SimPhysXPublishTopicName;
+    public string SimAGXPublishTopicName;
     public string RealPublishTopicName;
     private string SRPublishTopicName;
-    public string SimSubscribeTopicName;
+    public string SimPhysXSubscribeTopicName;
+    public string SimAGXSubscribeTopicName;
     public string RealSubscribeTopicName;
     private string SRSubscribeTopicName;
     public string controller_swTopicName = "controller_sw";
@@ -53,7 +56,7 @@ public class VR_cont_2 : MonoBehaviour
     private Quaternion rotation_for_list;
     private float real_anglar_length = 0.0f;
     public GameObject targetObject;
-    public int synchronization_sw = 0;
+    public bool synchronization_sw;
     private float zerotime;
     //
     public float adopt_time = 1.0f;
@@ -89,7 +92,7 @@ public class VR_cont_2 : MonoBehaviour
     private float timeElapsed_adopt_starter = 0.0f;
     private float timeElapsed_start = 0.0f;
     private float sw_timeElapsed = 0.0f;
-    private float dissconnect_timer = 0.0f;
+    private float dissconnect_timer;
     private int starter_acsel = 0;
     private float acsel = 0.0f;
     private float vel_linear_acceleration;
@@ -119,7 +122,7 @@ public class VR_cont_2 : MonoBehaviour
     private int counter;
     private bool unconfined = true;
     public float publishMessageInterval = 0.02f;//50Hz
-
+    private int dissconnect_detecter = 0;
 
     ROSConnection ros;
     // private PoseStampedMsg twist;
@@ -134,19 +137,28 @@ public class VR_cont_2 : MonoBehaviour
     private float rotation = 0.0f;
     private long real_unix_time;
     private System.DateTime real_now_time;
+
+    //public enum SimOrRealOption { ForSimPhysX, ForSimAGX, ForReal }
+
+    //public SimOrRealOption ForPhysXorAGXorReal;
+    
     // Start is called before the first frame update
     void Start()
     {
         //
         VRManager = FindObjectOfType<Controller_manager>();
         SimORRealSelecter = FindObjectOfType<FieldMainManager>();
-        if (SimORRealSelecter.ForSimOrReal.ToString() == "ForSimulater")
+        if (SimORRealSelecter.ForSimOrReal.ToString() == "ForSimPhysX")
         {
-            SimORReal = false;
+            SimORReal = 0;
+        }
+        else if (SimORRealSelecter.ForSimOrReal.ToString() == "ForSimAGX")
+        {
+            SimORReal = 1;
         }
         else if (SimORRealSelecter.ForSimOrReal.ToString() == "ForReal")
         {
-            SimORReal = true;
+            SimORReal = 2;
         }
 
         if (VRManager != null)
@@ -159,20 +171,28 @@ public class VR_cont_2 : MonoBehaviour
         ros.RegisterPublisher<BoolMsg>(controller_swTopicName);
         controller_sw_return_TopicName = controller_swTopicName + "_return";
         ros.Subscribe<BoolMsg>(controller_sw_return_TopicName, SW_Callback);
-        if (SimORReal == true)
+        if (SimORReal == 2)
         {
             SRPublishTopicName = RealPublishTopicName;
             SRSubscribeTopicName = RealSubscribeTopicName;
+            ros.Subscribe<PoseStampedMsg>(SRSubscribeTopicName, Callback);
         }
-        else if (SimORReal == false)
+        else if (SimORReal == 1)
         {
-            SRPublishTopicName = SimPublishTopicName;
-            SRSubscribeTopicName = SimSubscribeTopicName;
+            SRPublishTopicName = SimAGXPublishTopicName;
+            SRSubscribeTopicName = SimAGXSubscribeTopicName;
+            ros.Subscribe<OdometryMsg>(SRSubscribeTopicName, Callback1);
+        }
+        else if (SimORReal == 0)
+        {
+            SRPublishTopicName = SimPhysXPublishTopicName;
+            SRSubscribeTopicName = SimPhysXSubscribeTopicName;
+            ros.Subscribe<PoseStampedMsg>(SRSubscribeTopicName, Callback);
         }
         ros.RegisterPublisher<TwistMsg>(SRPublishTopicName);
         //
         //   twist = new PoseStampedMsg();
-        ros.Subscribe<PoseStampedMsg>(SRSubscribeTopicName, Callback);
+        
 
         Debug.Log("already:baselink/pose");
         //
@@ -242,7 +262,21 @@ public class VR_cont_2 : MonoBehaviour
         {
             if (dissconnect_timer >= 3.0f)
             {
+                dissconnect_detecter = 1;
+                if (emergency == true)
+                {
+                    dissconnect_detecter = 2;
+                }
                 //emergency = true;
+            }
+            if (dissconnect_detecter == 1 && dissconnect_timer <= 1.0f) 
+            {
+                dissconnect_detecter = 0;
+                //emergency = false;
+            }
+            else if (dissconnect_detecter == 2 && dissconnect_timer <= 1.0f)
+            {
+                dissconnect_detecter = 0;
             }
 
             VRManager = FindObjectOfType<Controller_manager>();
@@ -455,8 +489,8 @@ public class VR_cont_2 : MonoBehaviour
                             adapter2 = 0.0f;
                             rotadapter = 0.0f;
                         }
-                        /*
-                        if (zerotime >= Time_Delay+3.0f)
+
+                        if (zerotime >= Time_Delay + 3.0f && synchronization_sw == true)
                         {
                             moover_sw = 0;
                             frontback = 0.0f;
@@ -471,7 +505,7 @@ public class VR_cont_2 : MonoBehaviour
                             }
 
                         }
-                        */
+                        
                         if (moover_sw != 1)
                         {
                             frontback = 0.0f;
@@ -526,8 +560,8 @@ public class VR_cont_2 : MonoBehaviour
                         {
                             //
                             int CMD_time = Mathf.RoundToInt(Time_Delay / publishMessageInterval);
-                            linear.x = CMD_linear_list[CMD_linear_list.Count - (CMD_time)];
-                            angular.z = CMD_anglar_list[CMD_anglar_list.Count - (CMD_time)];
+                            linear.x = CMD_linear_list[CMD_linear_list.Count - CMD_time-1];
+                            angular.z = CMD_anglar_list[CMD_anglar_list.Count - CMD_time-1];
                             //Debug.Log(CMD_time_list[CMD_time_list.Count - (CMD_time)]);
                             TwistMsg Twist = new TwistMsg(
                               linear,
@@ -558,6 +592,48 @@ public class VR_cont_2 : MonoBehaviour
         // Unixエポックは1970年1月1日 00:00:00 UTCからの秒数なので、それを基にDateTimeを作成
         DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         return epoch.AddSeconds(unixTime).ToLocalTime(); // ローカルタイムに変換
+    }
+    void Callback1(OdometryMsg msg)
+    {
+        mode = FindObjectOfType<mood_selector>();
+        dissconnect_timer = 0.0f;
+
+        if (mode.mood == 2 && control_mode == 1 && sw == 1) //Controll mode (Pose modify)
+        {
+            model_name_space = FindObjectOfType<Model_name>();
+            offset_x = model_name_space.OffsetList[0];
+            offset_y = model_name_space.OffsetList[1];
+            offset_z = model_name_space.OffsetList[2];
+            //Debug.Log("moooovercallback");
+            DateTime currentTime = DateTime.Now;
+            timeElapsed_adopt += Time.deltaTime;
+            if (currentTime >= nextActionTime)//(timeElapsed_adopt >= adopt_time)
+            {
+                //Debug.Log("mooooverget");
+                posi_list.Add(targetObject.transform.position);
+                //posi_list_z.Add(GameObject.Find("ic120").transform.position.z);
+                rotation_for_list = targetObject.transform.rotation;
+                rotation_list.Add(rotation_for_list.eulerAngles);
+
+                if (TimeSynchronize == true)
+                {
+                    real_unix_time = msg.header.stamp.sec;
+                    real_now_time = UnixTimeToDateTime(real_unix_time);
+                    //Debug.Log(real_now_time);
+                }
+                Vector3 newPosition = new Vector3(((float)msg.pose.pose.position.y * (-1) + offset_x), ((float)msg.pose.pose.position.z) + offset_z, ((float)msg.pose.pose.position.x) + offset_y);
+                Quaternion newRotation = new((float)msg.pose.pose.orientation.y * (-1), (float)msg.pose.pose.orientation.z, (float)msg.pose.pose.orientation.x, (float)msg.pose.pose.orientation.w * (-1));
+                Vector3 NewRotation = newRotation.eulerAngles;
+                //////////////
+                //////////////
+                ///
+                CMD_Calculator(newPosition, newRotation, currentTime);
+                ///
+                /////////////
+                /////////////
+
+            }
+        }
     }
 
     void Callback(PoseStampedMsg msg)
@@ -594,6 +670,14 @@ public class VR_cont_2 : MonoBehaviour
                 Vector3 newPosition = new Vector3(((float)msg.pose.position.y * (-1) + offset_x), ((float)msg.pose.position.z) + offset_z, ((float)msg.pose.position.x) + offset_y);
                 Quaternion newRotation = new((float)msg.pose.orientation.y * (-1), (float)msg.pose.orientation.z, (float)msg.pose.orientation.x, (float)msg.pose.orientation.w * (-1));
                 Vector3 NewRotation = newRotation.eulerAngles;
+                ////////////
+                ///////////
+                ///
+                CMD_Calculator(newPosition, newRotation, currentTime);
+                /// 
+                //////////////
+                /////////////
+                /*
                 real_posi_list.Add(newPosition);
                 //real_rotation_list.Add(NewRotation);
                 real_rotation_list.Add(newRotation * Vector3.forward);
@@ -636,34 +720,7 @@ public class VR_cont_2 : MonoBehaviour
                         //Real_Cyber_future_length_pose = Vector2.Dot(new Vector2((float)Math.Sin(-NewRotation[1]), (float)Math.Cos(-NewRotation[1])), Real_Cyber_future_diff_pose);
                         Real_Cyber_future_length_pose = Vector2.Dot(new Vector2(Real_forwardVector_normal[0], Real_forwardVector_normal[2]), Real_Cyber_future_diff_pose);
 
-                        /*
-                        if (Math.Abs(Real_Cyber_future_length_pose) < Margin)
-                        {
-                            Real_Cyber_future_length_pose = 0.0f;
-                        }
-                        Real_Cyber_future_length_pose_compare.Add(Real_Cyber_future_length_pose);
-
-                        Debug.Log("diffpose" + Real_Cyber_future_length_pose + "  bector_length   " + Real_Cyber_future_diff_pose);
-                        if (Real_Cyber_future_length_pose_compare[Real_Cyber_future_length_pose_compare.Count - 1] > Real_Cyber_future_length_pose_compare[Real_Cyber_future_length_pose_compare.Count - 2] && Real_Cyber_future_length_pose > 0)
-                        {
-                            //adapter1 = 0.5f;
-                            adapter2 -= 0.1f;
-
-                            Debug.Log("deceler:" + adapter2);
-                        }
-                        else if (Real_Cyber_future_length_pose_compare[Real_Cyber_future_length_pose_compare.Count - 1] < Real_Cyber_future_length_pose_compare[Real_Cyber_future_length_pose_compare.Count - 2] && Real_Cyber_future_length_pose < 0)
-                        {
-                            //adapter1 = 1.5f;
-                            adapter2 += 0.1f;
-
-                            Debug.Log("accel:" + adapter2);
-                        }
-                        //Vector3 forwardDirection = newRotation * Vector3.forward;
-                        Vector3 toTarget = targetObject.transform.position - newPosition;
-                        float angle = Vector3.SignedAngle(Real_forwardVector, toTarget, Vector3.up);
-                        // Debug.Log("角の差 " + angle);
-                        side_diff = (Vector3.Distance(newPosition, targetObject.transform.position)) * (float)Math.Sin(angle * Math.PI / 180);
-                        */
+                        
                         ///
                         ///
 
@@ -880,11 +937,277 @@ public class VR_cont_2 : MonoBehaviour
 
                 }
 
-                //double deltaTime_adopt = time_adopt - previousTime_adopt;
+                */
                 timeElapsed_adopt = 0.0f;
             }
             //previousTime_adopt = time_adopt;
         }
+    }
+
+    void CMD_Calculator(Vector3 RealPosition, Quaternion realRotation, DateTime NowTime)
+    {
+
+        real_posi_list.Add(RealPosition);
+        Vector3 RealRotation = realRotation.eulerAngles;
+        //real_rotation_list.Add(RealRotation);
+        real_rotation_list.Add(realRotation * Vector3.forward);
+        //real_diff_anglar_list.Add(real_rotation_list[real_rotation_list.Count - 1][1] - real_rotation_list[real_rotation_list.Count - 2][1]);
+        real_diff_anglar_list.Add(Vector3.SignedAngle(real_rotation_list[real_rotation_list.Count - 2], real_rotation_list[real_rotation_list.Count - 1], Vector3.up));
+        real_posi_length_list.Add(Vector3.Distance(real_posi_list[real_posi_list.Count - 1], real_posi_list[real_posi_list.Count - 2]));
+        real_posi_length_list_x.Add((real_posi_list[real_posi_list.Count - 1][0]) - (real_posi_list[real_posi_list.Count - 2][0]));
+        real_posi_length_list_z.Add((real_posi_list[real_posi_list.Count - 1][2]) - (real_posi_list[real_posi_list.Count - 2][2]));
+        cyber_posi_length_list.Add(Vector3.Distance(posi_list[posi_list.Count - 1], posi_list[posi_list.Count - 2]));
+
+
+        if (timeElapsed_adopt_starter >= Time_Delay)
+        {
+            last_time = Mathf.RoundToInt(Time_Delay / (intervalInMilliseconds / 1000));
+            if ((linear_or_rot == 1) && (real_posi_length_list[real_posi_length_list.Count - 1]) / (real_posi_length_list[real_posi_length_list.Count - 2]) < 1.1 && (real_posi_length_list[real_posi_length_list.Count - 1]) / (real_posi_length_list[real_posi_length_list.Count - 2]) > 0.9)
+            {
+                real_pose_length = 0.0f;
+                real_pose_length_x = 0.0f;
+                real_pose_length_z = 0.0f;
+                cyber_pose_length = 0.0f;
+                counter = 0;
+                for (int i = real_posi_length_list.Count - 1; i > (real_posi_length_list.Count - last_time - 1); i--)
+                {
+                    real_pose_length = real_pose_length + real_posi_length_list[i];
+                    real_pose_length_x = real_pose_length_x + real_posi_length_list_x[i];
+                    real_pose_length_z = real_pose_length_z + real_posi_length_list_z[i];
+                    cyber_pose_length = cyber_pose_length + cyber_posi_length_list[i];
+                    counter += 1;
+                }
+                //real_pose_length = real_pose_length / (counter);
+                //real_pose_length_x = real_pose_length_x / (counter);
+                //real_pose_length_z = real_pose_length_z / (counter);
+                cyber_pose_length = cyber_pose_length / (counter);
+
+                Vector3 Real_future_pose = new Vector3(RealPosition[0] + real_pose_length_x, 0.0f, RealPosition[2] + real_pose_length_z);
+                Vector2 Real_Cyber_future_diff_pose = new Vector2((targetObject.transform.position[0]) - Real_future_pose[0], (targetObject.transform.position[2]) - Real_future_pose[2]);
+                // Real_Cyber_future_length_pose = Vector2.Dot(new Vector2((float)Math.Sin(-RealRotation[1]), (float)Math.Cos(-RealRotation[1])), Real_Cyber_future_diff_pose);
+                Vector3 Real_forwardVector = realRotation * Vector3.forward; // Z軸方向
+                Vector3 Real_forwardVector_normal = Real_forwardVector.normalized;
+                //Real_Cyber_future_length_pose = Vector2.Dot(new Vector2((float)Math.Sin(-RealRotation[1]), (float)Math.Cos(-RealRotation[1])), Real_Cyber_future_diff_pose);
+                Real_Cyber_future_length_pose = Vector2.Dot(new Vector2(Real_forwardVector_normal[0], Real_forwardVector_normal[2]), Real_Cyber_future_diff_pose);
+
+
+                ///
+                ///
+
+                Real_Cyber_future_length_pose_compare.Add(Real_Cyber_future_length_pose);
+
+                Debug.Log("diffpose" + Real_Cyber_future_length_pose + "  bector_length   " + Real_Cyber_future_diff_pose);
+                if (Real_Cyber_future_length_pose_compare[Real_Cyber_future_length_pose_compare.Count - 1] > Real_Cyber_future_length_pose_compare[Real_Cyber_future_length_pose_compare.Count - 2] && Real_Cyber_future_length_pose > 0)
+                {
+                    //adapter1 = 0.5f;
+                    if (Math.Abs(Real_Cyber_future_length_pose) >= Margin)
+                    {
+                        adapter2 -= 0.1f;
+                    }
+                    else if (Math.Abs(Real_Cyber_future_length_pose) > 0.01 && Math.Abs(Real_Cyber_future_length_pose) < Margin)
+                    {
+                        adapter2 -= 0.01f;
+                    }
+
+
+                    Debug.Log("deceler:" + adapter2);
+                }
+                else if (Real_Cyber_future_length_pose_compare[Real_Cyber_future_length_pose_compare.Count - 1] < Real_Cyber_future_length_pose_compare[Real_Cyber_future_length_pose_compare.Count - 2] && Real_Cyber_future_length_pose < 0)
+                {
+                    //adapter1 = 1.5f;
+                    if (Math.Abs(Real_Cyber_future_length_pose) >= Margin)
+                    {
+                        adapter2 += 0.1f;
+                    }
+                    else if (Math.Abs(Real_Cyber_future_length_pose) > 0.01 && Math.Abs(Real_Cyber_future_length_pose) < Margin)
+                    {
+                        adapter2 += 0.01f;
+                    }
+                    // adapter2 += 0.1f;
+
+                    Debug.Log("accel:" + adapter2);
+                }
+                //Vector3 forwardDirection = realRotation * Vector3.forward;
+                Vector3 toTarget = targetObject.transform.position - RealPosition;
+                float angle = Vector3.SignedAngle(Real_forwardVector, toTarget, Vector3.up);
+                // Debug.Log("角の差 " + angle);
+                side_diff = (Vector3.Distance(RealPosition, targetObject.transform.position)) * (float)Math.Sin(angle * Math.PI / 180);
+                ///
+                ///
+
+
+                if (Math.Abs(side_diff) > Margin)
+                {
+                    Vector3 Real_forward = (real_posi_list[real_posi_list.Count - 1] - real_posi_list[real_posi_list.Count - 2]);
+                    float direction = Vector2.Dot(new Vector2(Real_forwardVector[0], Real_forwardVector[2]), new Vector2(Real_forward[0], Real_forward[2]));
+                    // Vector3 localOffset = new Vector3(-side_diff, 0, real_pose_length);  // 前方から見て進むオフセット
+                    // Vector3 worldOffset = targetObject.transform.TransformDirection(localOffset);
+                    //Vector3 RealPosition = targetObject.transform.position + worldOffset;
+                    Vector3 targetdirection = targetObject.transform.position - (RealPosition + (Real_forwardVector_normal * (Real_Cyber_future_length_pose + 2 * real_pose_length)));
+                    // float Cyber_angle = Vector3.SignedAngle(targetObject.transform.rotation * Vector3.forward, worldOffset, Vector3.up);
+                    //float Cyber_angle = Vector3.SignedAngle(targetObject.transform.rotation * Vector3.forward, -targetdirection, Vector3.up);
+                    //float Cyber_angle = Vector3.SignedAngle(realRotation * Vector3.forward, -targetdirection, Vector3.up);
+                    float Cyber_angle = Vector3.SignedAngle(targetObject.transform.rotation * Vector3.forward, -targetdirection, Vector3.up);
+
+                    //Debug.Log("------角度の差は---^---^--- " + (targetObject.transform.position - (RealPosition + (Real_forwardVector_normal * (Real_Cyber_future_length_pose + 2 * real_pose_length)))));
+                    Debug.Log("------実機前方---^---^--- " + (realRotation * Vector3.forward) + " 目標ベクトル " + -targetdirection);
+                    if (Math.Abs(side_diff) < Margin && Math.Abs(Cyber_angle) > Angular_Margin)
+                    {
+                        if (direction >= 0)//yellow
+                        {
+
+                            if (-Cyber_angle < 0)
+                            {
+                                //rotadapter = -0.1f;
+                                rotadapter = -Cyber_angle * (float)((Math.PI) / 180.0f);
+                                Debug.Log("1:rotadapter -= 0.1f " + rotadapter + "角度の差は " + Cyber_angle);
+                            }
+                            else if (-Cyber_angle >= 0)
+                            {
+                                //rotadapter = +0.1f;
+                                rotadapter = -Cyber_angle * (float)((Math.PI) / 180.0f);
+                                Debug.Log("2:rotadapter += 0.1f " + rotadapter + "角度の差は " + Cyber_angle);
+                            }
+                        }
+                        else if (direction < 0)//blue
+                        {
+                            if (-Cyber_angle < 0)
+                            {
+                                //rotadapter = +0.1f;
+                                rotadapter = -Cyber_angle * (float)((Math.PI) / 180.0f);
+                                Debug.Log("3:rotadapter += 0.1f " + rotadapter + "角度の差は " + Cyber_angle);
+                            }
+                            else if (-Cyber_angle >= 0)
+                            {
+                                // rotadapter = -0.1f;
+                                rotadapter = -Cyber_angle * (float)((Math.PI) / 180.0f);
+                                Debug.Log("4:rotadapter -= 0.1f " + rotadapter + "角度の差は " + Cyber_angle);
+                            }
+                        }
+                    }
+                }
+
+
+
+            }
+            last_rotation = rotation_list[rotation_list.Count - last_time];
+            diff_rot = last_rotation - RealRotation;
+            if ((linear_or_rot == 2))
+            {
+                //Real_Cyber_future_length_anglar_compare.Add(diff_rot[1]);
+                real_anglar_length = 0.0f;
+                counter = 0;
+                for (int i = real_diff_anglar_list.Count - 1; i > (real_diff_anglar_list.Count - last_time); i--)
+                {
+                    real_anglar_length = real_anglar_length + real_diff_anglar_list[i];
+                    counter += 1;
+                }
+                //
+                Debug.Log("前方方向の角度 " + realRotation * Vector3.forward);
+                Vector3 Real_forwardVector = realRotation * Vector3.forward;
+                Vector3 toTarget = rotation_for_list * Vector3.forward;
+                float angle = Vector3.SignedAngle(toTarget, Real_forwardVector, Vector3.up);
+                //
+                //Real_Cyber_future_anglar_diff = rotation_for_list.eulerAngles[1] - (real_anglar_length + RealRotation[1]);
+                if (Math.Abs(Real_Cyber_future_anglar_diff - Real_Cyber_future_length_anglar_compare[Real_Cyber_future_length_anglar_compare.Count - 1]) > Math.Abs(Real_Cyber_future_anglar_diff - Real_Cyber_future_length_anglar_compare[Real_Cyber_future_length_anglar_compare.Count - 1] - 360))
+                {
+                    Real_Cyber_future_anglar_diff = Real_Cyber_future_anglar_diff - 360;
+                }
+                Real_Cyber_future_length_anglar_compare.Add(Real_Cyber_future_anglar_diff);
+                //if (Mathf.Abs(diff_rot[1]) >= Angular_Margin)
+                //{
+
+                //if (diff_rot[1] < -180)
+                //{
+                //    diff_rot[1] = diff_rot[1] + 360.0f;
+                //}
+                //if (diff_rot[1] > 0 && Real_Cyber_future_length_anglar_compare[Real_Cyber_future_length_anglar_compare.Count - 1] > Real_Cyber_future_length_anglar_compare[Real_Cyber_future_length_anglar_compare.Count - 2])
+                if (real_anglar_length + angle < 0)
+                {
+                    rotadapter += 0.01f;
+                }
+                //else if (diff_rot[1] < 0 && Real_Cyber_future_length_anglar_compare[Real_Cyber_future_length_anglar_compare.Count - 1] < Real_Cyber_future_length_anglar_compare[Real_Cyber_future_length_anglar_compare.Count - 2])
+                else if (real_anglar_length + angle >= 0)
+                {
+                    rotadapter -= 0.01f;
+                }
+                Debug.Log("実機の回転予想 " + real_anglar_length);
+                Debug.Log("シミュレーターと実機の角度差 " + angle);
+                Debug.Log("角度の差は " + (real_anglar_length + angle));
+                Debug.Log("diffrot" + Real_Cyber_future_anglar_diff);// diff_rot[1]);
+                Debug.Log("rotadapter" + rotadapter);
+                //if (real_rotation_list[real_rotation_list.Count - 1][1] - real_rotation_list[real_rotation_list.Count - 2][1] > 0)//right rotation
+                //{
+                //    if (diff_rot[1] > 0)
+                //    {
+                //        rotadapter -= 0.01f;
+                //    }
+                //    else if (diff_rot[1] < 0)
+                //    {
+                //        rotadapter += 0.01f;
+                //    }
+                //}
+                //else if (real_rotation_list[real_rotation_list.Count - 1][1] - real_rotation_list[real_rotation_list.Count - 2][1] < 0)//left rotation
+                //{
+                //    if (diff_rot[1] > 0)
+                //    {
+                //        rotadapter -= 0.01f;
+                //    }
+                //    else if (diff_rot[1] < 0)
+                //    {
+                //        rotadapter += 0.01f;
+                //    }
+                //}
+
+                // targetObject.transform.position = targetObject.transform.position + new Vector3(0.0f, 0.030f, 0.0f);
+                // Quaternion goal_angule = Quaternion.Euler(-new Vector3(0.0f, diff_rot[1], 0.0f) + rotation_for_list.eulerAngles);
+                // targetObject.transform.rotation = goal_angule;
+                //}
+            }
+            ////
+            if (moover_sw == 2)
+            {
+                Debug.Log("vrcont_zerostop");
+                if ((Vector3.Distance(real_posi_list[real_posi_list.Count - 1], targetObject.transform.position)) >= Margin)
+                {
+                    Debug.Log("vrcont_pose?set");
+                    targetObject.GetComponent<Rigidbody>().isKinematic = true;
+                    targetObject.transform.position = targetObject.transform.position + new Vector3(0.0f, 0.030f, 0.0f);
+                    targetObject.transform.position = real_posi_list[real_posi_list.Count - 1];
+                }
+
+
+                if (Mathf.Abs(diff_rot[1]) >= Angular_Margin)
+                {
+                    targetObject.GetComponent<Rigidbody>().isKinematic = true;
+                    targetObject.transform.position = targetObject.transform.position + new Vector3(0.0f, 0.030f, 0.0f);
+                    Quaternion goal_angule = Quaternion.Euler(-new Vector3(0.0f, diff_rot[1], 0.0f) + rotation_for_list.eulerAngles);
+                    targetObject.transform.rotation = goal_angule;
+                }
+                moover_sw = 3;
+                zerotime = 0.0f;
+                adapter1 = 1.0f;
+                adapter2 = 0.0f;
+                Stop_time = 0.0f;
+            }
+            if (moover_sw == 3 && Stop_time > 2.0f)
+            {
+                moover_sw = 1;
+                targetObject.GetComponent<Rigidbody>().isKinematic = false;
+            }
+            ////
+
+            // Debug.Log("mooooverst");
+            //
+            //Debug.Log(string.Join(",", posi_list.Select(n => n.ToString())));
+            //
+            nextActionTime = NowTime.AddMilliseconds(intervalInMilliseconds);
+            // Debug.Log(posi_list);
+            // Debug.Log(RealPosition);
+
+        }
+
+
     }
 
     void SW_Callback(BoolMsg msg)

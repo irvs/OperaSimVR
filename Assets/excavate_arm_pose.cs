@@ -25,6 +25,7 @@ public class JointSubscriber : MonoBehaviour
     private List<ArticulationBody> targetjoints;
     private List<string> targetjointNames;
     private double targetPos;
+    private float dissconnect_timer;
     //GameObject targetObject;
     public string robotName = "robot_name";
     public GameObject targetObject;
@@ -40,9 +41,13 @@ public class JointSubscriber : MonoBehaviour
         twist = new JointStateMsg();
         ros = ROSConnection.GetOrCreateInstance();
         SimORRealSelecter = FindObjectOfType<FieldMainManager>();
-        if (SimORRealSelecter.ForSimOrReal.ToString() == "ForSimulater")
+        if (SimORRealSelecter.ForSimOrReal.ToString() == "ForSimPhysX")
         {
             SimORReal = false;
+        }
+        else if (SimORRealSelecter.ForSimOrReal.ToString() == "ForSimAGX")
+        {
+            SimORReal = true;
         }
         else if (SimORRealSelecter.ForSimOrReal.ToString() == "ForReal")
         {
@@ -69,31 +74,30 @@ public class JointSubscriber : MonoBehaviour
         //joint = this.GetComponent<ArticulationBody>();
         //targetPos = new Float64Msg();
     }
+    void Update()
+    {
+        dissconnect_timer += Time.deltaTime;
+    }
     void Callback(JointStateMsg msg)
     {
         //
         //Debug.Log("joint_subscribe");
         mode = FindObjectOfType<mood_selector>();
+        dissconnect_timer = 0.0f;
 
         if (mode.mood == 1)//Visual tool
         {
-            //private List<ArticulationBody> targetjoints;
-            //private List<string> targetjointNames;
-            //private double targetPos;
+
             //
             targetjoints = new List<ArticulationBody>();
             targetjointNames = new List<string>();
             //
-            //targetObject = GameObject.Find("zx200");
-            //Debug.Log(msg.position[0]);
             pos_of_swing_joint = msg.position[0];
             pos_of_boom_joint = msg.position[1];
             pos_of_arm_joint = msg.position[2];
             pos_of_bucket_joint = msg.position[3];
             // pos_of_end_joint = msg.position[4];
-            //Debug.Log(pos_of_bucket_joint);
-            //Debug.Log(msg.velocity[0]);
-            //Debug.Log(msg.effort[0]);
+
             //
             int j = 0;
             foreach (var joint in targetObject.GetComponentsInChildren<ArticulationBody>())

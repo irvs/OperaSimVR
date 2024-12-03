@@ -5,7 +5,7 @@ using UnityEngine;
 public class FieldMainManager : MonoBehaviour
 {
     //public 
-    public enum SimOrRealOption { ForSimulater, ForReal }
+    public enum SimOrRealOption { ForSimPhysX, ForSimAGX, ForReal }
 
     public SimOrRealOption ForSimOrReal;
 

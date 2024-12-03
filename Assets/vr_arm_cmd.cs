@@ -40,13 +40,19 @@ public class JointAnglePublisher : MonoBehaviour
     public string topicName_bucket = "/zx200/bucket/cmd";
     public string topicname_joint = "/zx200/front_cmd";
     public string Real_topicName_joint_velocity = "/zx200/front_cmd/for_ROS";
+    public string SimPhysXSubscribeTopicName;
+    public string SimAGXSubscribeTopicName;
+    public string RealSubscribeTopicName;
     public string controller_swTopicName = "controller_sw_zx200";
     public float publishMessageFrequency = 0.5f;
     public float publishMessageInterval = 0.02f;//50Hz
+    public GameObject targetObject;
     private float timeElapsed;
     private float sw_timeElapsed = 0.0f;
     private float frontback;
     private float rotation;
+    private float dissconnect_timer;
+    private int dissconnect_detecter = 0;
     float goalpose_swing = 0.0f;
     float goalpose_boom = -0.7f;
     float goalpose_arm = 1.57f;
@@ -55,7 +61,9 @@ public class JointAnglePublisher : MonoBehaviour
     float velocity_of_boom = 0.0f;
     float velocity_of_arm = 0.0f;
     float velocity_of_bucket = 0.0f;
-
+    List<float> JointCmdList = new List<float>();
+    public List<List<double>> listOfJointCmdList = new List<List<double>>();
+    List<List<double>> listOfJointPositionList = new List<List<double>>();
     //Twist
     Vector3Msg linear = new Vector3Msg(0f, 0f, 0f);
     Vector3Msg angular = new Vector3Msg(0f, 0f, 0f);
@@ -68,10 +76,17 @@ public class JointAnglePublisher : MonoBehaviour
     private List<double> positions; 
     private List<double> velocities; 
     private List<double> efforts;
+    private List<double> JointPositions;
     private List<ArticulationBody> joints;
     private double[] Jointposition;
     //
-    public GameObject targetObject;
+    public GameObject PlayertargetObject;
+    //
+    public int control_mode = 0;
+    List<float>Current_joint_CMD_List= new List<float>();
+    public float Time_Delay = 5.0f;
+    private float timeElapsed_start = 0.0f;
+    //
 
     void Start()
     {
@@ -82,13 +97,20 @@ public class JointAnglePublisher : MonoBehaviour
         }
         //
         SimORRealSelecter = FindObjectOfType<FieldMainManager>();
-        if (SimORRealSelecter.ForSimOrReal.ToString() == "ForSimulater")
+        if (SimORRealSelecter.ForSimOrReal.ToString() == "ForSimPhysX")
         {
             SimORReal = false;
+            ros.Subscribe<JointStateMsg>(SimPhysXSubscribeTopicName, Callback);
+        }
+        else if (SimORRealSelecter.ForSimOrReal.ToString() == "ForSimAGX")
+        {
+            SimORReal = true;
+            ros.Subscribe<JointStateMsg>(SimAGXSubscribeTopicName, Callback);
         }
         else if (SimORRealSelecter.ForSimOrReal.ToString() == "ForReal")
         {
             SimORReal = true;
+            ros.Subscribe<JointStateMsg>(RealSubscribeTopicName, Callback);
         }
         //
 
@@ -106,6 +128,10 @@ public class JointAnglePublisher : MonoBehaviour
         positions = new List<double> { 0.0, 0.0, 0.0, 0.0, 0.0 }; 
         velocities = new List<double> { 0.0, 0.0, 0.0, 0.0, 0.0 }; 
         efforts = new List<double> { 0.0, 0.0, 0.0, 0.0, 0.0 };
+        JointPositions = new List<double> { 0.0, 0.0, 0.0, 0.0 };
+        //List<double> jointCmd = new List<double> { 0.0, 0.0, 0.0, 0.0 };
+        listOfJointCmdList.Add(efforts);
+        listOfJointPositionList.Add(efforts);
 
         joints = new List<ArticulationBody>();
         jointNames = new List<string>();
@@ -121,7 +147,7 @@ public class JointAnglePublisher : MonoBehaviour
                 }
             }
         }
-    }
+}
     void Update()
     {
 
@@ -138,11 +164,36 @@ public class JointAnglePublisher : MonoBehaviour
             //
             if (timeElapsed >= publishMessageFrequency / 2.0f)
             {
-                // Debug.Log("Publish After Delay Time");
-               // ros.Publish(topicName_swing, 0.0f);
-               // ros.Publish(topicName_boom, 0.0f);
-               // ros.Publish(topicName_arm, 0.0f);
-               // ros.Publish(topicName_bucket, 0.0f);
+                //
+                velocity_of_swing = 0.0f;
+                velocity_of_boom = 0.0f;
+                velocity_of_arm = 0.0f;
+                velocity_of_bucket = 0.0f;
+                velocities[0] = 0.0f;
+                velocities[1] = 0.0f;
+                velocities[2] = 0.0f;
+                velocities[3] = 0.0f;
+                listOfJointCmdList.Add(velocities);
+                // List<double> Ç double[] Ç…ïœä∑
+                string[] jointNamesArray = jointNames.ToArray();
+                double[] positionsArray = positions.ToArray();
+                double[] velocitiesArray = velocities.ToArray();
+                double[] effortsArray = efforts.ToArray();
+                // ïœä∑ÇµÇΩîzóÒÇä÷êîÇ…ìnÇ∑
+                HeaderMsg header = new HeaderMsg(
+                        new TimeStamp(Clock.time),
+                        " "
+                        );
+
+                JointStateMsg JointCMD = new JointStateMsg(
+                    header,
+                    jointNamesArray,
+                    positionsArray,
+                    velocitiesArray,
+                    effortsArray
+                );
+                ros.Publish(Real_topicName_joint_velocity, JointCMD);
+                //
                 ros.Publish(topicName_cmd_vel, Twist);
                 timeElapsed = 0.0f;
             }
@@ -152,6 +203,24 @@ public class JointAnglePublisher : MonoBehaviour
         else if (emergency == false)
         {
 
+            if (dissconnect_timer >= 3.0f)
+            {
+                dissconnect_detecter = 1;
+                if (emergency == true)
+                {
+                    dissconnect_detecter = 2;
+                }
+                //emergency = true;
+            }
+            if (dissconnect_detecter == 1 && dissconnect_timer <= 1.0f)
+            {
+                dissconnect_detecter = 0;
+                //emergency = false;
+            }
+            else if (dissconnect_detecter == 2 && dissconnect_timer <= 1.0f)
+            {
+                dissconnect_detecter = 0;
+            }
             VRManager = FindObjectOfType<Controller_manager>();
             if (sw == 1)
             {
@@ -176,9 +245,10 @@ public class JointAnglePublisher : MonoBehaviour
                     //Debug.Log("geton");
 
                     selected_mode = FindObjectOfType<mood_selector>();
+                    dissconnect_timer += Time.deltaTime;
+                    timeElapsed_start += Time.deltaTime;
 
-
-                    OVRPlayerController scriptA = targetObject.GetComponent<OVRPlayerController>();
+                    OVRPlayerController scriptA = PlayertargetObject.GetComponent<OVRPlayerController>();
                     if (scriptA != null)
                     {
                         //Debug.Log("kaitennha" + scriptA.RotationRatchet);
@@ -186,7 +256,8 @@ public class JointAnglePublisher : MonoBehaviour
                         scriptA.RotationAmount = 0;
                         //Debug.Log("kaitennha" + scriptA.RotationRatchet);
                     }
-                    //
+                    /////////////////////////////////////////////position
+                    /////////////////////////////////////////////
                     if (SimORReal == false)
                     {
 
@@ -207,7 +278,7 @@ public class JointAnglePublisher : MonoBehaviour
                         {
                             goalpose_boom -= 0.005f;
                         }
-                        if (Input.GetKey(KeyCode.I) && goalpose_arm <= 2.5294)
+                        if (Input.GetKey(KeyCode.I) && goalpose_arm <= 2.35)
                         {
                             goalpose_arm += 0.005f;
                         }
@@ -277,7 +348,7 @@ public class JointAnglePublisher : MonoBehaviour
                         Vector2 stickR = movespeed * OVRInput.Get(OVRInput.RawAxis2D.RThumbstick);
                         if ((Mathf.Abs((OVRInput.Get(OVRInput.RawAxis2D.LThumbstick)).y) > 0.3))
                         {
-                            if (goalpose_arm >= 0.785 && goalpose_arm <= 2.529)
+                            if (goalpose_arm >= 0.785 && goalpose_arm <= 2.35)
                             {
                                 goalpose_arm += -stickL.y;
 
@@ -286,7 +357,7 @@ public class JointAnglePublisher : MonoBehaviour
                             {
                                 goalpose_arm += -stickL.y;
                             }
-                            else if (goalpose_arm >= 2.529 && -stickL.y < 0)
+                            else if (goalpose_arm >= 2.35 && -stickL.y < 0)
                             {
                                 goalpose_arm += -stickL.y;
                             }
@@ -329,7 +400,8 @@ public class JointAnglePublisher : MonoBehaviour
 
                         }
                     }
-
+                    ////////////////////////////////////////////////////////////
+                    ////////////////////////////////////////////////////////////velosity
                     if (SimORReal == true)
                     {
 
@@ -338,38 +410,75 @@ public class JointAnglePublisher : MonoBehaviour
                         {
                             Jointposition[i] = joints[i].jointPosition[0];
                         }
-
+                        //swing
                         if (Input.GetKey(KeyCode.Y))
                         {
-                            velocity_of_swing += 0.005f;
+                            velocity_of_swing += 0.05f;
                         }
                         if (Input.GetKey(KeyCode.H))
                         {
-                            velocity_of_swing -= 0.005f;
+                            velocity_of_swing -= 0.05f;
                         }
-                        if (Input.GetKey(KeyCode.U) && velocity_of_boom <= 0.2 && Jointposition[1] <= 0.9594) 
+                        //boom
+                        if (Input.GetKey(KeyCode.U) && velocity_of_boom <= 7.0 && Jointposition[1] <= 0.1749594) 
                         {
-                            velocity_of_boom += 0.005f;
+                            velocity_of_boom += 0.030f;
                         }
-                        if (Input.GetKey(KeyCode.J) && velocity_of_boom >= -0.2 && Jointposition[1] >= -1.2211)
+                        if (Input.GetKey(KeyCode.J) && velocity_of_boom >= -7.0 && Jointposition[1] >= -0.872)
                         {
-                            velocity_of_boom -= 0.005f;
+                            velocity_of_boom -= 0.030f;
                         }
-                        if (Input.GetKey(KeyCode.I) && velocity_of_arm <= 0.2 && Jointposition[2] <= 2.5294)
+                        if (Jointposition[1] > 0.9594 || Jointposition[1] < -0.872)
                         {
-                            velocity_of_arm += 0.005f;
+                            velocity_of_boom = 0.0f;
+                            if (Input.GetKey(KeyCode.U) && velocity_of_boom <= 7.0 && Jointposition[1] <= 0.1749594)
+                            {
+                                velocity_of_boom += 0.030f;
+                            }
+                            if (Input.GetKey(KeyCode.J) && velocity_of_boom >= -7.0 && Jointposition[1] >= -0.872)
+                            {
+                                velocity_of_boom -= 0.030f;
+                            }
                         }
-                        if (Input.GetKey(KeyCode.K) && velocity_of_arm >= -0.2 && Jointposition[2] >= 0.785)
+                        //arm
+                        if (Input.GetKey(KeyCode.I) && velocity_of_arm <= 7.0 && Jointposition[2] <= 2.5294)
                         {
-                            velocity_of_arm -= 0.005f;
+                            velocity_of_arm += 0.040f;
                         }
-                        if (Input.GetKey(KeyCode.O) && velocity_of_bucket <= 0.2 && Jointposition[3] <= 1.39555)
+                        if (Input.GetKey(KeyCode.K) && velocity_of_arm >= -7.0 && Jointposition[2] >= 0.959)
                         {
-                            velocity_of_bucket += 0.005f;
+                            velocity_of_arm -= 0.040f;
                         }
-                        if (Input.GetKey(KeyCode.L) && velocity_of_bucket >= -0.2 && Jointposition[3] >= -1.2211)
+                        if (Jointposition[2] > 2.5294 || Jointposition[2] < 0.785)
                         {
-                            velocity_of_bucket -= 0.005f;
+                            if (Input.GetKey(KeyCode.I) && velocity_of_arm <= 7.0 && Jointposition[2] <= 2.5294)
+                            {
+                                velocity_of_arm += 0.040f;
+                            }
+                            if (Input.GetKey(KeyCode.K) && velocity_of_arm >= -7.0 && Jointposition[2] >= 0.959)
+                            {
+                                velocity_of_arm -= 0.040f;
+                            }
+                        }
+                        //bucket
+                        if (Input.GetKey(KeyCode.O) && velocity_of_bucket <= 7.0 && Jointposition[3] <= 1.39555)
+                        {
+                            velocity_of_bucket += 0.05f;
+                        }
+                        if (Input.GetKey(KeyCode.L) && velocity_of_bucket >= -7.0 && Jointposition[3] >= -1.2211)
+                        {
+                            velocity_of_bucket -= 0.05f;
+                        }
+                        if(Jointposition[3] > 1.39555 || Jointposition[3] < -1.2211)
+                        {
+                            if (Input.GetKey(KeyCode.O) && velocity_of_bucket <= 7.0 && Jointposition[3] <= 1.39555)
+                            {
+                                velocity_of_bucket += 0.05f;
+                            }
+                            if (Input.GetKey(KeyCode.L) && velocity_of_bucket >= -7.0 && Jointposition[3] >= -1.2211)
+                            {
+                                velocity_of_bucket -= 0.05f;
+                            }
                         }
 
                         
@@ -378,54 +487,58 @@ public class JointAnglePublisher : MonoBehaviour
                         //for joint
                         Vector2 stickL = movespeed * OVRInput.Get(OVRInput.RawAxis2D.LThumbstick);
                         Vector2 stickR = movespeed * OVRInput.Get(OVRInput.RawAxis2D.RThumbstick);
+                        //arm
                         if ((Mathf.Abs((OVRInput.Get(OVRInput.RawAxis2D.LThumbstick)).y) > 0.3))
                         {
-                            if (Math.Abs(velocity_of_arm) <= 0.2 && Jointposition[2] <= 2.5294 && Jointposition[2] >= 0.785)
+                            if (Math.Abs(velocity_of_arm) <= 0.4 && Jointposition[2] <= 2.35 && Jointposition[2] >= 0.959)
                             {
                                 velocity_of_arm += -stickL.y;
 
                             }
-                            else if (Math.Abs(velocity_of_arm) <= 0.2 && Jointposition[2] <= 0.785 && -stickL.y > 0)
+                            else if (Math.Abs(velocity_of_arm) <= 0.4 && Jointposition[2] <= 0.959 && -stickL.y > 0)
                             {
                                 velocity_of_arm += -stickL.y;
                             }
-                            else if (Math.Abs(velocity_of_arm) <= 0.2 && Jointposition[2] >= 2.529 && -stickL.y < 0)
+                            else if (Math.Abs(velocity_of_arm) <= 0.4 && Jointposition[2] >= 2.35 && -stickL.y < 0)
                             {
                                 velocity_of_arm += -stickL.y;
                             }
 
                         }
-                        if (Math.Abs(velocity_of_swing) <= 0.2 && (Mathf.Abs((OVRInput.Get(OVRInput.RawAxis2D.LThumbstick)).x) > 0.3))
+                        //swing
+                        if (Math.Abs(velocity_of_swing) <= 0.4 && (Mathf.Abs((OVRInput.Get(OVRInput.RawAxis2D.LThumbstick)).x) > 0.3))
                         {
                             velocity_of_swing += -0.3f * stickL.x;
                         }
-                        if (Math.Abs(velocity_of_boom) <= 0.2 && (Mathf.Abs((OVRInput.Get(OVRInput.RawAxis2D.RThumbstick)).y) > 0.3))
+                        //boom
+                        if (Math.Abs(velocity_of_boom) <= 0.4 && (Mathf.Abs((OVRInput.Get(OVRInput.RawAxis2D.RThumbstick)).y) > 0.3))
                         {
-                            if (Math.Abs(velocity_of_boom) <= 0.2 && Jointposition[1] >= -1.221 && Jointposition[1] <= 0.9594)
+                            if (Math.Abs(velocity_of_boom) <= 0.4 && Jointposition[1] >= -0.872 && Jointposition[1] <= 0.1749594)
                             {
                                 velocity_of_boom += 0.3f * stickR.y;
                             }
-                            else if (Math.Abs(velocity_of_boom) <= 0.2 && Jointposition[1] <= -1.221 && stickR.y > 0)
+                            else if (Math.Abs(velocity_of_boom) <= 0.4 && Jointposition[1] <= -0.872 && stickR.y > 0)
                             {
                                 velocity_of_boom += stickR.y;
                             }
-                            else if (Math.Abs(velocity_of_boom) <= 0.2 && Jointposition[1] >= 0.9594 && stickR.y < 0)
+                            else if (Math.Abs(velocity_of_boom) <= 0.4 && Jointposition[1] >= 0.1749594 && stickR.y < 0)
                             {
                                 velocity_of_boom += stickR.y;
                             }
                             Debug.Log("swingtest" + velocity_of_boom);
                         }
-                        if (Math.Abs(velocity_of_bucket) <= 0.2 && (Mathf.Abs((OVRInput.Get(OVRInput.RawAxis2D.RThumbstick)).x) > 0.3))
+                        //bucket
+                        if (Math.Abs(velocity_of_bucket) <= 0.4 && (Mathf.Abs((OVRInput.Get(OVRInput.RawAxis2D.RThumbstick)).x) > 0.3))
                         {
-                            if (Math.Abs(velocity_of_bucket) <= 0.2 && Jointposition[3] >= -1.221 && Jointposition[3] <= 1.3955)
+                            if (Math.Abs(velocity_of_bucket) <= 0.4 && Jointposition[3] >= -1.221 && Jointposition[3] <= 1.3955)
                             {
                                 velocity_of_bucket += -1.5f * stickR.x;
                             }
-                            else if (Math.Abs(velocity_of_bucket) <= 0.2 && Jointposition[3] <= -1.221 && -stickR.x > 0)
+                            else if (Math.Abs(velocity_of_bucket) <= 0.4 && Jointposition[3] <= -1.221 && -stickR.x > 0)
                             {
                                 velocity_of_bucket += -stickR.x;
                             }
-                            else if (Math.Abs(velocity_of_bucket) <= 0.2 && Jointposition[3] >= 1.3955 && -stickR.x < 0)
+                            else if (Math.Abs(velocity_of_bucket) <= 0.4 && Jointposition[3] >= 1.3955 && -stickR.x < 0)
                             {
                                 velocity_of_bucket += -stickR.x;
                             }
@@ -433,14 +546,8 @@ public class JointAnglePublisher : MonoBehaviour
                         }
                     }
                     //Debug.Log("swingtest" + goalpose_swing + ":" + -stickL.x);
-                    //
-                    //
-                    //linear.x = stickL.y;
-                    //angular.z = -stickL.x;
-                    //Debug.Log("x" + linear.x + "z" + angular.z);
-
-                    //
-                    //
+                    //////////////////////////////////////////////////
+                    //////////////////////////////////////////////////twist
                     RBack = OVRInput.Get(OVRInput.RawAxis1D.RHandTrigger);
                         RFront = OVRInput.Get(OVRInput.RawAxis1D.RIndexTrigger);
                         LBack = OVRInput.Get(OVRInput.RawAxis1D.LHandTrigger);
@@ -468,7 +575,6 @@ public class JointAnglePublisher : MonoBehaviour
                     //key
                     if (key == 1)
                     {
-
                         if (Input.GetKey(KeyCode.Space))
                         {
                             // OVRManager.display.RecenterPose();
@@ -522,13 +628,36 @@ public class JointAnglePublisher : MonoBehaviour
                         zerocounter = 0;
                     }
                     //
-
                     timeElapsed += Time.deltaTime;
                     sw_timeElapsed += Time.deltaTime;
+
+                    if (control_mode == 1 && selected_mode.mood == 2)
+                    {
+                        
+
+                    }
+
+
                     if (timeElapsed > publishMessageFrequency)
                     {
                         if (SimORReal == false)
                         {
+                            Debug.Log(goalpose_swing + "  :  " + goalpose_boom + "  :  " + goalpose_arm + "  :  " + goalpose_bucket);
+                            positions[0] = goalpose_swing;
+                            positions[1] = goalpose_boom;
+                            positions[2] = goalpose_arm;
+                            positions[3] = goalpose_bucket;
+                            listOfJointCmdList.Add(positions);
+                            if (control_mode == 1 && selected_mode.mood == 2 && timeElapsed_start > (Time_Delay + 5.0f) && listOfJointCmdList.Count - (Mathf.RoundToInt(Time_Delay / publishMessageInterval)) >= 0)
+                            {
+                                int CMD_time = Mathf.RoundToInt(Time_Delay / publishMessageInterval);
+                                goalpose_swing = (float)listOfJointCmdList[listOfJointCmdList.Count - 1 - CMD_time][0];
+                                goalpose_boom = (float)listOfJointCmdList[listOfJointCmdList.Count - 1 - CMD_time][1];
+                                goalpose_arm = (float)listOfJointCmdList[listOfJointCmdList.Count - 1 - CMD_time][2];
+                                goalpose_bucket = (float)listOfJointCmdList[listOfJointCmdList.Count - 1 - CMD_time][3];
+
+                            }
+
                             Float64Msg angleMessage_swing = new Float64Msg
                             {
                                 data = goalpose_swing // Set your joint angle here, e.g., transform.rotation.eulerAngles.x//
@@ -545,13 +674,16 @@ public class JointAnglePublisher : MonoBehaviour
                             {
                                 data = goalpose_bucket // Set your joint angle here, e.g., transform.rotation.eulerAngles.x//
                             };
+                            
                             //twist
                             TwistMsg Twist = new TwistMsg(
                                linear,
                                angular
                             );
                             //
-                            Debug.Log(goalpose_swing + "  :  " + goalpose_boom + "  :  " + goalpose_arm + "  :  " + goalpose_bucket);
+
+                            
+                            //Publish
                             ros.Publish(topicName_swing, angleMessage_swing);
                             ros.Publish(topicName_boom, angleMessage_boom);
                             ros.Publish(topicName_arm, angleMessage_arm);
@@ -559,7 +691,6 @@ public class JointAnglePublisher : MonoBehaviour
                             if (zerocounter <= 20)
                             {
                                 ros.Publish(topicName_cmd_vel, Twist);
-                                Debug.Log("linear " + linear);
                             }
 
                             timeElapsed = 0;
@@ -572,15 +703,28 @@ public class JointAnglePublisher : MonoBehaviour
                             velocities[1] = velocity_of_boom;
                             velocities[2] = velocity_of_arm;
                             velocities[3] = velocity_of_bucket;
-                            // List<double> positions = new List<double> { 1.0, 2.0, 3.0 };
+                            listOfJointCmdList.Add(velocities);
+                            for (int i = 0; i < joints.Count; i++)
+                            {
+                                JointPositions[i] = joints[i].jointPosition[0];
+
+                            }
+                            listOfJointPositionList.Add(JointPositions);
+                            if (control_mode == 1 && selected_mode.mood == 2 && timeElapsed_start > (Time_Delay + 5.0f) && listOfJointCmdList.Count - (Mathf.RoundToInt(Time_Delay / publishMessageInterval)) >= 0)
+                            {
+                                int CMD_time = Mathf.RoundToInt(Time_Delay / publishMessageInterval);
+                                velocities[0] = listOfJointCmdList[listOfJointCmdList.Count - 1 - CMD_time][0];
+                                velocities[1] = listOfJointCmdList[listOfJointCmdList.Count - 1 - CMD_time][1];
+                                velocities[2] = listOfJointCmdList[listOfJointCmdList.Count - 1 - CMD_time][2];
+                                velocities[3] = listOfJointCmdList[listOfJointCmdList.Count - 1 - CMD_time][3];
+
+                            }
                             // List<double> Ç double[] Ç…ïœä∑
                             string[] jointNamesArray = jointNames.ToArray();
                             double[] positionsArray = positions.ToArray();
                             double[] velocitiesArray = velocities.ToArray();
                             double[] effortsArray = efforts.ToArray();
                             // ïœä∑ÇµÇΩîzóÒÇä÷êîÇ…ìnÇ∑
-                            // someMethod(arg1, arg2, arg3, arg4, positionsArray);
-
                             HeaderMsg header = new HeaderMsg(
                                     new TimeStamp(Clock.time),
                                     " "
@@ -592,21 +736,10 @@ public class JointAnglePublisher : MonoBehaviour
                                 positionsArray,
                                 velocitiesArray,
                                 effortsArray
-                            /*
-                            header = new StdMsgs.msg.Header 
-                            { 
-                                stamp = ROS2Time.Now(), 
-                                frame_id = "base_link" 
-                            }, 
-                            name = jointNames, 
-                            position = positions, 
-                            velocity = velocities, 
-                            effort = efforts
-                            */
                             );
                             ros.Publish(Real_topicName_joint_velocity, JointCMD);
+                            timeElapsed = 0;
                         }
-
                     }
                 }
             }
@@ -619,5 +752,34 @@ public class JointAnglePublisher : MonoBehaviour
             Debug.Log("kaitennha" + scriptA.RotationRatchet + scriptA.RotationAmount);
         }
         */
+    }
+
+    void Callback(JointStateMsg msg)
+    {
+        selected_mode = FindObjectOfType<mood_selector>();
+        dissconnect_timer = 0.0f;
+        if (selected_mode.mood == 2)//Visual tool
+        {
+            float pos_of_swing = (float)msg.position[0];
+            float pos_of_boom = (float)msg.position[1];
+            float pos_of_arm = (float)msg.position[2];
+            float pos_of_bucket = (float)msg.position[3];
+            float velo_of_swing = (float)msg.velocity[0];
+            float velo_of_boom = (float)msg.velocity[1];
+            float velo_of_arm = (float)msg.velocity[2];
+            float velo_of_bucket = (float)msg.velocity[3];
+
+            int CMD_time = Mathf.RoundToInt(Time_Delay / publishMessageInterval);
+            float AtTimePosi_swing = (float)listOfJointPositionList[listOfJointPositionList.Count - 1 - CMD_time][0];
+            float AtTimePosi_boom = (float)listOfJointPositionList[listOfJointPositionList.Count - 1 - CMD_time][1];
+            float AtTimePosi_arm = (float)listOfJointPositionList[listOfJointPositionList.Count - 1 - CMD_time][2];
+            float AtTimePosi_bucket = (float)listOfJointPositionList[listOfJointPositionList.Count - 1 - CMD_time][3];
+            float AtTimeVelo_swing = (float)listOfJointCmdList[listOfJointCmdList.Count - 1 - CMD_time][0];
+            float AtTimeVelo_boom = (float)listOfJointCmdList[listOfJointCmdList.Count - 1 - CMD_time][1];
+            float AtTimeVelo_arm = (float)listOfJointCmdList[listOfJointCmdList.Count - 1 - CMD_time][2];
+            float AtTimeVelo_bucket = (float)listOfJointCmdList[listOfJointCmdList.Count - 1 - CMD_time][3];
+
+
+        }
     }
 }
