@@ -14,7 +14,7 @@ public class ParentColorChanger : MonoBehaviour
             {
                 childRenderer.material.color = newColor;
             }
-            Debug.Log("Color have changed.");
+            Debug.Log("Color have changed. : " + gameObject.name);
         }
         /*
         // 親オブジェクトから"ChildObjectName"という名前の子オブジェクトを取得

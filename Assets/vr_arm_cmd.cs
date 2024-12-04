@@ -411,11 +411,11 @@ public class JointAnglePublisher : MonoBehaviour
                             Jointposition[i] = joints[i].jointPosition[0];
                         }
                         //swing
-                        if (Input.GetKey(KeyCode.Y))
+                        if (Input.GetKey(KeyCode.Y) && velocity_of_swing <= 7.0)
                         {
                             velocity_of_swing += 0.05f;
                         }
-                        if (Input.GetKey(KeyCode.H))
+                        if (Input.GetKey(KeyCode.H) && velocity_of_swing >= -7.0)
                         {
                             velocity_of_swing -= 0.05f;
                         }
@@ -451,6 +451,7 @@ public class JointAnglePublisher : MonoBehaviour
                         }
                         if (Jointposition[2] > 2.5294 || Jointposition[2] < 0.785)
                         {
+                            velocity_of_arm = 0.0f;
                             if (Input.GetKey(KeyCode.I) && velocity_of_arm <= 7.0 && Jointposition[2] <= 2.5294)
                             {
                                 velocity_of_arm += 0.040f;
@@ -471,6 +472,7 @@ public class JointAnglePublisher : MonoBehaviour
                         }
                         if(Jointposition[3] > 1.39555 || Jointposition[3] < -1.2211)
                         {
+                            velocity_of_bucket = 0.0f;
                             if (Input.GetKey(KeyCode.O) && velocity_of_bucket <= 7.0 && Jointposition[3] <= 1.39555)
                             {
                                 velocity_of_bucket += 0.05f;
@@ -737,6 +739,12 @@ public class JointAnglePublisher : MonoBehaviour
                                 effortsArray
                             );
                             ros.Publish(Real_topicName_joint_velocity, JointCMD);
+                            /*
+                            if (zerocounter <= 20)
+                            {
+                                ros.Publish(topicName_cmd_vel, Twist);
+                            }
+                            */
                             timeElapsed = 0;
                         }
                     }

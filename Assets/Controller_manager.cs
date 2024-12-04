@@ -209,7 +209,7 @@ public class Controller_manager : MonoBehaviour
                 OVRPlayerController scriptA = PlayertargetObject.GetComponent<OVRPlayerController>();
                 scriptA.RotationRatchet = 45;
                 scriptA.RotationAmount = 0.5f;
-                //左ジョイスティックの情報取得
+                //
                 Vector2 stickR = movespeed * OVRInput.Get(OVRInput.RawAxis2D.RThumbstick);
                 Playerlinear = stickR.y;
                 if (Input.GetKey(KeyCode.W))

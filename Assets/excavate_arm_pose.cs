@@ -26,7 +26,6 @@ public class JointSubscriber : MonoBehaviour
     private List<string> targetjointNames;
     private double targetPos;
     private float dissconnect_timer;
-    //GameObject targetObject;
     public string robotName = "robot_name";
     public GameObject targetObject;
     public string Subscribe_topic_name = "subscribe_topic";
@@ -66,13 +65,6 @@ public class JointSubscriber : MonoBehaviour
         }
         Debug.Log("already:joint_states_pub");
         ///
-        ///
-        //targetObject = GameObject.Find("zx200");
-        //joints = new List<ArticulationBody>();
-        //jointNames = new List<string>();
-        //Debug.Log("jointNames");
-        //joint = this.GetComponent<ArticulationBody>();
-        //targetPos = new Float64Msg();
     }
     void Update()
     {
@@ -133,25 +125,6 @@ public class JointSubscriber : MonoBehaviour
                 }
             }
             ///
-            //jointPosition[0] = pos_of_swing_joint;
-            //Debug.Log(joints[0].jointPosition[0]);//= pos_of_swing_joint;
-            /*
-                for (int i = 0; i < joints.Count; i++)
-                {
-                    joints[i].jointPosition[0]=;
-                    //joints[i].jointVelocity[0];
-                    //enableJointEffortSensor ? joints[i].driveForce[0] : 0.0;
-                }
-            */
-            ///
-            ///
-            //Vector3 newPosition = new Vector3((float)msg.pose.position.y * (-1), (float)msg.pose.position.z, (float)msg.pose.position.x);
-            //Quaternion newRotation = new((float)msg.pose.orientation.y * (-1), (float)msg.pose.orientation.z, (float)msg.pose.orientation.x, (float)msg.pose.orientation.w * (-1));
-            //Debug.Log(newPosition);
-            //Debug.Log(newRotation.eulerAngles);
-            //
-            //GameObject.Find("ic120").transform.position = newPosition;
-            //GameObject.Find("ic120").transform.rotation = newRotation;
             //
         }
     }

@@ -16,7 +16,8 @@ public class PapermachinePoseSubscriber : MonoBehaviour
     private PoseStampedMsg twist;
     public string robotName = "robot_name";
     public GameObject targetObject;
-    public string Subscribe_topic_name = "subscribe_topic";
+    public string SimPhysXSubscribeTopicName;
+    public string SimAGXSubscribeTopicName;
     public string RealSubscribeTopicName;
     public float offset_x = 0;
     public float offset_y = 0;
@@ -33,10 +34,15 @@ public class PapermachinePoseSubscriber : MonoBehaviour
         Debug.Log("check:baselink/pose");
         // ROSコネクションへのサブスクライバーの登録
         SimORRealSelecter = FindObjectOfType<FieldMainManager>();
-        if (SimORRealSelecter.ForSimOrReal.ToString() == "ForSimulater")
+        if (SimORRealSelecter.ForSimOrReal.ToString() == "ForSimPhysX")
         {
             SimORReal = false;
-            ros.Subscribe<PoseStampedMsg>(Subscribe_topic_name, Callback);
+            ros.Subscribe<PoseStampedMsg>(SimPhysXSubscribeTopicName, Callback);
+        }
+        else if (SimORRealSelecter.ForSimOrReal.ToString() == "ForSimAGX")
+        {
+            SimORReal = true;
+            ros.Subscribe<OdometryMsg>(SimAGXSubscribeTopicName, Callback1);
         }
         else if (SimORRealSelecter.ForSimOrReal.ToString() == "ForReal")
         {
@@ -72,6 +78,34 @@ public class PapermachinePoseSubscriber : MonoBehaviour
          //   targetObject.GetComponent<Rigidbody>().isKinematic = true;
             //
        // }
+
+    }
+
+    void Callback1(OdometryMsg msg)
+    {
+        mode = FindObjectOfType<mood_selector>();
+        model_name_space = FindObjectOfType<Model_name>();
+        offset_x = model_name_space.OffsetList[0];
+        offset_y = model_name_space.OffsetList[1];
+        offset_z = model_name_space.OffsetList[2];
+        //Debug.Log(msg.pose.orientation);
+        //
+        //if (mode.mood == 1) //Visual tool
+        //{
+        //Debug.Log("zxcvbnm");
+        //Debug.Log(msg.pose.orientation);
+        //
+        Vector3 newPosition = new Vector3(((float)msg.pose.pose.position.y * (-1) + offset_x), ((float)msg.pose.pose.position.z) + offset_z, ((float)msg.pose.pose.position.x) + offset_y);
+        Quaternion newRotation = new((float)msg.pose.pose.orientation.y * (-1), (float)msg.pose.pose.orientation.z, (float)msg.pose.pose.orientation.x, (float)msg.pose.pose.orientation.w * (-1));
+        //Debug.Log(newPosition);
+        //Debug.Log(newRotation.eulerAngles);
+        //
+        //   targetObject.GetComponent<Rigidbody>().isKinematic = false;
+        targetObject.transform.position = newPosition;
+        targetObject.transform.rotation = newRotation;
+        //   targetObject.GetComponent<Rigidbody>().isKinematic = true;
+        //
+        // }
 
     }
 }
