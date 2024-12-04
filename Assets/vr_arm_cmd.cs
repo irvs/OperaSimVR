@@ -91,6 +91,7 @@ public class JointAnglePublisher : MonoBehaviour
     void Start()
     {
         VRManager = FindObjectOfType<Controller_manager>();
+        ros = ROSConnection.GetOrCreateInstance();
         if (VRManager != null)
         {
             Debug.Log("Player's health is: " + VRManager.num);
@@ -114,7 +115,7 @@ public class JointAnglePublisher : MonoBehaviour
         }
         //
 
-        ros = ROSConnection.GetOrCreateInstance();
+
         ros.RegisterPublisher<BoolMsg>(controller_swTopicName);
         ros.RegisterPublisher<TwistMsg>(topicName_cmd_vel);
         ros.RegisterPublisher<Float64Msg>(topicName_swing);
@@ -128,7 +129,7 @@ public class JointAnglePublisher : MonoBehaviour
         positions = new List<double> { 0.0, 0.0, 0.0, 0.0, 0.0 }; 
         velocities = new List<double> { 0.0, 0.0, 0.0, 0.0, 0.0 }; 
         efforts = new List<double> { 0.0, 0.0, 0.0, 0.0, 0.0 };
-        JointPositions = new List<double> { 0.0, 0.0, 0.0, 0.0 };
+        JointPositions = new List<double> { 0.0, 0.0, 0.0, 0.0, 0.0 };
         //List<double> jointCmd = new List<double> { 0.0, 0.0, 0.0, 0.0 };
         listOfJointCmdList.Add(efforts);
         listOfJointPositionList.Add(efforts);
@@ -404,7 +405,6 @@ public class JointAnglePublisher : MonoBehaviour
                     ////////////////////////////////////////////////////////////velosity
                     if (SimORReal == true)
                     {
-
                         Jointposition = new double[joints.Count];
                         for (int i = 0; i < joints.Count; i++)
                         {
@@ -525,7 +525,6 @@ public class JointAnglePublisher : MonoBehaviour
                             {
                                 velocity_of_boom += stickR.y;
                             }
-                            Debug.Log("swingtest" + velocity_of_boom);
                         }
                         //bucket
                         if (Math.Abs(velocity_of_bucket) <= 0.4 && (Mathf.Abs((OVRInput.Get(OVRInput.RawAxis2D.RThumbstick)).x) > 0.3))
