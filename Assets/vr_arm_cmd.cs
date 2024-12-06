@@ -420,24 +420,24 @@ public class JointAnglePublisher : MonoBehaviour
                             velocity_of_swing -= 0.05f;
                         }
                         //boom
-                        if (Input.GetKey(KeyCode.U) && velocity_of_boom <= 7.0 && Jointposition[1] <= 0.1749594) 
+                        if (Input.GetKey(KeyCode.U) && velocity_of_boom <= 1.0 && Jointposition[1] <= 0.1749594) 
                         {
-                            velocity_of_boom += 0.030f;
+                            velocity_of_boom = +0.030f;
                         }
-                        if (Input.GetKey(KeyCode.J) && velocity_of_boom >= -7.0 && Jointposition[1] >= -0.872)
+                        if (Input.GetKey(KeyCode.J) && velocity_of_boom >= -1.0 && Jointposition[1] >= -0.872)
                         {
-                            velocity_of_boom -= 0.030f;
+                            velocity_of_boom = -0.030f;
                         }
                         if (Jointposition[1] > 0.9594 || Jointposition[1] < -0.872)
                         {
                             velocity_of_boom = 0.0f;
-                            if (Input.GetKey(KeyCode.U) && velocity_of_boom <= 7.0 && Jointposition[1] <= 0.1749594)
+                            if (Input.GetKey(KeyCode.U) && velocity_of_boom <= 1.0 && Jointposition[1] <= 0.1749594)
                             {
-                                velocity_of_boom += 0.030f;
+                                velocity_of_boom = +0.030f;
                             }
-                            if (Input.GetKey(KeyCode.J) && velocity_of_boom >= -7.0 && Jointposition[1] >= -0.872)
+                            if (Input.GetKey(KeyCode.J) && velocity_of_boom >= -1.0 && Jointposition[1] >= -0.872)
                             {
-                                velocity_of_boom -= 0.030f;
+                                velocity_of_boom = -0.030f;
                             }
                         }
                         //arm

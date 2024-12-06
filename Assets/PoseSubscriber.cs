@@ -58,7 +58,7 @@ public class PoseSubscriber : MonoBehaviour
         {
             model_name_space = FindObjectOfType<Model_name>();
             offset_x = model_name_space.OffsetList[0];
-            offset_y = model_name_space.OffsetList[1];
+          //  offset_y = model_name_space.OffsetList[1];
             offset_z = model_name_space.OffsetList[2];
             //Debug.Log(msg.pose.orientation);
             //
@@ -99,7 +99,7 @@ public class PoseSubscriber : MonoBehaviour
         {
             model_name_space = FindObjectOfType<Model_name>();
             offset_x = model_name_space.OffsetList[0];
-            offset_y = model_name_space.OffsetList[1];
+          //  offset_y = model_name_space.OffsetList[1];
             offset_z = model_name_space.OffsetList[2];
             //Debug.Log(msg.pose.orientation);
             //
