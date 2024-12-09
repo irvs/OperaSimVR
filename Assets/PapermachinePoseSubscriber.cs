@@ -95,8 +95,8 @@ public class PapermachinePoseSubscriber : MonoBehaviour
         //Debug.Log("zxcvbnm");
         //Debug.Log(msg.pose.orientation);
         //
-        Vector3 newPosition = new Vector3(((float)msg.pose.pose.position.y * (-1) + offset_x), ((float)msg.pose.pose.position.z) + offset_z, ((float)msg.pose.pose.position.x) + offset_y);
-        Quaternion newRotation = new((float)msg.pose.pose.orientation.y * (-1), (float)msg.pose.pose.orientation.z, (float)msg.pose.pose.orientation.x, (float)msg.pose.pose.orientation.w * (-1));
+        Vector3 newPosition = new Vector3(((float)msg.pose.pose.position.x + offset_x), ((float)msg.pose.pose.position.z) + offset_z, ((float)msg.pose.pose.position.y) + offset_y);
+        Quaternion newRotation = new((float)msg.pose.pose.orientation.x, (float)msg.pose.pose.orientation.z, (float)msg.pose.pose.orientation.y, (float)msg.pose.pose.orientation.w);
         //Debug.Log(newPosition);
         //Debug.Log(newRotation.eulerAngles);
         //

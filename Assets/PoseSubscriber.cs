@@ -104,7 +104,7 @@ public class PoseSubscriber : MonoBehaviour
             //Debug.Log(msg.pose.orientation);
             //
             Vector3 newPosition = new Vector3(((float)msg.pose.pose.position.x + offset_x), ((float)msg.pose.pose.position.z) + offset_z, ((float)msg.pose.pose.position.y) + offset_y);
-            Quaternion newRotation = new((float)msg.pose.pose.orientation.x, -(float)msg.pose.pose.orientation.z, (float)msg.pose.pose.orientation.y, (float)msg.pose.pose.orientation.w);
+            Quaternion newRotation = new((float)msg.pose.pose.orientation.x, (float)msg.pose.pose.orientation.z, (float)msg.pose.pose.orientation.y, (float)msg.pose.pose.orientation.w);
             //Debug.Log(newPosition);
             //Debug.Log(newRotation.eulerAngles);
             //

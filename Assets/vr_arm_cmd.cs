@@ -777,6 +777,7 @@ public class JointAnglePublisher : MonoBehaviour
             float velo_of_bucket = (float)msg.velocity[3];
 
             int CMD_time = Mathf.RoundToInt(Time_Delay / publishMessageInterval);
+            /*
             float AtTimePosi_swing = (float)listOfJointPositionList[listOfJointPositionList.Count - 1 - CMD_time][0];
             float AtTimePosi_boom = (float)listOfJointPositionList[listOfJointPositionList.Count - 1 - CMD_time][1];
             float AtTimePosi_arm = (float)listOfJointPositionList[listOfJointPositionList.Count - 1 - CMD_time][2];
@@ -785,7 +786,7 @@ public class JointAnglePublisher : MonoBehaviour
             float AtTimeVelo_boom = (float)listOfJointCmdList[listOfJointCmdList.Count - 1 - CMD_time][1];
             float AtTimeVelo_arm = (float)listOfJointCmdList[listOfJointCmdList.Count - 1 - CMD_time][2];
             float AtTimeVelo_bucket = (float)listOfJointCmdList[listOfJointCmdList.Count - 1 - CMD_time][3];
-
+            */
 
         }
     }
