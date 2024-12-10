@@ -410,14 +410,108 @@ public class JointAnglePublisher : MonoBehaviour
                         {
                             Jointposition[i] = joints[i].jointPosition[0];
                         }
-                        //swing
-                        if (Input.GetKey(KeyCode.Y) && velocity_of_swing <= 7.0)
+
+                        //
+                        //for joint
+                        Vector2 stickL = movespeed * OVRInput.Get(OVRInput.RawAxis2D.LThumbstick);
+                        Vector2 stickR = movespeed * OVRInput.Get(OVRInput.RawAxis2D.RThumbstick);
+                        //arm
+                        if ((Mathf.Abs((OVRInput.Get(OVRInput.RawAxis2D.LThumbstick)).y) > 0.3))
                         {
-                            velocity_of_swing += 0.05f;
+                            if (Jointposition[2] <= 2.35 && Jointposition[2] >= 0.959)
+                            {
+                                velocity_of_arm = -0.5f * stickL.y;
+
+                            }
+                            if (Jointposition[2] <= 0.959 || Jointposition[2] >= 2.35)
+                            {
+                                velocity_of_arm = 0.0f;
+                            }
+                            if (Jointposition[2] <= 0.959 && -stickL.y > 0)
+                            {
+                                velocity_of_arm = -0.5f * stickL.y;
+                            }
+                            else if (Jointposition[2] >= 2.35 && -stickL.y < 0)
+                            {
+                                velocity_of_arm = -0.5f * stickL.y;
+                            }
+
                         }
-                        if (Input.GetKey(KeyCode.H) && velocity_of_swing >= -7.0)
+                        else if (Mathf.Abs((OVRInput.Get(OVRInput.RawAxis2D.LThumbstick)).y) > 0.3)
                         {
-                            velocity_of_swing -= 0.05f;
+                            velocity_of_arm = 0.0f;
+                        }
+                        //swing
+                        if ((Mathf.Abs((OVRInput.Get(OVRInput.RawAxis2D.LThumbstick)).x) > 0.3))
+                        {
+                            velocity_of_swing = -0.5f * stickL.x;
+                        }
+                        else if ((Mathf.Abs((OVRInput.Get(OVRInput.RawAxis2D.LThumbstick)).x) <= 0.3))
+                        {
+                            velocity_of_swing = -0.0f;
+                        }
+                        //boom
+                        if ((Mathf.Abs((OVRInput.Get(OVRInput.RawAxis2D.RThumbstick)).y) > 0.3))
+                        {
+                            if (Jointposition[1] >= -0.872 && Jointposition[1] <= 0.1749594)
+                            {
+                                velocity_of_boom = 0.3f * stickR.y;
+                            }
+                            if (Jointposition[1] <= -0.872 || Jointposition[1] >= 0.1749594)
+                            {
+                                velocity_of_boom = 0.0f;
+                            }
+                            if (Jointposition[1] <= -0.872 && stickR.y > 0)
+                            {
+                                velocity_of_boom = 0.3f * stickR.y;
+                            }
+                            else if (Jointposition[1] >= 0.1749594 && stickR.y < 0)
+                            {
+                                velocity_of_boom = 0.3f * stickR.y;
+                            }
+                        }
+                        else if ((Mathf.Abs((OVRInput.Get(OVRInput.RawAxis2D.RThumbstick)).y) <= 0.3))
+                        {
+                            velocity_of_boom = 0.0f;
+                        }
+                        //bucket
+                        if ((Mathf.Abs((OVRInput.Get(OVRInput.RawAxis2D.RThumbstick)).x) > 0.3))
+                        {
+                            if (Jointposition[3] >= -1.221 && Jointposition[3] <= 1.3955)
+                            {
+                                velocity_of_bucket = -0.5f * stickR.x;
+                            }
+                            if (Jointposition[3] <= -1.221 || Jointposition[3] >= 1.3955)
+                            {
+                                velocity_of_bucket = 0.0f;
+                            }
+                            if (Jointposition[3] <= -1.221 && -stickR.x > 0)
+                            {
+                                velocity_of_bucket = -0.5f * stickR.x;
+                            }
+                            else if (Jointposition[3] >= 1.3955 && -stickR.x < 0)
+                            {
+                                velocity_of_bucket = -0.5f * stickR.x;
+                            }
+
+                        }
+                        else if ((Mathf.Abs((OVRInput.Get(OVRInput.RawAxis2D.RThumbstick)).x) <= 0.3))
+                        {
+                            velocity_of_bucket = 0.0f;
+                        }
+
+                        //swing
+                        if (Input.GetKey(KeyCode.Y) && velocity_of_swing <= 1.0)
+                        {
+                            velocity_of_swing += 0.030f;
+                        }
+                        if (Input.GetKey(KeyCode.H) && velocity_of_swing >= -1.0)
+                        {
+                            velocity_of_swing -= 0.030f;
+                        }
+                        if (Input.GetKeyUp(KeyCode.Y) || Input.GetKeyUp(KeyCode.H))
+                        {
+                            velocity_of_swing = 0.0f;
                         }
                         //boom
                         if (Input.GetKey(KeyCode.U) && velocity_of_boom <= 1.0 && Jointposition[1] <= 0.1749594) 
@@ -440,111 +534,64 @@ public class JointAnglePublisher : MonoBehaviour
                                 velocity_of_boom = -0.030f;
                             }
                         }
+                        if (Input.GetKeyUp(KeyCode.J) || Input.GetKeyUp(KeyCode.U))
+                        {
+                            velocity_of_boom = 0.0f;
+                        }
                         //arm
-                        if (Input.GetKey(KeyCode.I) && velocity_of_arm <= 7.0 && Jointposition[2] <= 2.5294)
+                        if (Input.GetKey(KeyCode.I) && velocity_of_arm <= 1.0 && Jointposition[2] <= 2.5294)
                         {
-                            velocity_of_arm += 0.040f;
+                            velocity_of_arm += 0.030f;
                         }
-                        if (Input.GetKey(KeyCode.K) && velocity_of_arm >= -7.0 && Jointposition[2] >= 0.959)
+                        if (Input.GetKey(KeyCode.K) && velocity_of_arm >= -1.0 && Jointposition[2] >= 0.959)
                         {
-                            velocity_of_arm -= 0.040f;
+                            velocity_of_arm -= 0.030f;
                         }
-                        if (Jointposition[2] > 2.5294 || Jointposition[2] < 0.785)
+                        if (Jointposition[2] > 2.5294 || Jointposition[2] < 0.959)
                         {
                             velocity_of_arm = 0.0f;
-                            if (Input.GetKey(KeyCode.I) && velocity_of_arm <= 7.0 && Jointposition[2] <= 2.5294)
+                            if (Input.GetKey(KeyCode.I) && velocity_of_arm <= 1.0 && Jointposition[2] <= 2.5294)
                             {
-                                velocity_of_arm += 0.040f;
+                                velocity_of_arm += 0.030f;
                             }
-                            if (Input.GetKey(KeyCode.K) && velocity_of_arm >= -7.0 && Jointposition[2] >= 0.959)
+                            if (Input.GetKey(KeyCode.K) && velocity_of_arm >= -1.0 && Jointposition[2] >= 0.959)
                             {
-                                velocity_of_arm -= 0.040f;
-                            }
+                                velocity_of_arm -= 0.030f;
+                            } 
+                        }
+                        if (Input.GetKeyUp(KeyCode.I) || Input.GetKeyUp(KeyCode.K))
+                        {
+                            velocity_of_arm = 0.0f;
                         }
                         //bucket
-                        if (Input.GetKey(KeyCode.O) && velocity_of_bucket <= 7.0 && Jointposition[3] <= 1.39555)
+                        if (Input.GetKey(KeyCode.O) && velocity_of_bucket <= 1.0 && Jointposition[3] <= 1.39555)
                         {
-                            velocity_of_bucket += 0.05f;
+                            velocity_of_bucket += 0.030f;
                         }
-                        if (Input.GetKey(KeyCode.L) && velocity_of_bucket >= -7.0 && Jointposition[3] >= -1.2211)
+                        if (Input.GetKey(KeyCode.L) && velocity_of_bucket >= -1.0 && Jointposition[3] >= -1.2211)
                         {
-                            velocity_of_bucket -= 0.05f;
+                            velocity_of_bucket -= 0.030f;
                         }
                         if(Jointposition[3] > 1.39555 || Jointposition[3] < -1.2211)
                         {
                             velocity_of_bucket = 0.0f;
-                            if (Input.GetKey(KeyCode.O) && velocity_of_bucket <= 7.0 && Jointposition[3] <= 1.39555)
+                            if (Input.GetKey(KeyCode.O) && velocity_of_bucket <= 1.0 && Jointposition[3] <= 1.39555)
                             {
-                                velocity_of_bucket += 0.05f;
+                                velocity_of_bucket += 0.030f;
                             }
-                            if (Input.GetKey(KeyCode.L) && velocity_of_bucket >= -7.0 && Jointposition[3] >= -1.2211)
+                            if (Input.GetKey(KeyCode.L) && velocity_of_bucket >= -1.0 && Jointposition[3] >= -1.2211)
                             {
-                                velocity_of_bucket -= 0.05f;
+                                velocity_of_bucket -= 0.030f;
                             }
                         }
+                        if (Input.GetKeyUp(KeyCode.O) || Input.GetKeyUp(KeyCode.L))
+                        {
+                            velocity_of_bucket = 0.0f;
+                        }
+
+
 
                         
-
-                        //
-                        //for joint
-                        Vector2 stickL = movespeed * OVRInput.Get(OVRInput.RawAxis2D.LThumbstick);
-                        Vector2 stickR = movespeed * OVRInput.Get(OVRInput.RawAxis2D.RThumbstick);
-                        //arm
-                        if ((Mathf.Abs((OVRInput.Get(OVRInput.RawAxis2D.LThumbstick)).y) > 0.3))
-                        {
-                            if (Math.Abs(velocity_of_arm) <= 0.4 && Jointposition[2] <= 2.35 && Jointposition[2] >= 0.959)
-                            {
-                                velocity_of_arm += -stickL.y;
-
-                            }
-                            else if (Math.Abs(velocity_of_arm) <= 0.4 && Jointposition[2] <= 0.959 && -stickL.y > 0)
-                            {
-                                velocity_of_arm += -stickL.y;
-                            }
-                            else if (Math.Abs(velocity_of_arm) <= 0.4 && Jointposition[2] >= 2.35 && -stickL.y < 0)
-                            {
-                                velocity_of_arm += -stickL.y;
-                            }
-
-                        }
-                        //swing
-                        if (Math.Abs(velocity_of_swing) <= 0.4 && (Mathf.Abs((OVRInput.Get(OVRInput.RawAxis2D.LThumbstick)).x) > 0.3))
-                        {
-                            velocity_of_swing += -0.3f * stickL.x;
-                        }
-                        //boom
-                        if (Math.Abs(velocity_of_boom) <= 0.4 && (Mathf.Abs((OVRInput.Get(OVRInput.RawAxis2D.RThumbstick)).y) > 0.3))
-                        {
-                            if (Math.Abs(velocity_of_boom) <= 0.4 && Jointposition[1] >= -0.872 && Jointposition[1] <= 0.1749594)
-                            {
-                                velocity_of_boom += 0.3f * stickR.y;
-                            }
-                            else if (Math.Abs(velocity_of_boom) <= 0.4 && Jointposition[1] <= -0.872 && stickR.y > 0)
-                            {
-                                velocity_of_boom += stickR.y;
-                            }
-                            else if (Math.Abs(velocity_of_boom) <= 0.4 && Jointposition[1] >= 0.1749594 && stickR.y < 0)
-                            {
-                                velocity_of_boom += stickR.y;
-                            }
-                        }
-                        //bucket
-                        if (Math.Abs(velocity_of_bucket) <= 0.4 && (Mathf.Abs((OVRInput.Get(OVRInput.RawAxis2D.RThumbstick)).x) > 0.3))
-                        {
-                            if (Math.Abs(velocity_of_bucket) <= 0.4 && Jointposition[3] >= -1.221 && Jointposition[3] <= 1.3955)
-                            {
-                                velocity_of_bucket += -1.5f * stickR.x;
-                            }
-                            else if (Math.Abs(velocity_of_bucket) <= 0.4 && Jointposition[3] <= -1.221 && -stickR.x > 0)
-                            {
-                                velocity_of_bucket += -stickR.x;
-                            }
-                            else if (Math.Abs(velocity_of_bucket) <= 0.4 && Jointposition[3] >= 1.3955 && -stickR.x < 0)
-                            {
-                                velocity_of_bucket += -stickR.x;
-                            }
-
-                        }
                     }
                     //Debug.Log("swingtest" + goalpose_swing + ":" + -stickL.x);
                     //////////////////////////////////////////////////

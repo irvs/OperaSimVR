@@ -8,7 +8,9 @@ public class Model_name : MonoBehaviour
     public bool ObjectTypeIsPaperMachine;
     public string ParentMachine;
     public string Modelname;
-    public string KindsOfHeavyMachinery;
+    //public string KindsOfHeavyMachinery;
+    public enum HeavyMachineryOption { ZX120, ZX200, IC120, C30R}
+    public HeavyMachineryOption KindsOfHeavyMachinery;
     public float offset_x = 0;
     public float offset_y = 0;
     public float offset_z = 0;

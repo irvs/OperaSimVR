@@ -17,7 +17,7 @@ using UnityEngine;
 public class Mongo_pose_writer : MonoBehaviour
 {
     private ROSConnection ros;
-
+    public int sw;
     //private OdometryMsg odomMessage;
     private PoseStampedMsg odomMessage;
 
@@ -29,14 +29,14 @@ public class Mongo_pose_writer : MonoBehaviour
     private double previousTime = 0.0;
 
     // Publish the cube's position and rotation every N seconds
-    public float publishMessageInterval = 10.02f;//50Hz
+    public float publishMessageInterval = 0.5f;//50Hz
 
     // Used to determine how much time has elapsed since the last message was published
     private float timeElapsed;
 
     public string WriteTargetObject;
-    public ControllerLay laiser;
-    int Geton;
+    GameObject targetobject;
+    Controller_manager SW_From_cont;
 
     // Start is called before the first frame update
     void Start()
@@ -52,55 +52,38 @@ public class Mongo_pose_writer : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-
-        laiser = FindObjectOfType<ControllerLay>();
-        Geton = laiser.GetOn;
-        WriteTargetObject = laiser.GetOnVehicle;
-
-        if (Geton == 1)
+        SW_From_cont = FindObjectOfType<Controller_manager>();
+        WriteTargetObject = SW_From_cont.Machine_name;
+       // targetobject= SW_From_cont.VehicletargetObject;
+        if (sw == 1 || SW_From_cont.DB_pose_sw == true)
         {
 
-            timeElapsed += Time.deltaTime;
+             timeElapsed += Time.deltaTime;
 
-            double time = Time.fixedTimeAsDouble;
-            double deltaTime = time - previousTime;
+            targetobject=GameObject.Find(WriteTargetObject);
 
             odomMessage.pose.position.x = GameObject.Find(WriteTargetObject).transform.position.z;
-            odomMessage.pose.position.y = -GameObject.Find("ic120").transform.position.x;
-            //Vector3 newPosition = new Vector3((float)msg.pose.position.y * (-1), (float)msg.pose.position.z, (float)msg.pose.position.x);
+                odomMessage.pose.position.y = -targetobject.transform.position.x;
+                //Vector3 newPosition = new Vector3((float)msg.pose.position.y * (-1), (float)msg.pose.position.z, (float)msg.pose.position.x);
 
-            odomMessage.pose.orientation.w = GameObject.Find("ic120").transform.rotation.w;
-            odomMessage.pose.orientation.x = GameObject.Find("ic120").transform.rotation.x;
-            odomMessage.pose.orientation.y = GameObject.Find("ic120").transform.rotation.y;
-            odomMessage.pose.orientation.z = GameObject.Find("ic120").transform.rotation.z;
-            //Debug.Log(GameObject.Find("ic120").transform.position.x);
-            // odomMessage.pose.covariance = new double[] { 0.001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000.0 };
+                odomMessage.pose.orientation.w = targetobject.transform.rotation.w;
+                odomMessage.pose.orientation.x = targetobject.transform.rotation.x;
+                odomMessage.pose.orientation.y = targetobject.transform.rotation.y;
+                odomMessage.pose.orientation.z = targetobject.transform.rotation.z;
 
-            //   odomMessage.twist.twist.linear.x = 0.0;
-            //   odomMessage.twist.twist.linear.y = 0.0;
-            //   odomMessage.twist.twist.linear.z = 0.0;
 
-            //   odomMessage.twist.twist.angular.x = 0.0;
-            //   odomMessage.twist.twist.angular.y = 0.0;
-            //   odomMessage.twist.twist.angular.z = 0.0;
+                if (timeElapsed >= publishMessageInterval)
+                {
+                    odomMessage.header.frame_id = robotName;
+                    odomMessage.header.stamp = new TimeStamp(Clock.time);
+                    //odomMessage.child_frame_id = childFrameName;
 
-            //  odomMessage.twist.covariance = new double[] { 0.001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000.0 };
+                    ros.Publish(WriterTopicName, odomMessage);
+                    timeElapsed = 0.0f;
+                    Debug.Log(WriteTargetObject + " pose publish.");
+                    SW_From_cont.DB_pose_sw = false;
+                }
 
-            if (timeElapsed >= publishMessageInterval)
-            {
-
-                odomMessage.header.frame_id = robotName;
-                odomMessage.header.stamp = new TimeStamp(Clock.time);
-                //odomMessage.child_frame_id = childFrameName;
-
-                ros.Publish(WriterTopicName, odomMessage);
-                timeElapsed = 0.0f;
-                // Debug.Log("pubpubpub");
             }
-
-
-            previousTime = time;
         }
     }
-
-}

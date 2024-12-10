@@ -15,6 +15,7 @@ public class Controller_manager : MonoBehaviour
     ControllerLay From_VRcont;
     public bool designate_vehicle;
     bool controller_sw;
+    public bool emergency_sw = false;
     bool outside_sw =false;
     public string Machine_name;
     GameObject VehicletargetObject;
@@ -34,6 +35,9 @@ public class Controller_manager : MonoBehaviour
     public GameObject PlayertargetObject;
     private float Playerlinear;
     private bool button;
+    public bool DB_pose_sw;
+    public bool DB_joint_sw;
+    Model_name ModelInfo;
     //
 
     // Start is called before the first frame update
@@ -65,42 +69,13 @@ public class Controller_manager : MonoBehaviour
         //GetOnMachine = From_VRcont.GetOn;
         if (OVRInput.Get(OVRInput.RawButton.LIndexTrigger) && GetOnMachine == 0)
         {
-            /*
-            warp_triger = 1;
-            Debug.Log("fgfffffffffffffff");
-            Debug.Log(warp_triger);
-            //
-            //Debug.Log(parentObjectName);
-            if (parentObjectName == "ic120")
-            {
-                Debug.Log("vvvSic120");
-                geton_ic120 = 1;
-                geton_zx200 = 0;
-                geton_c30r = 0;
-
-            }
-            if (parentObjectName == "zx200")
-            {
-                Debug.Log("vvvSic200");
-                geton_ic120 = 0;
-                geton_zx200 = 1;
-                geton_c30r = 0;
-
-            }
-            if (parentObjectName == "c30r")
-            {
-                Debug.Log("vvvSc30r");
-                geton_ic120 = 0;
-                geton_zx200 = 0;
-                geton_c30r = 1;
-
-            }
-            */
+            
             //GetOnVehicle = parentObjectName;
             //GetOn = 1;
             GetOnMachine = 1;
-            VehicletargetObject = GameObject.Find(Machine_name);
+            
         }
+
 
         if (Machine_name != null && Machine_name != "OVRPlayerController")
         {
@@ -109,6 +84,8 @@ public class Controller_manager : MonoBehaviour
             if ((GetOnMachine == 1) && (Player_posi_mover_SW == 0))
             {
                 Debug.Log("INPUT_BBBBBBBBBBBBB");
+                VehicletargetObject = GameObject.Find(Machine_name);
+                ModelInfo = VehicletargetObject.GetComponent<Model_name>();
                 posiorigin = GameObject.Find("OVRPlayerController").transform.position;
                 rotrigin = GameObject.Find("OVRPlayerController").transform.rotation;
                 GameObject.Find("OVRPlayerController").GetComponent<CharacterController>().enabled = false;
@@ -255,6 +232,42 @@ public class Controller_manager : MonoBehaviour
                 outside_sw = true;
 
             }
+            if ((OVRInput.GetDown(OVRInput.RawButton.Y)) || (Input.GetKeyDown(KeyCode.C)))
+            {
+                emergency_sw = true;
+                VR_cont_2 EMG_sw = GameObject.Find(Machine_name).GetComponent<VR_cont_2>();
+                if (EMG_sw != null)
+                {
+                    EMG_sw.emergency = true;
+                    Debug.Log("emergency");
+                }
+                
+
+            }
+            if ((OVRInput.GetDown(OVRInput.RawButton.Y) && OVRInput.Get(OVRInput.RawButton.RIndexTrigger) == true) || Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.C))
+            {
+                emergency_sw = false;
+                VR_cont_2 EMG_sw = GameObject.Find(Machine_name).GetComponent<VR_cont_2>();
+                if (EMG_sw != null)
+                {
+                    EMG_sw.emergency = false;
+                    Debug.Log("unlock emergency");
+                }
+                
+
+            }
+            if ((OVRInput.GetDown(OVRInput.RawButton.A) && OVRInput.Get(OVRInput.RawButton.RIndexTrigger) == false)|| Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.A))
+            {
+                Debug.Log("DB writer on");
+                if (ModelInfo.KindsOfHeavyMachinery.ToString() == "IC120")
+                {
+                    DB_pose_sw = true;
+                }
+                if (ModelInfo.KindsOfHeavyMachinery.ToString() == "ZX200")
+                {
+                    DB_joint_sw = true;
+                }
+}
 
         }//
     } 

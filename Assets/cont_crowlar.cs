@@ -71,6 +71,9 @@ public class cont_crowlar : MonoBehaviour
     private float timeElapsed_for_pub;
     vrcmdvelcontroller controller_cmd;
     VR_cont_2 cont_VR_2_cmd;
+    Vector3 crowlarvelocity;
+    float crowlarspeed;
+    private Rigidbody rb;
 
     // Start is called before the first frame update
     void Start()
@@ -121,10 +124,11 @@ public class cont_crowlar : MonoBehaviour
         tread_half = Mathf.Abs(leftWheels[0].transform.localPosition.x - rightWheels[0].transform.localPosition.x) / 2;
 
         Debug.Log("DiffDriveController starts!!");
-       /// ros.Subscribe<TwistMsg>(TwistTopicName, ExecuteTwist); //Register Subscriber
-       /// ros.RegisterPublisher<OdometryMsg>(OdomTopicName); //Register Publisher
+        /// ros.Subscribe<TwistMsg>(TwistTopicName, ExecuteTwist); //Register Subscriber
+        /// ros.RegisterPublisher<OdometryMsg>(OdomTopicName); //Register Publisher
+        // Rigidbodyコンポーネントを取得
+        rb = GetComponent<Rigidbody>();
     }
-
     // Update is called once per frame
     void FixedUpdate()
     {
@@ -223,10 +227,18 @@ public class cont_crowlar : MonoBehaviour
         //var cmdLinearVel = (double)(controller_cmd.CMD_linear_list[controller_cmd.CMD_linear_list.Count - 1]* linearspeed);
         //var cmdLinearVel = (double)(cont_VR_2_cmd.CMD_linear_list_for_cyber[cont_VR_2_cmd.CMD_linear_list_for_cyber.Count - 1] * linearspeed);
         var cmdLinearVel = (double)(VRdirective.CMD_linear_list_for_cyber[VRdirective.CMD_linear_list_for_cyber.Count - 1] * linearspeed);
-        //Debug.Log("contcrawler"+ cmdLinearVel);
-        //
 
-        //
+        ///
+        if (cmdLinearVel > 0.1 && crowlarspeed < 1.0)
+        {
+            cmdLinearVel = 3.0f;
+        }
+        else if (cmdLinearVel < -0.1 && crowlarspeed < 1.0)
+        {
+            cmdLinearVel = -3.0f;
+        }
+       // Debug.Log("contcrawler"+ cmdLinearVel);
+        ///
         cmdLinearVel = Math.Min(cmdLinearVel, maxLinearVelocity);
         cmdLinearVel = Math.Max(cmdLinearVel, -maxLinearVelocity);
         ///var cmdAngularVel = twist.angular.z;
@@ -286,9 +298,20 @@ public class cont_crowlar : MonoBehaviour
     ///void ExecuteTwist(TwistMsg msg)
     ///{
     ///    twist = msg;
-        //Debug.Log("Linear Velocity:"+twist.linear.x);
-        //Debug.Log("Angular Velocity:"+twist.angular.z);
+    //Debug.Log("Linear Velocity:"+twist.linear.x);
+    //Debug.Log("Angular Velocity:"+twist.angular.z);
     ///}
+    ///
+    void Update()
+    {
+        // Rigidbodyの速度を取得
+        crowlarvelocity = rb.velocity;
+
+        // オブジェクトの速度を表示
+        crowlarspeed = crowlarvelocity.magnitude;
+        //Debug.Log("Speed: " + crowlarspeed);
+    }
+    /*
     void Update()
     {
         timeElapsed_for_pub += Time.deltaTime;
@@ -373,36 +396,37 @@ public class cont_crowlar : MonoBehaviour
             Debug.Log("左アナログスティックを右に倒した");
             angular.z = angular.z + (-0.1);
         }*/
-        //print(linear);
-        //
-        if (linear.x == 0 && angular.z == 0)
-        {
-            zerocounter += 1;
-        }
-        if ((zerocounter != 0 && linear.x != 0) | (zerocounter != 0 && angular.z != 0))
-        {
-            zerocounter = 0;
-        }
-        //
-        if (publishersw == 1)
-        {
-            //Send untiy_odom to turtlebot_control
-            TwistMsg Twist = new TwistMsg(
-                   linear,
-                   angular
-                );
-            //
-
-            //
-            // Finally send the message to server_endpoint.py running in ROS
-            if (zerocounter <= 20 && timeElapsed_for_pub >= publishMessageInterval)
-            {
-                Debug.Log("Publish");
-                ros.Publish(CMDTopicName, Twist);
-                timeElapsed_for_pub = 0.0f;
-            }
-            previousTime_for_pub = time_for_pub;
-
-        }
+    //print(linear);
+    //
+    /*
+    if (linear.x == 0 && angular.z == 0)
+    {
+        zerocounter += 1;
     }
+    if ((zerocounter != 0 && linear.x != 0) | (zerocounter != 0 && angular.z != 0))
+    {
+        zerocounter = 0;
+    }
+    //
+    if (publishersw == 1)
+    {
+        //Send untiy_odom to turtlebot_control
+        TwistMsg Twist = new TwistMsg(
+               linear,
+               angular
+            );
+        //
+
+        //
+        // Finally send the message to server_endpoint.py running in ROS
+        if (zerocounter <= 20 && timeElapsed_for_pub >= publishMessageInterval)
+        {
+            Debug.Log("Publish");
+            ros.Publish(CMDTopicName, Twist);
+            timeElapsed_for_pub = 0.0f;
+        }
+        previousTime_for_pub = time_for_pub;
+
+    }
+}*/
 }

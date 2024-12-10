@@ -110,7 +110,7 @@ public class mood_selector : MonoBehaviour
             GameObject.Find("zx200").GetComponent<Rigidbody>().isKinematic = false;
             //ic120 visualize
             //GameObject.Find("ic120").GetComponent<JointSubscriber_ic120>().enabled = false;
-            GameObject.Find("ic120").GetComponent<PoseSubscriber>().enabled = false;
+            GameObject.Find("ic120").GetComponent<PoseSubscriber>().enabled = true;
             //zx200 visualize
             GameObject.Find("zx200").GetComponent<JointSubscriber>().enabled = false;
             GameObject.Find("zx200").GetComponent<PoseSubscriber>().enabled = false;
