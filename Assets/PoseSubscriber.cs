@@ -94,7 +94,12 @@ public class PoseSubscriber : MonoBehaviour
                 //Debug.Log("rot_change_strange" + Real_Cyber_angle_diff);
             }
         }
-    } 
+    }
+
+    private void Update()
+    {
+      //  Debug.Log(newPosition);
+    }
 
     void Callback1(OdometryMsg msg)
     {

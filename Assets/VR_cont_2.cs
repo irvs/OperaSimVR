@@ -124,7 +124,8 @@ public class VR_cont_2 : MonoBehaviour
     private bool unconfined = true;
     public float publishMessageInterval = 0.02f;//50Hz
     private int dissconnect_detecter = 0;
-
+    private Vector3 newPosition;
+    private Quaternion newRotation;
     ROSConnection ros;
     // private PoseStampedMsg twist;
     //Twist
@@ -200,6 +201,11 @@ public class VR_cont_2 : MonoBehaviour
         nextActionTime = DateTime.Now.AddMilliseconds(intervalInMilliseconds);
         //
         CMD_linear_list.Add(0.0f);
+        CMD_linear_list.Add(0.0f);
+        CMD_linear_list.Add(0.0f);
+        CMD_linear_list.Add(0.0f);
+        CMD_linear_list.Add(0.0f);
+        CMD_linear_list.Add(0.0f);
         CMD_linear_list_for_cyber.Add(0.0f);
         CMD_anglar_list.Add(0.0f);
         CMD_anglar_list_for_cyber.Add(0.0f);
@@ -263,6 +269,12 @@ public class VR_cont_2 : MonoBehaviour
             CMD_linear_list_for_cyber.Add(0.00f);
             CMD_anglar_list_for_cyber.Add(0.00f);
             CMD_linear_list.Add(0.00f);
+            CMD_linear_list.Add(0.0f);
+            CMD_linear_list.Add(0.0f);
+            CMD_linear_list.Add(0.0f);
+            CMD_linear_list.Add(0.0f);
+            CMD_linear_list.Add(0.0f);
+            CMD_linear_list.Add(0.0f);
             CMD_anglar_list.Add(0.00f);
             linear_or_rot = 0;
         }
@@ -563,7 +575,7 @@ public class VR_cont_2 : MonoBehaviour
 
 
                         }
-                        if (timeElapsed_start > (Time_Delay + 5.0f) && CMD_linear_list.Count - (Mathf.RoundToInt(Time_Delay / publishMessageInterval)) >= 0)
+                        if (timeElapsed_start > (Time_Delay + 5.0f) && CMD_linear_list.Count - (Mathf.RoundToInt(Time_Delay / publishMessageInterval)) - 1 >= 0 && CMD_anglar_list.Count - (Mathf.RoundToInt(Time_Delay / publishMessageInterval)) - 1 >= 0)
                         {
                             //
                             int CMD_time = Mathf.RoundToInt(Time_Delay / publishMessageInterval);
@@ -586,7 +598,12 @@ public class VR_cont_2 : MonoBehaviour
 
 
                         }
-
+                        RealPosition = GetComponent<PoseSubscriber>();
+                       // Debug.Log(RealPosition);
+                      //  Debug.Log(RealPosition.newPosition);
+                        newPosition = RealPosition.newPosition;
+                        newRotation = RealPosition.newRotation;
+                        
                     }
 
                 }//
@@ -607,8 +624,8 @@ public class VR_cont_2 : MonoBehaviour
 
         if (mode.mood == 2 && control_mode == 1 && sw == 1) //Controll mode (Pose modify)
         {
-            model_name_space = FindObjectOfType<Model_name>();
-            RealPosition = FindObjectOfType<PoseSubscriber>();
+            model_name_space = GetComponent<Model_name>();
+            RealPosition = GetComponent<PoseSubscriber>();
             offset_x = model_name_space.OffsetList[0];
             offset_y = model_name_space.OffsetList[1];
             offset_z = model_name_space.OffsetList[2];
@@ -631,17 +648,18 @@ public class VR_cont_2 : MonoBehaviour
                 }
                 //////////////
                 //////////////
-                Vector3 newPosition = new Vector3(((float)msg.pose.pose.position.y * (-1) + offset_x), ((float)msg.pose.pose.position.z) + offset_z, ((float)msg.pose.pose.position.x) + offset_y);
-                Quaternion newRotation = new((float)msg.pose.pose.orientation.y * (-1), (float)msg.pose.pose.orientation.z, (float)msg.pose.pose.orientation.x, (float)msg.pose.pose.orientation.w * (-1));
-                Vector3 NewRotation = newRotation.eulerAngles;
+                //       newPosition = new Vector3(((float)msg.pose.pose.position.x + offset_x), ((float)msg.pose.pose.position.z) + offset_z, ((float)msg.pose.pose.position.y) + offset_y);
+                //       newRotation = new((float)msg.pose.pose.orientation.x, (float)msg.pose.pose.orientation.z, (float)msg.pose.pose.orientation.y, (float)msg.pose.pose.orientation.w);
+                //       NewRotation = newRotation.eulerAngles;
                 //////////////
                 //////////////
                 newPosition = RealPosition.newPosition;
                 newRotation = RealPosition.newRotation;
+                Debug.Log(newPosition);
                 //////////////
                 //////////////
                 ///
-                CMD_Calculator(newPosition, newRotation, currentTime);
+                CMD_Calculator(newPosition, newRotation, currentTime, timeElapsed_adopt_starter);
                 ///
                 /////////////
                 /////////////
@@ -657,8 +675,8 @@ public class VR_cont_2 : MonoBehaviour
 
         if (mode.mood == 2 && control_mode == 1 && sw == 1) //Controll mode (Pose modify)
         {
-            model_name_space = FindObjectOfType<Model_name>();
-            RealPosition = FindObjectOfType<PoseSubscriber>();
+            model_name_space = GetComponent<Model_name>();
+            RealPosition = GetComponent<PoseSubscriber>();
             offset_x = model_name_space.OffsetList[0];
             offset_y = model_name_space.OffsetList[1];
             offset_z = model_name_space.OffsetList[2];
@@ -682,8 +700,8 @@ public class VR_cont_2 : MonoBehaviour
                     //Debug.Log(real_now_time);
                 }
 
-                Vector3 newPosition = new Vector3(((float)msg.pose.position.y * (-1) + offset_x), ((float)msg.pose.position.z) + offset_z, ((float)msg.pose.position.x) + offset_y);
-                Quaternion newRotation = new((float)msg.pose.orientation.y * (-1), (float)msg.pose.orientation.z, (float)msg.pose.orientation.x, (float)msg.pose.orientation.w * (-1));
+                newPosition = new Vector3(((float)msg.pose.position.y * (-1) + offset_x), ((float)msg.pose.position.z) + offset_z, ((float)msg.pose.position.x) + offset_y);
+                newRotation = new((float)msg.pose.orientation.y * (-1), (float)msg.pose.orientation.z, (float)msg.pose.orientation.x, (float)msg.pose.orientation.w * (-1));
                 Vector3 NewRotation = newRotation.eulerAngles;
                 //////////////
                 //////////////
@@ -692,7 +710,7 @@ public class VR_cont_2 : MonoBehaviour
                 //////////////
                 //////////////
                 ///
-                CMD_Calculator(newPosition, newRotation, currentTime);
+                CMD_Calculator(newPosition, newRotation, currentTime, timeElapsed_adopt_starter);
                 /// 
                 //////////////
                 /////////////
@@ -963,9 +981,9 @@ public class VR_cont_2 : MonoBehaviour
         }
     }
 
-    void CMD_Calculator(Vector3 RealPosition, Quaternion realRotation, DateTime NowTime)
+    void CMD_Calculator(Vector3 RealPosition, Quaternion realRotation, DateTime NowTime, float TimeElapsed_adopt_starter_param)
     {
-
+        //Debug.Log("CMD_Calculator");
         real_posi_list.Add(RealPosition);
         Vector3 RealRotation = realRotation.eulerAngles;
         //real_rotation_list.Add(RealRotation);
@@ -978,11 +996,13 @@ public class VR_cont_2 : MonoBehaviour
         cyber_posi_length_list.Add(Vector3.Distance(posi_list[posi_list.Count - 1], posi_list[posi_list.Count - 2]));//サイバー空間のモデルの進んだ距離
 
 
-        if (timeElapsed_adopt_starter >= Time_Delay)
+        if (TimeElapsed_adopt_starter_param >= Time_Delay)
         {
+            //Debug.Log("CMD_Calculator");
             last_time = Mathf.RoundToInt(Time_Delay / (intervalInMilliseconds / 1000));//ラグ時間前のリストの数
-            if ((linear_or_rot == 1) && (real_posi_length_list[real_posi_length_list.Count - 1]) / (real_posi_length_list[real_posi_length_list.Count - 2]) < 1.1 && (real_posi_length_list[real_posi_length_list.Count - 1]) / (real_posi_length_list[real_posi_length_list.Count - 2]) > 0.9)
+            if ((linear_or_rot == 1)) //&& (real_posi_length_list[real_posi_length_list.Count - 1]) / (real_posi_length_list[real_posi_length_list.Count - 2]) < 1.1 && (real_posi_length_list[real_posi_length_list.Count - 1]) / (real_posi_length_list[real_posi_length_list.Count - 2]) > 0.9)
             {
+               // Debug.Log("CMD_Calculator");
                 real_pose_length = 0.0f;
                 real_pose_length_x = 0.0f;
                 real_pose_length_z = 0.0f;
@@ -1062,16 +1082,22 @@ public class VR_cont_2 : MonoBehaviour
                     // Vector3 localOffset = new Vector3(-side_diff, 0, real_pose_length);  // 前方から見て進むオフセット
                     // Vector3 worldOffset = targetObject.transform.TransformDirection(localOffset);
                     //Vector3 RealPosition = targetObject.transform.position + worldOffset;
-                    Vector3 targetdirection = targetObject.transform.position - (RealPosition + (Real_forwardVector_normal * (Real_Cyber_future_length_pose + 2 * real_pose_length)));
+                    //Vector3 targetdirection = targetObject.transform.position - (RealPosition + (Real_forwardVector_normal * (Real_Cyber_future_length_pose + 2 * real_pose_length)));
+                    Vector3 targetdirection = new Vector3((targetObject.transform.position[0] - (RealPosition[0] + (Real_forwardVector_normal * (Real_Cyber_future_length_pose + 2 * real_pose_length))[0])),0.0f, (targetObject.transform.position[2] - (RealPosition[2] + (Real_forwardVector_normal * (Real_Cyber_future_length_pose + 2 * real_pose_length))[2])));
                     // float Cyber_angle = Vector3.SignedAngle(targetObject.transform.rotation * Vector3.forward, worldOffset, Vector3.up);
                     //float Cyber_angle = Vector3.SignedAngle(targetObject.transform.rotation * Vector3.forward, -targetdirection, Vector3.up);
                     //float Cyber_angle = Vector3.SignedAngle(realRotation * Vector3.forward, -targetdirection, Vector3.up);
-                    float Cyber_angle = Vector3.SignedAngle(targetObject.transform.rotation * Vector3.forward, -targetdirection, Vector3.up);
+                    Vector3 Cyber_front_vec = new Vector3((float)(targetObject.transform.rotation * Vector3.forward)[0], 0.0f, (float)(targetObject.transform.rotation * Vector3.forward)[2]);
+                    
+                   // float Cyber_angle = Vector3.SignedAngle(targetObject.transform.rotation * Vector3.forward, -targetdirection, Vector3.up);
+                    float Cyber_angle = Vector3.SignedAngle(Cyber_front_vec, -targetdirection, Vector3.up);
 
                     //Debug.Log("------角度の差は---^---^--- " + (targetObject.transform.position - (RealPosition + (Real_forwardVector_normal * (Real_Cyber_future_length_pose + 2 * real_pose_length)))));
-                    Debug.Log("------実機前方---^---^--- " + (realRotation * Vector3.forward) + " 目標ベクトル " + -targetdirection);
-                    if (Math.Abs(side_diff) < Margin && Math.Abs(Cyber_angle) > Angular_Margin)
+                    Debug.Log("------実機前方---^---^--- " + (realRotation * Vector3.forward) + " 目標ベクトル " + -targetdirection+"横ずれ"+ side_diff);
+                    Debug.Log("モデル前方 : " + Cyber_front_vec + " 目標ベクトル " + -targetdirection);
+                    if (Math.Abs(side_diff) > Margin && Math.Abs(Cyber_angle) > Angular_Margin)
                     {
+                      //  Debug.Log("change rotadoptor");
                         if (direction >= 0)//yellow
                         {
 
@@ -1228,7 +1254,7 @@ public class VR_cont_2 : MonoBehaviour
 
 
     }
-    void CMD_Calculator2(Vector3 RealPosition, Quaternion realRotation, DateTime NowTime)
+    void CMD_Calculator2(Vector3 RealPosition, Quaternion realRotation, DateTime NowTime, float TimeElapsed_adopt_starter_param)
     {
         real_posi_list.Add(RealPosition);
         Vector3 RealRotation = realRotation.eulerAngles;
@@ -1243,7 +1269,7 @@ public class VR_cont_2 : MonoBehaviour
         //
         //
 
-        if (timeElapsed_adopt_starter >= Time_Delay)
+        if (TimeElapsed_adopt_starter_param >= Time_Delay)
         {
             last_time = Mathf.RoundToInt(Time_Delay / (intervalInMilliseconds / 1000));//ラグ時間前のリストの数
             if ((linear_or_rot == 1) && (real_posi_length_list[real_posi_length_list.Count - 1]) / (real_posi_length_list[real_posi_length_list.Count - 2]) < 1.1 && (real_posi_length_list[real_posi_length_list.Count - 1]) / (real_posi_length_list[real_posi_length_list.Count - 2]) > 0.9)
