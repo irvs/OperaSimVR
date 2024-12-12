@@ -126,6 +126,7 @@ public class VR_cont_2 : MonoBehaviour
     private int dissconnect_detecter = 0;
     private Vector3 newPosition;
     private Quaternion newRotation;
+    private int prev_control_mode;
     ROSConnection ros;
     // private PoseStampedMsg twist;
     //Twist
@@ -437,7 +438,12 @@ public class VR_cont_2 : MonoBehaviour
                     if (control_mode == 0)
                     {
                         moover_sw = 1;
-
+                        if (prev_control_mode != control_mode) 
+                        {
+                            emergency = true;
+                            prev_control_mode = 0;
+                        }
+                        
 
                         if (linear.x == 0 && angular.z == 0)
                         {
@@ -493,6 +499,12 @@ public class VR_cont_2 : MonoBehaviour
 
                     if (control_mode == 1 && selected_mode.mood == 2)
                     {
+                        if (prev_control_mode != control_mode)
+                        {
+                            emergency = true;
+                            prev_control_mode = 0;
+                        }
+
                         //Debug.Log("cont_mode1");
                         if (linear_or_rot == 1 && frontback != 0 && moover_sw == 1)
                         {

@@ -67,7 +67,7 @@ public class Controller_manager : MonoBehaviour
         }
 
         //GetOnMachine = From_VRcont.GetOn;
-        if (OVRInput.Get(OVRInput.RawButton.LIndexTrigger) && GetOnMachine == 0)
+        if ((OVRInput.Get(OVRInput.RawButton.LIndexTrigger) && GetOnMachine == 0) || ((Input.GetKeyDown(KeyCode.V)) && (GetOnMachine == 0))) 
         {
             
             //GetOnVehicle = parentObjectName;
