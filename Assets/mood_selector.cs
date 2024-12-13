@@ -86,7 +86,7 @@ public class mood_selector : MonoBehaviour
             GameObject.Find("ic120").GetComponent<PoseSubscriber>().enabled = true;
             //zx200 visualize
             GameObject.Find("zx200").GetComponent<JointSubscriber>().enabled = true;
-            GameObject.Find("zx200").GetComponent<PoseSubscriber>().enabled = true;
+            //GameObject.Find("zx200").GetComponent<PoseSubscriber>().enabled = true;
             //clock
             GameObject.Find("ROS").transform.Find("WorldClock").gameObject.GetComponent<ROSClockPublisher>().enabled = false;
             //vr controller
