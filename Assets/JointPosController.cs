@@ -44,7 +44,7 @@ public class JointPosController : MonoBehaviour
     {
         mode = FindObjectOfType<mood_selector>();
 
-        if (mode.mood == 0)//Simulater tool
+        if (mode.mode == 0)//Simulater tool
         {
             targetPos = msg;
             var drive = joint.xDrive;

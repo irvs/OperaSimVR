@@ -679,7 +679,7 @@ public class JointAnglePublisher : MonoBehaviour
                     timeElapsed += Time.deltaTime;
                     sw_timeElapsed += Time.deltaTime;
 
-                    if (control_mode == 1 && selected_mode.mood == 2)
+                    if (control_mode == 1 && selected_mode.mode == 2)
                     {
                         
 
@@ -696,7 +696,7 @@ public class JointAnglePublisher : MonoBehaviour
                             positions[2] = goalpose_arm;
                             positions[3] = goalpose_bucket;
                             listOfJointCmdList.Add(positions);
-                            if (control_mode == 1 && selected_mode.mood == 2 && timeElapsed_start > (Time_Delay + 5.0f) && listOfJointCmdList.Count - (Mathf.RoundToInt(Time_Delay / publishMessageInterval)) >= 0)
+                            if (control_mode == 1 && selected_mode.mode == 2 && timeElapsed_start > (Time_Delay + 5.0f) && listOfJointCmdList.Count - (Mathf.RoundToInt(Time_Delay / publishMessageInterval)) >= 0)
                             {
                                 int CMD_time = Mathf.RoundToInt(Time_Delay / publishMessageInterval);
                                 goalpose_swing = (float)listOfJointCmdList[listOfJointCmdList.Count - 1 - CMD_time][0];
@@ -758,7 +758,7 @@ public class JointAnglePublisher : MonoBehaviour
 
                             }
                             listOfJointPositionList.Add(JointPositions);
-                            if (control_mode == 1 && selected_mode.mood == 2 && timeElapsed_start > (Time_Delay + 5.0f) && listOfJointCmdList.Count - (Mathf.RoundToInt(Time_Delay / publishMessageInterval)) >= 0)
+                            if (control_mode == 1 && selected_mode.mode == 2 && timeElapsed_start > (Time_Delay + 5.0f) && listOfJointCmdList.Count - (Mathf.RoundToInt(Time_Delay / publishMessageInterval)) >= 0)
                             {
                                 int CMD_time = Mathf.RoundToInt(Time_Delay / publishMessageInterval);
                                 velocities[0] = listOfJointCmdList[listOfJointCmdList.Count - 1 - CMD_time][0];
@@ -812,7 +812,7 @@ public class JointAnglePublisher : MonoBehaviour
     {
         selected_mode = FindObjectOfType<mood_selector>();
         dissconnect_timer = 0.0f;
-        if (selected_mode.mood == 2)//Visual tool
+        if (selected_mode.mode == 2)//Visual tool
         {
             float pos_of_swing = (float)msg.position[0];
             float pos_of_boom = (float)msg.position[1];

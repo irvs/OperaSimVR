@@ -57,7 +57,7 @@ public class PoseSubscriber : MonoBehaviour
     {
         mode = FindObjectOfType<mood_selector>();
         VRcontroller = FindObjectOfType<VR_cont_2>();
-        if (mode.mood == 1 || VRcontroller.sw == 1) //Visual tool
+        if (mode.mode == 1 || VRcontroller.sw == 1) //Visual tool
         {
             model_name_space = FindObjectOfType<Model_name>();
             offset_x = model_name_space.OffsetList[0];
@@ -67,7 +67,7 @@ public class PoseSubscriber : MonoBehaviour
             //
             newPosition = new Vector3(((float)msg.pose.position.y * (-1) + offset_x), ((float)msg.pose.position.z) + offset_z, ((float)msg.pose.position.x) + offset_y);
             newRotation = new((float)msg.pose.orientation.y * (-1), (float)msg.pose.orientation.z, (float)msg.pose.orientation.x, (float)msg.pose.orientation.w * (-1));
-            if (mode.mood == 1) 
+            if (mode.mode == 1) 
             {
                 //Debug.Log(newPosition);
                 //Debug.Log(newRotation.eulerAngles);
@@ -105,7 +105,7 @@ public class PoseSubscriber : MonoBehaviour
     {
         mode = FindObjectOfType<mood_selector>();
         VRcontroller = FindObjectOfType<VR_cont_2>();
-        if (mode.mood == 1 || VRcontroller.sw == 1) //Visual tool
+        if (mode.mode == 1 || VRcontroller.sw == 1) //Visual tool
         {
             model_name_space = FindObjectOfType<Model_name>();
             offset_x = model_name_space.OffsetList[0];
@@ -115,7 +115,7 @@ public class PoseSubscriber : MonoBehaviour
             //
             newPosition = new Vector3(((float)msg.pose.pose.position.x + offset_x), ((float)msg.pose.pose.position.z) + offset_z, ((float)msg.pose.pose.position.y) + offset_y);
             newRotation = new((float)msg.pose.pose.orientation.x, (float)msg.pose.pose.orientation.z, (float)msg.pose.pose.orientation.y, (float)msg.pose.pose.orientation.w);
-            if (mode.mood == 1) //Visual tool
+            if (mode.mode == 1) //Visual tool
             {
                 //Debug.Log(newPosition);
                 //Debug.Log(newRotation.eulerAngles);

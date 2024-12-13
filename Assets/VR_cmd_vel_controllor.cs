@@ -133,7 +133,7 @@ public class vrcmdvelcontroller : MonoBehaviour
                 timeElapsed += Time.deltaTime;
                 timeElapsed_Pose += Time.deltaTime;
                 
-                if (selected_mode.mood == 2)
+                if (selected_mode.mode == 2)
                 {
                     timeElapsed_CMD += Time.deltaTime;
                     timeElapsed_adopt_starter += Time.deltaTime;
@@ -307,7 +307,7 @@ public class vrcmdvelcontroller : MonoBehaviour
 
                 }
                 
-                if (control_mode == 1 && selected_mode.mood == 2)
+                if (control_mode == 1 && selected_mode.mode == 2)
                 {
                     //Debug.Log("cont_mode1");
                     if (timeElapsed_CMD >= publishMessageInterval)
@@ -381,7 +381,7 @@ public class vrcmdvelcontroller : MonoBehaviour
     {
         mode = FindObjectOfType<mood_selector>();
 
-        if (mode.mood == -2) //Controll mode (Pose modify)
+        if (mode.mode == -2) //Controll mode (Pose modify)
         {
             //Debug.Log("moooovercallback");
             DateTime currentTime = DateTime.Now;

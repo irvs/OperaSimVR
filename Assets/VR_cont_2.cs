@@ -332,7 +332,7 @@ public class VR_cont_2 : MonoBehaviour
                     timeElapsed_Pose += Time.deltaTime;
                     sw_timeElapsed += Time.deltaTime;
 
-                    if (selected_mode.mood == 2)
+                    if (selected_mode.mode == 2)
                     {
                         timeElapsed_CMD += Time.deltaTime;
                         timeElapsed_adopt_starter += Time.deltaTime;
@@ -358,7 +358,7 @@ public class VR_cont_2 : MonoBehaviour
                         }
                     }
                     //
-                    if (linear_or_rot == 1 || selected_mode.mood == 1 || control_mode == 0)
+                    if (linear_or_rot == 1 || selected_mode.mode == 1 || control_mode == 0)
                     {
                         frontback = stickL.y;
                     }
@@ -366,10 +366,10 @@ public class VR_cont_2 : MonoBehaviour
                     {
                         frontback = 0.0f;
                     }
-                    if (linear_or_rot == 2 || selected_mode.mood == 1 || control_mode == 0)
+                    if (linear_or_rot == 2 || selected_mode.mode == 1 || control_mode == 0)
                     {
                         rotation = -stickL.x;
-                    }
+                    }   
                     else if (linear_or_rot == 1)
                     {
                         rotation = 0.0f;
@@ -400,7 +400,7 @@ public class VR_cont_2 : MonoBehaviour
                             adapter2 = 0.0f;
                         }
                         //
-                        if (Input.GetKey(KeyCode.LeftArrow) && linear_or_rot == 2 || Input.GetKey(KeyCode.LeftArrow) && selected_mode.mood == 1 || Input.GetKey(KeyCode.LeftArrow) && control_mode == 0)
+                        if (Input.GetKey(KeyCode.LeftArrow) && linear_or_rot == 2 || Input.GetKey(KeyCode.LeftArrow) && selected_mode.mode == 1 || Input.GetKey(KeyCode.LeftArrow) && control_mode == 0)
                         {
                             rotation = rotspeed;
                         }
@@ -408,7 +408,7 @@ public class VR_cont_2 : MonoBehaviour
                         {
                             rotation = 0;
                         }
-                        if (Input.GetKey(KeyCode.RightArrow) && linear_or_rot == 2 || Input.GetKey(KeyCode.RightArrow) && selected_mode.mood == 1 || Input.GetKey(KeyCode.RightArrow) && control_mode == 0)
+                        if (Input.GetKey(KeyCode.RightArrow) && linear_or_rot == 2 || Input.GetKey(KeyCode.RightArrow) && selected_mode.mode == 1 || Input.GetKey(KeyCode.RightArrow) && control_mode == 0)
                         {
                             rotation = -rotspeed;
                         }
@@ -416,7 +416,7 @@ public class VR_cont_2 : MonoBehaviour
                         {
                             rotation = 0;
                         }
-                        if (Input.GetKey(KeyCode.UpArrow) && linear_or_rot == 1 || Input.GetKey(KeyCode.UpArrow) && selected_mode.mood == 1 || Input.GetKey(KeyCode.UpArrow) && control_mode == 0)
+                        if (Input.GetKey(KeyCode.UpArrow) && linear_or_rot == 1 || Input.GetKey(KeyCode.UpArrow) && selected_mode.mode == 1 || Input.GetKey(KeyCode.UpArrow) && control_mode == 0)
                         {
                             frontback = linearspeed;
                         }
@@ -424,7 +424,7 @@ public class VR_cont_2 : MonoBehaviour
                         {
                             frontback = 0;
                         }
-                        if (Input.GetKey(KeyCode.DownArrow) && linear_or_rot == 1 || Input.GetKey(KeyCode.DownArrow) && selected_mode.mood == 1 || Input.GetKey(KeyCode.DownArrow) && control_mode == 0)
+                        if (Input.GetKey(KeyCode.DownArrow) && linear_or_rot == 1 || Input.GetKey(KeyCode.DownArrow) && selected_mode.mode == 1 || Input.GetKey(KeyCode.DownArrow) && control_mode == 0)
                         {
                             frontback = -linearspeed;
                         }
@@ -497,12 +497,12 @@ public class VR_cont_2 : MonoBehaviour
 
                     }
 
-                    if (control_mode == 1 && selected_mode.mood == 2)
+                    if (control_mode == 1 && selected_mode.mode == 2)
                     {
                         if (prev_control_mode != control_mode)
                         {
                             emergency = true;
-                            prev_control_mode = 0;
+                            prev_control_mode = 1;
                         }
 
                         //Debug.Log("cont_mode1");
@@ -634,7 +634,7 @@ public class VR_cont_2 : MonoBehaviour
         mode = FindObjectOfType<mood_selector>();
         dissconnect_timer = 0.0f;
 
-        if (mode.mood == 2 && control_mode == 1 && sw == 1) //Controll mode (Pose modify)
+        if (mode.mode == 2 && control_mode == 1 && sw == 1) //Controll mode (Pose modify)
         {
             model_name_space = GetComponent<Model_name>();
             RealPosition = GetComponent<PoseSubscriber>();
@@ -685,7 +685,7 @@ public class VR_cont_2 : MonoBehaviour
         mode = FindObjectOfType<mood_selector>();
         dissconnect_timer = 0.0f;
 
-        if (mode.mood == 2 && control_mode == 1 && sw == 1) //Controll mode (Pose modify)
+        if (mode.mode == 2 && control_mode == 1 && sw == 1) //Controll mode (Pose modify)
         {
             model_name_space = GetComponent<Model_name>();
             RealPosition = GetComponent<PoseSubscriber>();
@@ -1012,7 +1012,7 @@ public class VR_cont_2 : MonoBehaviour
         {
             //Debug.Log("CMD_Calculator");
             last_time = Mathf.RoundToInt(Time_Delay / (intervalInMilliseconds / 1000));//ラグ時間前のリストの数
-            if ((linear_or_rot == 1)) //&& (real_posi_length_list[real_posi_length_list.Count - 1]) / (real_posi_length_list[real_posi_length_list.Count - 2]) < 1.1 && (real_posi_length_list[real_posi_length_list.Count - 1]) / (real_posi_length_list[real_posi_length_list.Count - 2]) > 0.9)
+            if ((linear_or_rot == 1) && ((real_posi_length_list[real_posi_length_list.Count - 1]) / (real_posi_length_list[real_posi_length_list.Count - 2])) < 1.3 && ((real_posi_length_list[real_posi_length_list.Count - 1]) / (real_posi_length_list[real_posi_length_list.Count - 2])) > 0.7)
             {
                // Debug.Log("CMD_Calculator");
                 real_pose_length = 0.0f;
@@ -1053,7 +1053,7 @@ public class VR_cont_2 : MonoBehaviour
                     //adapter1 = 0.5f;
                     if (Math.Abs(Real_Cyber_future_length_pose) >= Margin)
                     {
-                        adapter2 -= 0.1f;
+                        adapter2 -= 0.2f;
                     }
                     else if (Math.Abs(Real_Cyber_future_length_pose) > 0.01 && Math.Abs(Real_Cyber_future_length_pose) < Margin)
                     {
@@ -1068,7 +1068,7 @@ public class VR_cont_2 : MonoBehaviour
                     //adapter1 = 1.5f;
                     if (Math.Abs(Real_Cyber_future_length_pose) >= Margin)
                     {
-                        adapter2 += 0.1f;
+                        adapter2 += 0.2f;
                     }
                     else if (Math.Abs(Real_Cyber_future_length_pose) > 0.01 && Math.Abs(Real_Cyber_future_length_pose) < Margin)
                     {

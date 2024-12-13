@@ -77,7 +77,7 @@ public class JointSubscriber : MonoBehaviour
         mode = FindObjectOfType<mood_selector>();
         dissconnect_timer = 0.0f;
 
-        if (mode.mood == 1)//Visual tool
+        if (mode.mode == 1)//Visual tool
         {
 
             //

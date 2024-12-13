@@ -12,15 +12,19 @@ using System;
 public class mood_selector : MonoBehaviour
 {
     // Start is called before the first frame update
-    public int mood = 0;
-
-    
+    public int mode = 0;
+    private int prev_mode;
+    private int mode_return;
 
     //void Start()
     void Update()
     {
-        if (mood == 0) //simlator
+        if (mode == 0) //simlator
         {
+            if (mode != prev_mode)
+            {
+                prev_mode = mode;
+            }
             ///for simulator
             GameObject.Find("ic120").GetComponent<DiffDriveController>().enabled = true;
             GameObject.Find("zx200").GetComponent<DiffDriveController>().enabled = true;
@@ -54,8 +58,12 @@ public class mood_selector : MonoBehaviour
 
 
         }
-        if (mood == 1)//visualization
+        if (mode == 1)//visualization
         {
+            if (mode != prev_mode)
+            {
+                prev_mode = mode;
+            }
             ///for simulator
             GameObject.Find("ic120").GetComponent<DiffDriveController>().enabled = false;
             GameObject.Find("zx200").GetComponent<DiffDriveController>().enabled = false;
@@ -89,8 +97,17 @@ public class mood_selector : MonoBehaviour
 
         }
 
-        if (mood == 2) //simlator+controller
+        if (mode == 2) //simlator+controller
         {
+            if (mode != prev_mode)
+            {
+                if (prev_mode != 0)
+                {
+                 //   mode = 0;
+                  //  mode_return = 2;
+                }
+                prev_mode = mode;
+            }
             ///for simulator
             GameObject.Find("ic120").GetComponent<DiffDriveController>().enabled = false;
             GameObject.Find("zx200").GetComponent<DiffDriveController>().enabled = false;
@@ -104,7 +121,7 @@ public class mood_selector : MonoBehaviour
             GameObject.Find("zx200").transform.Find("base_link/body_link/boom_link/arm_link/bucket_link").gameObject.GetComponent<JointPosController>().enabled = false;
             //ic120 controllor
             GameObject.Find("ic120").GetComponent<cont_crowlar>().enabled = true;
-            //GameObject.Find("ic120").GetComponent<Rigidbody>().isKinematic = false;
+            GameObject.Find("ic120").GetComponent<Rigidbody>().isKinematic = false;
             //zx200 controllor
             GameObject.Find("zx200").GetComponent<cont_joint>().enabled = true;
             GameObject.Find("zx200").GetComponent<Rigidbody>().isKinematic = false;
