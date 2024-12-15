@@ -69,6 +69,38 @@ public class JointSubscriber : MonoBehaviour
     void Update()
     {
         dissconnect_timer += Time.deltaTime;
+        //
+        //
+        /*
+        targetjoints = new List<ArticulationBody>();
+        targetjointNames = new List<string>();
+        int j = 0;
+        foreach (var joint in targetObject.GetComponentsInChildren<ArticulationBody>())
+        {
+            // Debug.Log(joint);
+            if ((joint.isActiveAndEnabled) && (j <= 3)) 
+            {
+                //Debug.Log("abbbbbbbbbbbbbb");
+                Debug.Log(joint);
+                Debug.Log(j);
+                var targetujoint = joint.GetComponent<UrdfJoint>();
+                if (targetujoint && !(targetujoint is UrdfJointFixed))
+                {
+                    //Debug.Log("abbbbbbbbbbbbbb");
+                    targetjoints.Add(joint);
+                    targetjointNames.Add(targetujoint.jointName);
+                    //
+                    // Debug.Log(joint);
+                    Debug.Log(targetjoints[j] + " : " + j);
+                    // Debug.Log("abcd" + joint + " " + targetPos);
+                    j += 1;
+                }
+                
+            }
+        }
+        */
+        //
+        //
     }
     void Callback(JointStateMsg msg)
     {
@@ -95,7 +127,7 @@ public class JointSubscriber : MonoBehaviour
             foreach (var joint in targetObject.GetComponentsInChildren<ArticulationBody>())
             {
                 // Debug.Log(joint);
-                if (joint.isActiveAndEnabled)
+                if ((joint.isActiveAndEnabled) && (j <= 3))
                 {
                     //Debug.Log("abbbbbbbbbbbbbb");
                     //Debug.Log(joint);

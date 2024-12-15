@@ -61,13 +61,14 @@ public class Controller_manager : MonoBehaviour
                 {
                     Machine_Name_List.Add(Machine_name);
                 }
+                Debug.Log(Machine_name);
             }
                 
             Machine_name = Machine_Name_List[Machine_Name_List.Count - 1];
         }
 
         //GetOnMachine = From_VRcont.GetOn;
-        if ((OVRInput.Get(OVRInput.RawButton.LIndexTrigger) && GetOnMachine == 0) || ((Input.GetKeyDown(KeyCode.V)) && (GetOnMachine == 0))) 
+        if ((Machine_name != null && OVRInput.Get(OVRInput.RawButton.LIndexTrigger) && GetOnMachine == 0) || (Machine_name != null && (Input.GetKeyDown(KeyCode.V)) && (GetOnMachine == 0)))  
         {
             
             //GetOnVehicle = parentObjectName;
@@ -85,6 +86,7 @@ public class Controller_manager : MonoBehaviour
             {
                 Debug.Log("INPUT_BBBBBBBBBBBBB");
                 VehicletargetObject = GameObject.Find(Machine_name);
+                //Debug.Log(Machine_name);
                 ModelInfo = VehicletargetObject.GetComponent<Model_name>();
                 posiorigin = GameObject.Find("OVRPlayerController").transform.position;
                 rotrigin = GameObject.Find("OVRPlayerController").transform.rotation;
