@@ -61,7 +61,7 @@ public class Controller_manager : MonoBehaviour
                 {
                     Machine_Name_List.Add(Machine_name);
                 }
-                Debug.Log(Machine_name);
+               // Debug.Log(Machine_name);
             }
                 
             Machine_name = Machine_Name_List[Machine_Name_List.Count - 1];

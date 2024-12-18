@@ -72,7 +72,7 @@ public class PoseSubscriber : MonoBehaviour
         rot_offset = new Vector3((float)rot_offset_x, (float)rot_offset_y, (float)rot_offset_z);
         chenged_orientation = newRotation.eulerAngles - rot_offset;
         //Debug.Log(newPosition);
-        Debug.Log(newRotation.eulerAngles);
+        //Debug.Log(newRotation.eulerAngles);
         //
         //GameObject.Find("ic120").GetComponent<CharacterController>().enabled = false;
         GameObject.Find("ic120").transform.position = newPosition - new Vector3(55.24f, 6.3f, 63.6f);// - GameObject.Find("map_zero_point").transform.position;// -new Vector3(-65,0,50);

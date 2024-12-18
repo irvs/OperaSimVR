@@ -14,7 +14,7 @@ public class Player_Key_mover : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-
+        
     }
 
     // Update is called once per frame
@@ -24,7 +24,7 @@ public class Player_Key_mover : MonoBehaviour
         VRcontroller = FindObjectOfType<VR_cont_2>();
         if (VRcontroller.sw != 1)
         {
-
+            GameObject.Find("OVRPlayerController").GetComponent<Collider>().enabled = false;
             if (Input.GetKeyDown(KeyCode.UpArrow) && Input.GetKey(KeyCode.LeftShift) == false)
             {
                 Playerlinear = LinearSpeed;

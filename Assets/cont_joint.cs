@@ -189,7 +189,12 @@ public class cont_joint : MonoBehaviour
                             {
 
                                 targetPos = FromVRJointController.listOfJointCmdList[FromVRJointController.listOfJointCmdList.Count - 1][j];
-
+                                Debug.Log(targetPos);
+                                if (j == 2)
+                                {
+                                    targetPos = targetPos * 0.05;
+                                }
+                                targetPos = targetPos * 500.0f;
                                 var drive = joint.xDrive;//targetjoints[i].xDrive;
 
 
