@@ -152,7 +152,7 @@ public class JointSubscriber : MonoBehaviour
                         //
                         drive.target = (float)(targetPos * Mathf.Rad2Deg);
                         joint.xDrive = drive;//targetjoints[i].xDrive = drive;
-                        Debug.Log("abcd" + joint + " " + targetPos);
+                      //  Debug.Log("abcd" + joint + " " + targetPos);
                         j += 1;
                     }
                 }

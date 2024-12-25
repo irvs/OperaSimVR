@@ -35,6 +35,9 @@ public class PoseSubscriber : MonoBehaviour
     ROSConnection ros;
     public Vector3 newPosition;
     public Quaternion newRotation;
+    public GameObject SelectorObject;
+    public GameObject VRControllerObject;
+
     void Start()
     {
         ros = ROSConnection.GetOrCreateInstance();
@@ -83,15 +86,16 @@ public class PoseSubscriber : MonoBehaviour
 
     void Callback2(PoseStampedMsg msg)
     {
-        mode = GetComponent<mood_selector>();
-        VRcontroller = GetComponent<VR_cont_2>();
+        mode = SelectorObject.GetComponent<mood_selector>();
+        VRcontroller = VRControllerObject.GetComponent<VR_cont_2>();
+        Debug.Log(mode + " : " + VRcontroller);
         if (mode.mode == 1 || VRcontroller.sw == 1) //Visual tool
         {
             //Debug.Log(msg.pose.position);
             //Debug.Log(msg.pose.orientation);
             //
             //Vector3 newPosition = new Vector3(((float)msg.pose.position.y * (-1)+ offset_x), ((float)msg.pose.position.z)+offset_z, ((float)msg.pose.position.x)+ offset_y);
-            Vector3 newPosition = new Vector3(((float)msg.pose.position.x) + offset_y, ((float)msg.pose.position.z) + offset_z, (-(float)msg.pose.position.y * (-1) + offset_x));
+            Vector3 newPosition = new Vector3(((float)msg.pose.position.y) + offset_x, ((float)msg.pose.position.z) + offset_z, (-(float)msg.pose.position.x * (-1) + offset_y));
             Quaternion newRotation = new((float)msg.pose.orientation.y * (-1), (float)msg.pose.orientation.z, (float)msg.pose.orientation.x, (float)msg.pose.orientation.w * (-1));
             rot_offset = new Vector3((float)rot_offset_x, (float)rot_offset_y, (float)rot_offset_z);
             chenged_orientation = newRotation.eulerAngles - rot_offset;
@@ -101,7 +105,7 @@ public class PoseSubscriber : MonoBehaviour
             if (chenge_position_sw == true)
             {
                 //GameObject.Find("ic120").GetComponent<CharacterController>().enabled = false;
-                targetObject.transform.position = newPosition - new Vector3(55.24f, 6.3f, 63.6f);// - GameObject.Find("map_zero_point").transform.position;// -new Vector3(-65,0,50);
+                targetObject.transform.position = newPosition + new Vector3(-35.6f, 0, 51.6f); //GameObject.Find("map_Reference point").transform.position;// -new Vector3(-65,0,50);new Vector3(55.24f, 6.3f, 63.6f);//
             }
             targetObject.transform.eulerAngles = chenged_orientation;
         }
