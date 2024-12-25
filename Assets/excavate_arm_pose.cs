@@ -112,6 +112,7 @@ public class JointSubscriber : MonoBehaviour
         if (mode.mode == 1)//Visual tool
         {
 
+
             //
             targetjoints = new List<ArticulationBody>();
             targetjointNames = new List<string>();
@@ -121,7 +122,7 @@ public class JointSubscriber : MonoBehaviour
             pos_of_arm_joint = msg.position[2];
             pos_of_bucket_joint = msg.position[3];
             // pos_of_end_joint = msg.position[4];
-
+           // Debug.Log(pos_of_boom_joint);
             //
             int j = 0;
             foreach (var joint in targetObject.GetComponentsInChildren<ArticulationBody>())
@@ -151,7 +152,7 @@ public class JointSubscriber : MonoBehaviour
                         //
                         drive.target = (float)(targetPos * Mathf.Rad2Deg);
                         joint.xDrive = drive;//targetjoints[i].xDrive = drive;
-                       // Debug.Log("abcd" + joint + " " + targetPos);
+                        Debug.Log("abcd" + joint + " " + targetPos);
                         j += 1;
                     }
                 }

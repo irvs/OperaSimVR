@@ -22,7 +22,14 @@ public class PapermachinePoseSubscriber : MonoBehaviour
     public float offset_x = 0;
     public float offset_y = 0;
     public float offset_z = 0;
+    public float rot_offset_x = 0;
+    public float rot_offset_y = 0;
+    public float rot_offset_z = 0;
+    private Vector3 rot_offset;
+    private Vector3 chenged_orientation;
     private mood_selector mode;
+    private VR_cont_2 VRcontroller;
+    public bool chenge_position_sw;
     FieldMainManager SimORRealSelecter;
     Model_name model_name_space;
     ROSConnection ros;
@@ -47,12 +54,36 @@ public class PapermachinePoseSubscriber : MonoBehaviour
         else if (SimORRealSelecter.ForSimOrReal.ToString() == "ForReal")
         {
             SimORReal = true;
-            ros.Subscribe<PoseStampedMsg>(RealSubscribeTopicName, Callback);
+            ros.Subscribe<PoseStampedMsg>(RealSubscribeTopicName, Callback2);
         }
         Debug.Log("already:baselink/pose");
         //
 
     }
+
+    void Callback2(PoseStampedMsg msg)
+    {
+        mode = GetComponent<mood_selector>();
+        VRcontroller = GetComponent<VR_cont_2>();
+        //Debug.Log(msg.pose.position);
+        //Debug.Log(msg.pose.orientation);
+        //
+        //Vector3 newPosition = new Vector3(((float)msg.pose.position.y * (-1)+ offset_x), ((float)msg.pose.position.z)+offset_z, ((float)msg.pose.position.x)+ offset_y);
+        Vector3 newPosition = new Vector3(((float)msg.pose.position.x) + offset_y, ((float)msg.pose.position.z) + offset_z, (-(float)msg.pose.position.y * (-1) + offset_x));
+        Quaternion newRotation = new((float)msg.pose.orientation.y * (-1), (float)msg.pose.orientation.z, (float)msg.pose.orientation.x, (float)msg.pose.orientation.w * (-1));
+        rot_offset = new Vector3((float)rot_offset_x, (float)rot_offset_y, (float)rot_offset_z);
+        chenged_orientation = newRotation.eulerAngles - rot_offset;
+        //Debug.Log(newPosition);
+        //Debug.Log(newRotation.eulerAngles);
+        //
+        if (chenge_position_sw == true)
+        {
+            //GameObject.Find("ic120").GetComponent<CharacterController>().enabled = false;
+            targetObject.transform.position = newPosition - new Vector3(55.24f, 6.3f, 63.6f);// - GameObject.Find("map_zero_point").transform.position;// -new Vector3(-65,0,50);
+        }
+        targetObject.transform.eulerAngles = chenged_orientation;
+    }
+
     void Callback(PoseStampedMsg msg)
     {
         mode = FindObjectOfType<mood_selector>();
