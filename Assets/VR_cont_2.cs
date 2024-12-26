@@ -638,9 +638,9 @@ public class VR_cont_2 : MonoBehaviour
         {
             model_name_space = GetComponent<Model_name>();
             RealPosition = GetComponent<PoseSubscriber>();
-            offset_x = model_name_space.OffsetList[0];
-            offset_y = model_name_space.OffsetList[1];
-            offset_z = model_name_space.OffsetList[2];
+        //    offset_x = model_name_space.OffsetList[0];
+         //   offset_y = model_name_space.OffsetList[1];
+        //    offset_z = model_name_space.OffsetList[2];
             //Debug.Log("moooovercallback");
             DateTime currentTime = DateTime.Now;
             timeElapsed_adopt += Time.deltaTime;
@@ -665,7 +665,7 @@ public class VR_cont_2 : MonoBehaviour
                 //       NewRotation = newRotation.eulerAngles;
                 //////////////
                 //////////////
-                newPosition = RealPosition.newPosition;
+                newPosition = RealPosition.newPosition + new Vector3(-36f, 0, 52f);
                 newRotation = RealPosition.newRotation;
                 Debug.Log(newPosition);
                 //////////////
