@@ -14,6 +14,7 @@ public class VR_cont_2 : MonoBehaviour
 {
     public int sw = 0;
     private int prev_sw = 0;
+    public bool RecordPlaySw;//cmd record play
     public int control_mode = 0;
     public bool emergency;
     public int SimORReal;
@@ -73,9 +74,9 @@ public class VR_cont_2 : MonoBehaviour
     cont_crowlar crawler_controllor;
     PoseSubscriber RealPosition;
     int cmd_operation = 0;
-    private float adapter1 = 1.0f;
-    private float adapter2 = 0.0f;
-    private float rotadapter = 0.0f;
+    public float adapter1 = 1.0f;
+    public float adapter2 = 0.0f;
+    public float rotadapter = 0.0f;
     public int linear_or_rot = 0;
     private int moover_sw = 1;
     int publishersw = 0;
@@ -302,7 +303,7 @@ public class VR_cont_2 : MonoBehaviour
 
             //VRManager = FindObjectOfType<Controller_manager>();
 
-            if (sw == 1)
+            if (sw == 1 && RecordPlaySw == false)
             {
                 prev_sw = 1;
                 // Debug.Log("get: " + laiser.conum_zx200);

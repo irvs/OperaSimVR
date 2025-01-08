@@ -74,6 +74,9 @@ public class cont_crowlar : MonoBehaviour
     Vector3 crowlarvelocity;
     float crowlarspeed;
     private Rigidbody rb;
+    Recorder CMD_Recorder;//cmd record play
+    private long PlayDeltaTime;//cmd record play
+    
 
     // Start is called before the first frame update
     void Start()
@@ -217,16 +220,41 @@ public class cont_crowlar : MonoBehaviour
         ///}
 
         /* Calculate velocity command value based on inverse kinematics */
-        //
         controller_cmd = FindObjectOfType<vrcmdvelcontroller>();
         cont_VR_2_cmd = FindObjectOfType<VR_cont_2>();
         VR_cont_2 VRdirective = GetComponent<VR_cont_2>();
+        Recorder CMD_Recorder = GetComponent<Recorder>();
         //
         ///var cmdLinearVel = twist.linear.x;
         //var cmdLinearVel = linear.x;
         //var cmdLinearVel = (double)(controller_cmd.CMD_linear_list[controller_cmd.CMD_linear_list.Count - 1]* linearspeed);
         //var cmdLinearVel = (double)(cont_VR_2_cmd.CMD_linear_list_for_cyber[cont_VR_2_cmd.CMD_linear_list_for_cyber.Count - 1] * linearspeed);
         var cmdLinearVel = (double)(VRdirective.CMD_linear_list_for_cyber[VRdirective.CMD_linear_list_for_cyber.Count - 1] * linearspeed);
+        ///var cmdAngularVel = twist.angular.z;
+        //var cmdAngularVel = angular.z;
+        //var cmdAngularVel = (double)(cont_VR_2_cmd.CMD_anglar_list_for_cyber[cont_VR_2_cmd.CMD_anglar_list_for_cyber.Count - 1] * rotspeed);
+        var cmdAngularVel = (double)(VRdirective.CMD_anglar_list_for_cyber[VRdirective.CMD_anglar_list_for_cyber.Count - 1] * rotspeed);
+        //
+        /////////////////////////for cmd play
+        if (VRdirective.RecordPlaySw == true)
+        {
+            for (int i = 0; i <= ((CMD_Recorder.RecordList).Count - 1); i++)
+            {
+                DateTime currentTime = DateTime.Now;
+                long timestamp = ((DateTimeOffset)currentTime).ToUnixTimeSeconds();
+                if (i == 0)
+                {
+                    PlayDeltaTime = timestamp - CMD_Recorder.TimeStampList[0];
+                }
+                if (timestamp - CMD_Recorder.TimeStampList[i] >= PlayDeltaTime)
+                {
+                    cmdLinearVel = (double)(CMD_Recorder.RecordList[i][1] * VRdirective.adapter1 + VRdirective.adapter2) * linearspeed;
+                    cmdAngularVel = (double)(CMD_Recorder.RecordList[i][2]+ VRdirective.rotadapter) * rotspeed;
+                }
+            }
+        }
+        /////////////////////////
+        //
 
         ///
         if (cmdLinearVel > 0.1 && crowlarspeed < 1.0)
@@ -241,10 +269,7 @@ public class cont_crowlar : MonoBehaviour
         ///
         cmdLinearVel = Math.Min(cmdLinearVel, maxLinearVelocity);
         cmdLinearVel = Math.Max(cmdLinearVel, -maxLinearVelocity);
-        ///var cmdAngularVel = twist.angular.z;
-        //var cmdAngularVel = angular.z;
-        //var cmdAngularVel = (double)(cont_VR_2_cmd.CMD_anglar_list_for_cyber[cont_VR_2_cmd.CMD_anglar_list_for_cyber.Count - 1] * rotspeed);
-        var cmdAngularVel = (double)(VRdirective.CMD_anglar_list_for_cyber[VRdirective.CMD_anglar_list_for_cyber.Count - 1] * rotspeed);
+
         cmdAngularVel = Math.Min(cmdAngularVel, maxAngularVelocity);
         cmdAngularVel = Math.Max(cmdAngularVel, -maxAngularVelocity);
         leftVelCmd = (float)(cmdLinearVel - tread_half * cmdAngularVel); // Unit is [m/s]
