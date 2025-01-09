@@ -112,7 +112,7 @@ public class PoseSubscriber : MonoBehaviour
             //Debug.Log(msg.pose.orientation);
             //
             //Vector3 newPosition = new Vector3(((float)msg.pose.position.y * (-1)+ offset_x), ((float)msg.pose.position.z)+offset_z, ((float)msg.pose.position.x)+ offset_y);
-            Vector3 newPosition = new Vector3(((float)msg.pose.position.x) - ((float)21395.18), ((float)msg.pose.position.z) - 62, ((float)msg.pose.position.y - ((float)14034.45)));
+            Vector3 newPosition = new Vector3(((float)msg.pose.position.x) - ((float)21395.18), ((float)msg.pose.position.z) - offset_y, ((float)msg.pose.position.y - ((float)14034.45)));
             // Vector3 newPosition = new Vector3(((float)14027) - offset_x, ((float)68.5) - offset_z, ((float)21420.9 - offset_y));
             Quaternion newRotation = new((float)msg.pose.orientation.y * (-1), (float)msg.pose.orientation.z, (float)msg.pose.orientation.x, (float)msg.pose.orientation.w * (-1));
             rot_offset = new Vector3((float)rot_offset_x, (float)rot_offset_y, (float)rot_offset_z);
