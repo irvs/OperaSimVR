@@ -141,6 +141,7 @@ public class SoilParticleSettings : MonoBehaviour
         RenderTexture.active = prevRT;
     }
 
+    
     // Part of this code is from:
     //  com.unity.terrain-tools/Editor/TerrainTools/Erosion/ThermalEroder.cs
     void FixedUpdate()
