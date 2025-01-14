@@ -76,7 +76,9 @@ public class cont_crowlar : MonoBehaviour
     private Rigidbody rb;
     Recorder CMD_Recorder;//cmd record play
     private long PlayDeltaTime;//cmd record play
-    
+    public int RecordCounter = 0;//cmd record play
+    private double cmdLinearVelForPlay;//cmd record play
+    private double cmdAngularVelForPlay;//cmd record play
 
     // Start is called before the first frame update
     void Start()
@@ -135,189 +137,175 @@ public class cont_crowlar : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        //const float speed = 100.0f;
-        float leftVelCmd = 0.0f; // Velocity Command for Left Track
-        float rightVelCmd = 0.0f; // Velocity Command for Right Track
-        double leftVelMes = 0.0; // Measured Velocity from Left Track
-        double rightVelMes = 0.0; // Measured Velocity from Right Track
-
-        timeElapsed += Time.deltaTime;
-
-        double time = Time.fixedTimeAsDouble;
-        double deltaTime = time - previousTime;
-
-        double leftTrackVel = 2.0 * Math.PI * leftMiddleWheel.rpm / 60.0; // Unit is [rad/s]
-        double rightTrackVel = 2.0 * Math.PI * rightMiddleWheel.rpm / 60.0; // Unit is [rad/s]
-        // Debug.Log("LeftTrackRPM:" + leftMiddleWheel.rpm);
-        // Debug.Log("RightTrackRPM:" + rightMiddleWheel.rpm);
-        // Debug.Log("LeftTrackVelocity:" + leftTrackVel);
-        // Debug.Log("RightTrackVelocity:" + rightTrackVel);
-
-        /* To Get Track's Radius use wheel collider parameter*/
-        double leftTrackRadius = leftMiddleWheel.radius;
-        double rightTrackRadius = rightMiddleWheel.radius;
-        // Debug.Log("LeftTrackRadius:"+leftTrackRadius);
-        // Debug.Log("RightTrackRadius:"+rightTrackRadius);
-
-        /* velocity =  angular velocity[rad/s] * radius[m] */
-        leftVelMes = leftTrackVel * leftTrackRadius; // Unit is [m/s]
-        rightVelMes = rightTrackVel * rightTrackRadius; // Unit is [m/s]
-        // Debug.Log("LeftJointVelocity:"+leftVelMes);
-        // Debug.Log("RightJointVelocity:"+rightVelMes);
-
-        ///double linearVel = 0.0;
-        ///double angularVel = 0.0;
-
-        /* Calculate linear and angular velocity based on kinematics */
-        ///linearVel = (rightVelMes + leftVelMes) / 2.0;
-        ///angularVel = (rightVelMes - leftVelMes) / (2.0 * tread_half * treadCollectionFactor);
-        // Debug.Log("LinearVelocity:"+linearVel);
-        // Debug.Log("AngularVelocity:"+angularVel);
-        // Debug.Log("tread_half:"+tread_half);
-        // Debug.Log("deltaTime:"+deltaTime);
-
-        ///yaw += angularVel * deltaTime;
-        /* Normalize Yaw [batween -PI and +PI] */
-        ///if (Mathf.Abs((float)yaw) > Mathf.PI)
-        ///{
-        ///    yaw -= (double)(2 * Mathf.PI * Mathf.Sign((float)yaw));
-        ///}
-
-        ///odomMessage.pose.pose.position.x += linearVel * (double)Mathf.Cos((float)yaw) * deltaTime;
-        ///odomMessage.pose.pose.position.y += linearVel * (double)Mathf.Sin((float)yaw) * deltaTime;
-
-        // Debug.Log("x:"+odomMessage.pose.pose.position.x);
-        // Debug.Log("y:"+odomMessage.pose.pose.position.y);
-        // Debug.Log("yaw:"+yaw);
-
-        /// Quaternion rotation = Quaternion.Euler(0, 0, (float)(yaw * 180.0 / (double)Mathf.PI));
-
-        ///odomMessage.pose.pose.orientation.w = rotation.w;
-        ///odomMessage.pose.pose.orientation.x = rotation.x;
-        ///odomMessage.pose.pose.orientation.y = rotation.y;
-        ///odomMessage.pose.pose.orientation.z = rotation.z;
-
-        ///odomMessage.pose.covariance = new double[] { 0.001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000.0 };
-
-        ///odomMessage.twist.twist.linear.x = linearVel;
-        ///odomMessage.twist.twist.linear.y = 0.0;
-        ///odomMessage.twist.twist.linear.z = 0.0;
-
-        ///   odomMessage.twist.twist.angular.x = 0.0;
-        ///   odomMessage.twist.twist.angular.y = 0.0;
-        ///   odomMessage.twist.twist.angular.z = angularVel;
-
-        ///   odomMessage.twist.covariance = new double[] { 0.001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000.0 };
-
-        /// if (timeElapsed >= publishMessageInterval)
-        /// {
-        ///odomMessage.header.frame_id = robotName + "_tf/odom";
-        /// odomMessage.header.stamp = new TimeStamp(Clock.time);
-        /// odomMessage.child_frame_id = childFrameName;
-
-        /// ros.Publish(OdomTopicName, odomMessage);
-        ///  timeElapsed = 0.0f;
-        ///}
-
-        /* Calculate velocity command value based on inverse kinematics */
-        controller_cmd = FindObjectOfType<vrcmdvelcontroller>();
-        cont_VR_2_cmd = FindObjectOfType<VR_cont_2>();
         VR_cont_2 VRdirective = GetComponent<VR_cont_2>();
-        Recorder CMD_Recorder = GetComponent<Recorder>();
-        //
-        ///var cmdLinearVel = twist.linear.x;
-        //var cmdLinearVel = linear.x;
-        //var cmdLinearVel = (double)(controller_cmd.CMD_linear_list[controller_cmd.CMD_linear_list.Count - 1]* linearspeed);
-        //var cmdLinearVel = (double)(cont_VR_2_cmd.CMD_linear_list_for_cyber[cont_VR_2_cmd.CMD_linear_list_for_cyber.Count - 1] * linearspeed);
-        var cmdLinearVel = (double)(VRdirective.CMD_linear_list_for_cyber[VRdirective.CMD_linear_list_for_cyber.Count - 1] * linearspeed);
-        ///var cmdAngularVel = twist.angular.z;
-        //var cmdAngularVel = angular.z;
-        //var cmdAngularVel = (double)(cont_VR_2_cmd.CMD_anglar_list_for_cyber[cont_VR_2_cmd.CMD_anglar_list_for_cyber.Count - 1] * rotspeed);
-        var cmdAngularVel = (double)(VRdirective.CMD_anglar_list_for_cyber[VRdirective.CMD_anglar_list_for_cyber.Count - 1] * rotspeed);
-        //
-        /////////////////////////for cmd play
-        if (VRdirective.RecordPlaySw == true)
+        if (VRdirective.RecordPlaySw == false)
         {
-            for (int i = 0; i <= ((CMD_Recorder.RecordList).Count - 1); i++)
+            //const float speed = 100.0f;
+            float leftVelCmd = 0.0f; // Velocity Command for Left Track
+            float rightVelCmd = 0.0f; // Velocity Command for Right Track
+            double leftVelMes = 0.0; // Measured Velocity from Left Track
+            double rightVelMes = 0.0; // Measured Velocity from Right Track
+
+            timeElapsed += Time.deltaTime;
+
+            double time = Time.fixedTimeAsDouble;
+            double deltaTime = time - previousTime;
+
+            double leftTrackVel = 2.0 * Math.PI * leftMiddleWheel.rpm / 60.0; // Unit is [rad/s]
+            double rightTrackVel = 2.0 * Math.PI * rightMiddleWheel.rpm / 60.0; // Unit is [rad/s]
+                                                                                // Debug.Log("LeftTrackRPM:" + leftMiddleWheel.rpm);
+                                                                                // Debug.Log("RightTrackRPM:" + rightMiddleWheel.rpm);
+                                                                                // Debug.Log("LeftTrackVelocity:" + leftTrackVel);
+                                                                                // Debug.Log("RightTrackVelocity:" + rightTrackVel);
+
+            /* To Get Track's Radius use wheel collider parameter*/
+            double leftTrackRadius = leftMiddleWheel.radius;
+            double rightTrackRadius = rightMiddleWheel.radius;
+            // Debug.Log("LeftTrackRadius:"+leftTrackRadius);
+            // Debug.Log("RightTrackRadius:"+rightTrackRadius);
+
+            /* velocity =  angular velocity[rad/s] * radius[m] */
+            leftVelMes = leftTrackVel * leftTrackRadius; // Unit is [m/s]
+            rightVelMes = rightTrackVel * rightTrackRadius; // Unit is [m/s]
+                                                            // Debug.Log("LeftJointVelocity:"+leftVelMes);
+                                                            // Debug.Log("RightJointVelocity:"+rightVelMes);
+
+            ///double linearVel = 0.0;
+            ///double angularVel = 0.0;
+
+            /* Calculate linear and angular velocity based on kinematics */
+            ///linearVel = (rightVelMes + leftVelMes) / 2.0;
+            ///angularVel = (rightVelMes - leftVelMes) / (2.0 * tread_half * treadCollectionFactor);
+            // Debug.Log("LinearVelocity:"+linearVel);
+            // Debug.Log("AngularVelocity:"+angularVel);
+            // Debug.Log("tread_half:"+tread_half);
+            // Debug.Log("deltaTime:"+deltaTime);
+
+            ///yaw += angularVel * deltaTime;
+            /* Normalize Yaw [batween -PI and +PI] */
+            ///if (Mathf.Abs((float)yaw) > Mathf.PI)
+            ///{
+            ///    yaw -= (double)(2 * Mathf.PI * Mathf.Sign((float)yaw));
+            ///}
+
+            ///odomMessage.pose.pose.position.x += linearVel * (double)Mathf.Cos((float)yaw) * deltaTime;
+            ///odomMessage.pose.pose.position.y += linearVel * (double)Mathf.Sin((float)yaw) * deltaTime;
+
+            // Debug.Log("x:"+odomMessage.pose.pose.position.x);
+            // Debug.Log("y:"+odomMessage.pose.pose.position.y);
+            // Debug.Log("yaw:"+yaw);
+
+            /// Quaternion rotation = Quaternion.Euler(0, 0, (float)(yaw * 180.0 / (double)Mathf.PI));
+
+            ///odomMessage.pose.pose.orientation.w = rotation.w;
+            ///odomMessage.pose.pose.orientation.x = rotation.x;
+            ///odomMessage.pose.pose.orientation.y = rotation.y;
+            ///odomMessage.pose.pose.orientation.z = rotation.z;
+
+            ///odomMessage.pose.covariance = new double[] { 0.001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000.0 };
+
+            ///odomMessage.twist.twist.linear.x = linearVel;
+            ///odomMessage.twist.twist.linear.y = 0.0;
+            ///odomMessage.twist.twist.linear.z = 0.0;
+
+            ///   odomMessage.twist.twist.angular.x = 0.0;
+            ///   odomMessage.twist.twist.angular.y = 0.0;
+            ///   odomMessage.twist.twist.angular.z = angularVel;
+
+            ///   odomMessage.twist.covariance = new double[] { 0.001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000.0 };
+
+            /// if (timeElapsed >= publishMessageInterval)
+            /// {
+            ///odomMessage.header.frame_id = robotName + "_tf/odom";
+            /// odomMessage.header.stamp = new TimeStamp(Clock.time);
+            /// odomMessage.child_frame_id = childFrameName;
+
+            /// ros.Publish(OdomTopicName, odomMessage);
+            ///  timeElapsed = 0.0f;
+            ///}
+
+            /* Calculate velocity command value based on inverse kinematics */
+            controller_cmd = FindObjectOfType<vrcmdvelcontroller>();
+            cont_VR_2_cmd = FindObjectOfType<VR_cont_2>();
+            Recorder CMD_Recorder = GetComponent<Recorder>();
+            //
+
+            ///var cmdLinearVel = twist.linear.x;
+            //var cmdLinearVel = linear.x;
+            //var cmdLinearVel = (double)(controller_cmd.CMD_linear_list[controller_cmd.CMD_linear_list.Count - 1]* linearspeed);
+            //var cmdLinearVel = (double)(cont_VR_2_cmd.CMD_linear_list_for_cyber[cont_VR_2_cmd.CMD_linear_list_for_cyber.Count - 1] * linearspeed);
+            var cmdLinearVel = (double)(VRdirective.CMD_linear_list_for_cyber[VRdirective.CMD_linear_list_for_cyber.Count - 1] * linearspeed);
+            ///var cmdAngularVel = twist.angular.z;
+            //var cmdAngularVel = angular.z;
+            //var cmdAngularVel = (double)(cont_VR_2_cmd.CMD_anglar_list_for_cyber[cont_VR_2_cmd.CMD_anglar_list_for_cyber.Count - 1] * rotspeed);
+            var cmdAngularVel = (double)(VRdirective.CMD_anglar_list_for_cyber[VRdirective.CMD_anglar_list_for_cyber.Count - 1] * rotspeed);
+
+
+
+
+            ///
+            if (cmdLinearVel > 0.1 && crowlarspeed < 1.0)
             {
-                DateTime currentTime = DateTime.Now;
-                long timestamp = ((DateTimeOffset)currentTime).ToUnixTimeSeconds();
-                if (i == 0)
+                cmdLinearVel = 3.0f;
+            }
+            else if (cmdLinearVel < -0.1 && crowlarspeed < 1.0)
+            {
+                cmdLinearVel = -3.0f;
+            }
+            // Debug.Log("contcrawler"+ cmdLinearVel);
+            ///
+            cmdLinearVel = Math.Min(cmdLinearVel, maxLinearVelocity);
+            cmdLinearVel = Math.Max(cmdLinearVel, -maxLinearVelocity);
+
+            cmdAngularVel = Math.Min(cmdAngularVel, maxAngularVelocity);
+            cmdAngularVel = Math.Max(cmdAngularVel, -maxAngularVelocity);
+            leftVelCmd = (float)(cmdLinearVel - tread_half * cmdAngularVel); // Unit is [m/s]
+            rightVelCmd = (float)(cmdLinearVel + tread_half * cmdAngularVel); // Unit is [m/s]
+                                                                              // Debug.Log("LeftJointVelocityCommand:" + leftVelCmd);
+                                                                              // Debug.Log("RightJointVelocityCommand:" + rightVelCmd);
+
+            /* Set targetVelocity in xDrive in wheels */
+            var ts = TimeSpan.FromSeconds(deltaTime);
+            for (var i = 0; i < leftWheelColliders.Count; i++)
+            {
+                var left = leftWheelColliders[i];
+                var pid = leftWheelControllers[i];
+                var v = (float)pid.PID_iterate(leftVelCmd, leftVelMes, ts);
+                if (Math.Abs(leftVelCmd) < 0.001)
                 {
-                    PlayDeltaTime = timestamp - CMD_Recorder.TimeStampList[0];
+                    left.brakeTorque = brakeTorque;
+                    left.motorTorque = 0.0F;
                 }
-                if (timestamp - CMD_Recorder.TimeStampList[i] >= PlayDeltaTime)
+                else
                 {
-                    cmdLinearVel = (double)(CMD_Recorder.RecordList[i][1] * VRdirective.adapter1 + VRdirective.adapter2) * linearspeed;
-                    cmdAngularVel = (double)(CMD_Recorder.RecordList[i][2]+ VRdirective.rotadapter) * rotspeed;
+                    left.brakeTorque = 0.0F;
+                    left.motorTorque = v;
                 }
+                //Debug.Log("LeftJointVelocityPID:" + v);
             }
-        }
-        /////////////////////////
-        //
-
-        ///
-        if (cmdLinearVel > 0.1 && crowlarspeed < 1.0)
-        {
-            cmdLinearVel = 3.0f;
-        }
-        else if (cmdLinearVel < -0.1 && crowlarspeed < 1.0)
-        {
-            cmdLinearVel = -3.0f;
-        }
-       // Debug.Log("contcrawler"+ cmdLinearVel);
-        ///
-        cmdLinearVel = Math.Min(cmdLinearVel, maxLinearVelocity);
-        cmdLinearVel = Math.Max(cmdLinearVel, -maxLinearVelocity);
-
-        cmdAngularVel = Math.Min(cmdAngularVel, maxAngularVelocity);
-        cmdAngularVel = Math.Max(cmdAngularVel, -maxAngularVelocity);
-        leftVelCmd = (float)(cmdLinearVel - tread_half * cmdAngularVel); // Unit is [m/s]
-        rightVelCmd = (float)(cmdLinearVel + tread_half * cmdAngularVel); // Unit is [m/s]
-        // Debug.Log("LeftJointVelocityCommand:" + leftVelCmd);
-        // Debug.Log("RightJointVelocityCommand:" + rightVelCmd);
-
-        /* Set targetVelocity in xDrive in wheels */
-        var ts = TimeSpan.FromSeconds(deltaTime);
-        for (var i = 0; i < leftWheelColliders.Count; i++)
-        {
-            var left = leftWheelColliders[i];
-            var pid = leftWheelControllers[i];
-            var v = (float)pid.PID_iterate(leftVelCmd, leftVelMes, ts);
-            if (Math.Abs(leftVelCmd) < 0.001)
+            for (var i = 0; i < rightWheelColliders.Count; i++)
             {
-                left.brakeTorque = brakeTorque;
-                left.motorTorque = 0.0F;
+                var right = rightWheelColliders[i];
+                var pid = rightWheelControllers[i];
+                var v = (float)pid.PID_iterate(rightVelCmd, rightVelMes, ts);
+                if (Math.Abs(rightVelCmd) < 0.001)
+                {
+                    right.brakeTorque = brakeTorque;
+                    right.motorTorque = 0.0F;
+                }
+                else
+                {
+                    right.brakeTorque = 0.0F;
+                    right.motorTorque = v;
+                }
+                //Debug.Log("RightJointVelocityPID:" + v);
             }
-            else
-            {
-                left.brakeTorque = 0.0F;
-                left.motorTorque = v;
-            }
-            //Debug.Log("LeftJointVelocityPID:" + v);
-        }
-        for (var i = 0; i < rightWheelColliders.Count; i++)
-        {
-            var right = rightWheelColliders[i];
-            var pid = rightWheelControllers[i];
-            var v = (float)pid.PID_iterate(rightVelCmd, rightVelMes, ts);
-            if (Math.Abs(rightVelCmd) < 0.001)
-            {
-                right.brakeTorque = brakeTorque;
-                right.motorTorque = 0.0F;
-            }
-            else
-            {
-                right.brakeTorque = 0.0F;
-                right.motorTorque = v;
-            }
-            //Debug.Log("RightJointVelocityPID:" + v);
-        }
 
-        //Debug.Log("LeftJointVelocityDiff:" + (leftVelCmd - leftTrackVel));
-        //Debug.Log("RightJointVelocityDiff:" + (rightVelCmd - rightTrackVel));
+            //Debug.Log("LeftJointVelocityDiff:" + (leftVelCmd - leftTrackVel));
+            //Debug.Log("RightJointVelocityDiff:" + (rightVelCmd - rightTrackVel));
 
-        previousTime = time;
+            previousTime = time;
+        }
     }
 
     ///void ExecuteTwist(TwistMsg msg)
@@ -327,6 +315,11 @@ public class cont_crowlar : MonoBehaviour
     //Debug.Log("Angular Velocity:"+twist.angular.z);
     ///}
     ///
+
+
+
+
+
     void Update()
     {
         // Rigidbodyの速度を取得
@@ -335,6 +328,153 @@ public class cont_crowlar : MonoBehaviour
         // オブジェクトの速度を表示
         crowlarspeed = crowlarvelocity.magnitude;
         //Debug.Log("Speed: " + crowlarspeed);
+
+        
+            VR_cont_2 VRdirective = GetComponent<VR_cont_2>();
+            if (VRdirective.RecordPlaySw == true)
+            {
+                //const float speed = 100.0f;
+                float leftVelCmd = 0.0f; // Velocity Command for Left Track
+                float rightVelCmd = 0.0f; // Velocity Command for Right Track
+                double leftVelMes = 0.0; // Measured Velocity from Left Track
+                double rightVelMes = 0.0; // Measured Velocity from Right Track
+
+                timeElapsed += Time.deltaTime;
+
+                double time = Time.fixedTimeAsDouble;
+                double deltaTime = time - previousTime;
+
+                double leftTrackVel = 2.0 * Math.PI * leftMiddleWheel.rpm / 60.0; // Unit is [rad/s]
+                double rightTrackVel = 2.0 * Math.PI * rightMiddleWheel.rpm / 60.0; // Unit is [rad/s]
+
+                /* To Get Track's Radius use wheel collider parameter*/
+                double leftTrackRadius = leftMiddleWheel.radius;
+                double rightTrackRadius = rightMiddleWheel.radius;
+                // Debug.Log("LeftTrackRadius:"+leftTrackRadius);
+                // Debug.Log("RightTrackRadius:"+rightTrackRadius);
+
+                /* velocity =  angular velocity[rad/s] * radius[m] */
+                leftVelMes = leftTrackVel * leftTrackRadius; // Unit is [m/s]
+                rightVelMes = rightTrackVel * rightTrackRadius; // Unit is [m/s]
+
+                
+
+                /* Calculate velocity command value based on inverse kinematics */
+                controller_cmd = FindObjectOfType<vrcmdvelcontroller>();
+                cont_VR_2_cmd = FindObjectOfType<VR_cont_2>();
+                Recorder CMD_Recorder = GetComponent<Recorder>();
+                //
+
+            //
+            /////////////////////////for cmd play
+            /*
+                for (int i = 0; i <= ((CMD_Recorder.RecordList).Count - 1); i++)
+                {
+                    DateTime currentTime = DateTime.Now;
+                    long timestamp = ((DateTimeOffset)currentTime).ToUnixTimeSeconds();
+                    
+                    if (i == 0)
+                    {
+                        PlayDeltaTime = timestamp - CMD_Recorder.TimeStampList[0];
+                    }
+                    if (timestamp - CMD_Recorder.TimeStampList[i] >= PlayDeltaTime)
+                    {
+                        RecordCounter += 1;
+                      //  var cmdLinearVel = (double)(CMD_Recorder.RecordList[i][1] * VRdirective.adapter1 + VRdirective.adapter2) * linearspeed;
+                      //  var cmdAngularVel = (double)(CMD_Recorder.RecordList[i][2] + VRdirective.rotadapter) * rotspeed;
+                    }
+                    Debug.Log("Publishing" + cmdLinearVel);
+                }
+                Debug.Log(cmdLinearVel);
+            */
+            /////////////////////////
+            //
+            DateTime currentTime = DateTime.Now;
+            long timestamp = ((DateTimeOffset)currentTime).ToUnixTimeSeconds();
+
+            if (RecordCounter == 0)
+            {
+                PlayDeltaTime = timestamp - CMD_Recorder.TimeStampList[0];
+            }
+            if (timestamp - CMD_Recorder.TimeStampList[RecordCounter] >= PlayDeltaTime && RecordCounter < (CMD_Recorder.RecordList).Count - 1) 
+            {
+                RecordCounter += 1;
+                cmdLinearVelForPlay = (double)(CMD_Recorder.RecordList[RecordCounter][1] * VRdirective.adapter1 + VRdirective.adapter2 ) * linearspeed;
+                cmdAngularVelForPlay = (double)(CMD_Recorder.RecordList[RecordCounter][2] + VRdirective.rotadapter ) * rotspeed;
+            }
+            Debug.Log("PublishingLinear" + cmdLinearVelForPlay);
+            Debug.Log("PublishingAngular" + cmdAngularVelForPlay);
+
+
+
+            ///
+            /*
+            if (cmdLinearVelForPlay > 0.1 && crowlarspeed < 1.0)
+            {
+
+                cmdLinearVelForPlay = 3.0f;
+            }
+            else if (cmdLinearVelForPlay < -0.1 && crowlarspeed < 1.0)
+            {
+                cmdLinearVelForPlay = -3.0f;
+            }
+            */
+            // Debug.Log("contcrawler"+ cmdLinearVelForPlay);
+            ///
+            cmdLinearVelForPlay = Math.Min(cmdLinearVelForPlay, maxLinearVelocity);
+                cmdLinearVelForPlay = Math.Max(cmdLinearVelForPlay, -maxLinearVelocity);
+
+                cmdAngularVelForPlay = Math.Min(cmdAngularVelForPlay, maxAngularVelocity);
+                cmdAngularVelForPlay = Math.Max(cmdAngularVelForPlay, -maxAngularVelocity);
+                leftVelCmd = (float)(cmdLinearVelForPlay - tread_half * cmdAngularVelForPlay); // Unit is [m/s]
+                rightVelCmd = (float)(cmdLinearVelForPlay + tread_half * cmdAngularVelForPlay); // Unit is [m/s]
+
+
+                /* Set targetVelocity in xDrive in wheels */
+                var ts = TimeSpan.FromSeconds(deltaTime);
+                for (var i = 0; i < leftWheelColliders.Count; i++)
+                {
+                    var left = leftWheelColliders[i];
+                    var pid = leftWheelControllers[i];
+                    var v = (float)pid.PID_iterate(leftVelCmd, leftVelMes, ts);
+                    if (Math.Abs(leftVelCmd) < 0.001)
+                    {
+                        left.brakeTorque = brakeTorque;
+                        left.motorTorque = 0.0F;
+                    }
+                    else
+                    {
+                        left.brakeTorque = 0.0F;
+                        left.motorTorque = v;
+                    }
+                    //Debug.Log("LeftJointVelocityPID:" + v);
+                }
+                for (var i = 0; i < rightWheelColliders.Count; i++)
+                {
+                    var right = rightWheelColliders[i];
+                    var pid = rightWheelControllers[i];
+                    var v = (float)pid.PID_iterate(rightVelCmd, rightVelMes, ts);
+                    if (Math.Abs(rightVelCmd) < 0.001)
+                    {
+                        right.brakeTorque = brakeTorque;
+                        right.motorTorque = 0.0F;
+                    }
+                    else
+                    {
+                        right.brakeTorque = 0.0F;
+                        right.motorTorque = v;
+                    }
+                    //Debug.Log("RightJointVelocityPID:" + v);
+                }
+
+                //Debug.Log("LeftJointVelocityDiff:" + (leftVelCmd - leftTrackVel));
+                //Debug.Log("RightJointVelocityDiff:" + (rightVelCmd - rightTrackVel));
+
+                previousTime = time;
+            }
+        
+
+        
     }
     /*
     void Update()

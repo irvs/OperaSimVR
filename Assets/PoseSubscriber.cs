@@ -106,7 +106,7 @@ public class PoseSubscriber : MonoBehaviour
     {
         mode = SelectorObject.GetComponent<mood_selector>();
         VRcontroller = VRControllerObject.GetComponent<VR_cont_2>();
-        Debug.Log(mode + " : " + VRcontroller);
+      //  Debug.Log(mode + " : " + VRcontroller);
 
             //Debug.Log(msg.pose.position);
             //Debug.Log(msg.pose.orientation);
@@ -120,7 +120,7 @@ public class PoseSubscriber : MonoBehaviour
         //Debug.Log(newPosition);
         //Debug.Log(newRotation.eulerAngles);
         //
-        if (mode.mode == 1 || VRcontroller.sw == 1) //Visual tool
+        if (mode.mode == 1) //Visual tool
         {
             if (chenge_position_sw == true)
             {

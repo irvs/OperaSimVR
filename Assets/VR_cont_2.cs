@@ -21,6 +21,9 @@ public class VR_cont_2 : MonoBehaviour
     public float offset_x = 0;
     public float offset_y = 0;
     public float offset_z = 0;
+    public float rot_offset_x = 0;
+    public float rot_offset_y = 0;
+    public float rot_offset_z = 0;
     public string SimPhysXPublishTopicName;
     public string SimAGXPublishTopicName;
     public string RealPublishTopicName;
@@ -622,6 +625,16 @@ public class VR_cont_2 : MonoBehaviour
                 }//
             }//
         }
+        selected_mode = FindObjectOfType<mood_selector>();
+        if (selected_mode.mode == 2 && RecordPlaySw == true)
+        {
+            timeElapsed_CMD += Time.deltaTime;
+            timeElapsed_adopt_starter += Time.deltaTime;
+            timeElapsed_start += Time.deltaTime;
+            zerotime += Time.deltaTime;
+            Stop_time += Time.deltaTime;
+            dissconnect_timer += Time.deltaTime;
+        }
     }
 
     DateTime UnixTimeToDateTime(long unixTime)
@@ -683,21 +696,23 @@ public class VR_cont_2 : MonoBehaviour
 
     void Callback(PoseStampedMsg msg)
     {
+       // Debug.Log("callback");
         mode = FindObjectOfType<mood_selector>();
         dissconnect_timer = 0.0f;
 
         if (mode.mode == 2 && control_mode == 1 && sw == 1) //Controll mode (Pose modify)
         {
-            model_name_space = GetComponent<Model_name>();
-            RealPosition = GetComponent<PoseSubscriber>();
-            offset_x = model_name_space.OffsetList[0];
-            offset_y = model_name_space.OffsetList[1];
-            offset_z = model_name_space.OffsetList[2];
+            model_name_space = targetObject.GetComponent<Model_name>();
+            RealPosition = targetObject.GetComponent<PoseSubscriber>();
+          //  offset_x = model_name_space.OffsetList[0];
+          //  offset_y = model_name_space.OffsetList[1];
+           // offset_z = model_name_space.OffsetList[2];
             //Debug.Log("moooovercallback");
             DateTime currentTime = DateTime.Now;
             timeElapsed_adopt += Time.deltaTime;
             //double time_adopt = Time.fixedTimeAsDouble;
             //Debug.Log(timeElapsed_adopt);
+            Debug.Log(RealPosition.newPosition);
             if (currentTime >= nextActionTime)//(timeElapsed_adopt >= adopt_time)
             {
                 //Debug.Log("mooooverget");
@@ -713,17 +728,20 @@ public class VR_cont_2 : MonoBehaviour
                     //Debug.Log(real_now_time);
                 }
 
-                newPosition = new Vector3(((float)msg.pose.position.y * (-1) + offset_x), ((float)msg.pose.position.z) + offset_z, ((float)msg.pose.position.x) + offset_y);
-                newRotation = new((float)msg.pose.orientation.y * (-1), (float)msg.pose.orientation.z, (float)msg.pose.orientation.x, (float)msg.pose.orientation.w * (-1));
-                Vector3 NewRotation = newRotation.eulerAngles;
+                Vector3 newPosition = new Vector3(((float)msg.pose.position.x) - ((float)21395.18), ((float)msg.pose.position.z) - offset_y, ((float)msg.pose.position.y - ((float)14034.45)));
+                Quaternion newRotation = new((float)msg.pose.orientation.y * (-1), (float)msg.pose.orientation.z, (float)msg.pose.orientation.x, (float)msg.pose.orientation.w * (-1));
+                Vector3 rot_offset = new Vector3((float)rot_offset_x, (float)rot_offset_y, (float)rot_offset_z);
+                Vector3 chenged_orientation = newRotation.eulerAngles - rot_offset;
+                Quaternion newRotationQuo = Quaternion.Euler(chenged_orientation);
+                Vector3 newPositionChanged = newPosition + new Vector3(-36f, 0, 52f);
                 //////////////
                 //////////////
-                newPosition = RealPosition.newPosition;
-                newRotation = RealPosition.newRotation;
+                //   newPosition = RealPosition.newPosition;
+                //   newRotation = RealPosition.newRotation;
                 //////////////
                 //////////////
                 ///
-                CMD_Calculator(newPosition, newRotation, currentTime, timeElapsed_adopt_starter);
+                CMD_Calculator(newPositionChanged, newRotationQuo, currentTime, timeElapsed_adopt_starter);
                 /// 
                 //////////////
                 /////////////
@@ -996,7 +1014,7 @@ public class VR_cont_2 : MonoBehaviour
 
     void CMD_Calculator(Vector3 RealPosition, Quaternion realRotation, DateTime NowTime, float TimeElapsed_adopt_starter_param)
     {
-        //Debug.Log("CMD_Calculator");
+       // Debug.Log("CMD_Calculator");
         real_posi_list.Add(RealPosition);
         Vector3 RealRotation = realRotation.eulerAngles;
         //real_rotation_list.Add(RealRotation);
@@ -1008,12 +1026,13 @@ public class VR_cont_2 : MonoBehaviour
         real_posi_length_list_z.Add((real_posi_list[real_posi_list.Count - 1][2]) - (real_posi_list[real_posi_list.Count - 2][2]));//world座標のz方向に進んだ距離
         cyber_posi_length_list.Add(Vector3.Distance(posi_list[posi_list.Count - 1], posi_list[posi_list.Count - 2]));//サイバー空間のモデルの進んだ距離
 
+        Debug.Log("Real : "+ RealPosition+" : " + targetObject.transform.position);
 
         if (TimeElapsed_adopt_starter_param >= Time_Delay)
         {
             //Debug.Log("CMD_Calculator");
             last_time = Mathf.RoundToInt(Time_Delay / (intervalInMilliseconds / 1000));//ラグ時間前のリストの数
-            if ((linear_or_rot == 1) && ((real_posi_length_list[real_posi_length_list.Count - 1]) / (real_posi_length_list[real_posi_length_list.Count - 2])) < 1.3 && ((real_posi_length_list[real_posi_length_list.Count - 1]) / (real_posi_length_list[real_posi_length_list.Count - 2])) > 0.7)
+            if (((linear_or_rot == 1) && ((real_posi_length_list[real_posi_length_list.Count - 1]) / (real_posi_length_list[real_posi_length_list.Count - 2])) < 1.3 && ((real_posi_length_list[real_posi_length_list.Count - 1]) / (real_posi_length_list[real_posi_length_list.Count - 2])) > 0.7))//|| (RecordPlaySw == true))
             {
                // Debug.Log("CMD_Calculator");
                 real_pose_length = 0.0f;
