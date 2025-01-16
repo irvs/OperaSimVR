@@ -15,6 +15,7 @@ public class TerrainGenerator : MonoBehaviour
     public int HeightTexture = 300;//terrainの奥行
     public float OffsetWidthTexture = 0.5f;//textureのoffset
     public float OffsetHeightTexture = 0.5f;//textureのoffset
+    public bool TerrainRecordSw;
 
     private float[,] originalHeights;  // 元の地形の高さデータを保持する配列
     int originalheight;
@@ -49,7 +50,10 @@ public class TerrainGenerator : MonoBehaviour
         }
 
         // Terrainのサイズを高さマップのサイズに合わせる
-          terrain.terrainData = new TerrainData();
+        if (TerrainRecordSw == false)
+        {
+            terrain.terrainData = new TerrainData();
+        }
           terrain.terrainData.heightmapResolution = width;
         //terrain.terrainData.heightmapResolution = TerrainWidth;
         //  terrain.terrainData.size = new Vector3(width, TerrainElevation, height); // 地形のサイズを設定（高さは適宜調整）
