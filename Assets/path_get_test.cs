@@ -20,6 +20,7 @@ public class path_get_test : MonoBehaviour
     public float offset_x = 0;
     public float offset_y = 0;
     public float offset_z = 0;
+    FieldMainManager SimORRealSelecter;
     private mood_selector mode;
     public List<Vector3> path_list = new List<Vector3>();
     private List<Quaternion> path_angular_list = new List<Quaternion>();
@@ -83,11 +84,20 @@ public class path_get_test : MonoBehaviour
         path_list.Clear();
         path_angular_list.Clear();
         Debug.Log($"Received path with {msg.poses.Length} waypoints"); // 受信したパスのデータを表示
+        SimORRealSelecter = FindObjectOfType<FieldMainManager>();
         foreach (var pose in msg.poses) 
         {
             //Debug.Log($"Pose: {pose.pose.position.x}, {pose.pose.position.y}");
             angular = new (-(float)pose.pose.orientation.y, (float)pose.pose.orientation.z, (float)pose.pose.orientation.x, -(float)pose.pose.orientation.w);
-            path_list.Add(new Vector3(-(float)pose.pose.position.y, 0.0f, (float)pose.pose.position.x));
+            if (SimORRealSelecter.ForSimOrReal.ToString() == "ForReal")
+            {
+                path_list.Add(new Vector3(((float)pose.pose.position.x) + offset_x + (GameObject.Find("map_Reference point").transform.position)[0], 0.0f + offset_y, ((float)pose.pose.position.y) + offset_z + (GameObject.Find("map_Reference point").transform.position)[2]));
+            }
+            else
+            {
+                path_list.Add(new Vector3(-(float)pose.pose.position.y, 0.0f, (float)pose.pose.position.x));
+            }
+            new Vector3(-36f, 0, 52f); //GameObject.Find("map_Reference point")new Vector3(-36f, 0, 52f); //GameObject.Find("map_Reference point")
             path_angular_list.Add(angular);
             //targetObject.transform.position = new Vector3(-(float)pose.pose.position.y,0.0f,(float)pose.pose.position.x);
         }
