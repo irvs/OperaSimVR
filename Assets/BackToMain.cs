@@ -9,6 +9,7 @@ public class BackToMain : MonoBehaviour
 {
 
     public string rosHost = "127.0.0.1";
+    public GameObject TargetTerrain;
 
     // Start is called before the first frame update
     void Start()
@@ -19,12 +20,15 @@ public class BackToMain : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (OVRInput.GetDown(OVRInput.RawButton.LIndexTrigger))
+        if (OVRInput.GetDown(OVRInput.RawButton.LIndexTrigger) || Input.GetKey(KeyCode.B))
         {
-            ROSConnection.GetOrCreateInstance().Disconnect(); 
+            
             ROSConnection ros = ROSConnection.GetOrCreateInstance();
+            ros.Disconnect();
             ros.Connect(rosHost,  10000);
-         //   OVRPlayerController.MeshCreated = false;
+            //   OVRPlayerController.MeshCreated = false;
+         //   TargetTerrain.SetActive(true);
+         //   GameObject.Find("TestTerrain").SetActive(true);
             SceneManager.LoadScene("Scenes/SampleScene");
         }
     }

@@ -1,0 +1,51 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using Unity.Robotics.ROSTCPConnector;
+using RosMessageTypes.Std;
+using RosMessageTypes.Sensor;
+
+public class VesselSubscriber : MonoBehaviour
+{
+    private ROSConnection ros;
+    public string VesselSubscriberTopicName = "dump/cmd";
+    public ArticulationBody dump_joint;
+    private float angle_of_vessel;
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        ros = ROSConnection.GetOrCreateInstance();
+        dump_joint = this.GetComponent<ArticulationBody>();
+
+        if (dump_joint)
+        {
+            var drive = dump_joint.xDrive;
+            drive.stiffness = 100000;
+            drive.damping = 100000;
+            drive.forceLimit = 100000;
+            dump_joint.xDrive = drive;
+        }
+        else
+        {
+            Debug.Log("No ArticulationBody are found");
+        }
+
+        ros.Subscribe<JointStateMsg>(VesselSubscriberTopicName, ExecuteVesselControl);
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+
+    }
+
+    void ExecuteVesselControl(JointStateMsg msg)
+    {
+        angle_of_vessel = (float)msg.position[1] ;
+        Debug.Log("Dump Target Position:" + angle_of_vessel);
+        var drive = dump_joint.xDrive;
+        drive.target = (float)(angle_of_vessel * Mathf.Rad2Deg);
+        dump_joint.xDrive = drive;
+    }
+}

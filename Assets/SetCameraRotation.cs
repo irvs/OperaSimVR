@@ -6,6 +6,7 @@ public class SetCameraRotation : MonoBehaviour
 {
     public GameObject OVRCameraRig;
     public static float cameraRotationY = 0f;
+    public float AngularSpeed = 0.2f;
 
     // Start is called before the first frame update
     void Start()
@@ -17,6 +18,14 @@ public class SetCameraRotation : MonoBehaviour
     void Update()
     {
         
+        if (Input.GetKey(KeyCode.LeftArrow))
+        {
+            OVRCameraRig.transform.Rotate(0, - AngularSpeed, 0);
+        }
+        else if (Input.GetKey(KeyCode.RightArrow))
+        {
+            OVRCameraRig.transform.Rotate(0, AngularSpeed, 0);
+        }
     }
 
     public static void SetRotationY(Transform trackingAnchorTransform)

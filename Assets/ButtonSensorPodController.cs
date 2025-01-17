@@ -8,8 +8,11 @@ public class ButtonSensorPodController : MonoBehaviour
 {
     public string sceneName = "Scenes/SensorPodScene";
     public GameObject TrackingAnchor;
+    public GameObject TargetTerrain;
 
     public string rosHost = "127.0.0.1";
+    public bool SeneChangeSw;
+    
 
     // Start is called before the first frame update
     void Start()
@@ -21,6 +24,35 @@ public class ButtonSensorPodController : MonoBehaviour
     void Update()
     {
         
+        if (Input.GetKey(KeyCode.M) || SeneChangeSw == true)
+        {
+            SeneChangeSw = false;
+            ROSConnection.GetOrCreateInstance().Disconnect();
+            ROSConnection ros = ROSConnection.GetOrCreateInstance();
+            if (sceneName == "Scenes/SampleScene")
+            {
+                ros.Connect(rosHost, 10000);
+            }
+            else
+            {
+                ros.Connect(rosHost, 9090);
+
+                Vector3 TrackingAnchorEulerAngles = TrackingAnchor.transform.rotation.eulerAngles;
+                TrackingAnchor.transform.rotation = Quaternion.Euler(TrackingAnchorEulerAngles.x, TrackingAnchorEulerAngles.y - 180, TrackingAnchorEulerAngles.z);
+
+                // Save now position and rotation for returning to MainScene
+                SetPose.SetNowPose(TrackingAnchor.transform.position);
+                SetPose.SetNowRot(TrackingAnchor.transform.rotation);
+
+                // Set the rotation of OVRCameraRig for SensorPodScene
+                SetCameraRotation.SetRotationY(TrackingAnchor.transform);
+            }
+
+            //  OVRPlayerController.MeshCreated = false;
+            SceneManager.LoadScene(sceneName);
+          //  TargetTerrain.SetActive(false);
+        }
+
     }
 
     public void OnClick()

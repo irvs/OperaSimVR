@@ -32,6 +32,8 @@ public class mood_selector : MonoBehaviour
             GameObject.Find("zx200").GetComponent<JointStatePublisher>().enabled = true;
 
             GameObject.Find("ic120").transform.Find("base_link").gameObject.GetComponent<PoseStampedPublisher>().enabled = true;
+            GameObject.Find("ic120").transform.Find("base_link/vessel_link").gameObject.GetComponent<VesselController>().enabled = true;
+            GameObject.Find("ic120").transform.Find("base_link/vessel_link").gameObject.GetComponent<VesselSubscriber>().enabled = false;
             GameObject.Find("zx200").transform.Find("base_link/body_link").gameObject.GetComponent<JointPosController>().enabled = true;
             GameObject.Find("zx200").transform.Find("base_link/body_link/boom_link").gameObject.GetComponent<JointPosController>().enabled = true;
             GameObject.Find("zx200").transform.Find("base_link/body_link/boom_link/arm_link").gameObject.GetComponent<JointPosController>().enabled = true;
@@ -52,9 +54,9 @@ public class mood_selector : MonoBehaviour
             //clock
             GameObject.Find("ROS").transform.Find("WorldClock").gameObject.GetComponent<ROSClockPublisher>().enabled = true;
             //vr controller
-            GameObject.Find("vr_cmd_vel_cont").GetComponent<vrcmdvelcontroller>().enabled = false;
+        //    GameObject.Find("vr_cmd_vel_cont").GetComponent<vrcmdvelcontroller>().enabled = false;
             //GameObject.Find("vr_cmd_vel_cont").GetComponent<JointAnglePublisher>().enabled = false;
-            GameObject.Find("vr_cmd_vel_cont").GetComponent<vrcmdc30rvelcontroller>().enabled = false;
+        //    GameObject.Find("vr_cmd_vel_cont").GetComponent<vrcmdc30rvelcontroller>().enabled = false;
 
 
         }
@@ -71,6 +73,8 @@ public class mood_selector : MonoBehaviour
             GameObject.Find("zx200").GetComponent<JointStatePublisher>().enabled = false;
 
             GameObject.Find("ic120").transform.Find("base_link").gameObject.GetComponent<PoseStampedPublisher>().enabled = false;
+            GameObject.Find("ic120").transform.Find("base_link/vessel_link").gameObject.GetComponent<VesselController>().enabled = false;
+            GameObject.Find("ic120").transform.Find("base_link/vessel_link").gameObject.GetComponent<VesselSubscriber>().enabled = true;
             GameObject.Find("zx200").transform.Find("base_link/body_link").gameObject.GetComponent<JointPosController>().enabled = false;
             GameObject.Find("zx200").transform.Find("base_link/body_link/boom_link").gameObject.GetComponent<JointPosController>().enabled = false;
             GameObject.Find("zx200").transform.Find("base_link/body_link/boom_link/arm_link").gameObject.GetComponent<JointPosController>().enabled = false;
@@ -90,9 +94,9 @@ public class mood_selector : MonoBehaviour
             //clock
             GameObject.Find("ROS").transform.Find("WorldClock").gameObject.GetComponent<ROSClockPublisher>().enabled = false;
             //vr controller
-            GameObject.Find("vr_cmd_vel_cont").GetComponent<vrcmdvelcontroller>().enabled = false;
-            GameObject.Find("vr_cmd_vel_cont").GetComponent<JointAnglePublisher>().enabled = false;
-            GameObject.Find("vr_cmd_vel_cont").GetComponent<vrcmdc30rvelcontroller>().enabled = false;
+       //     GameObject.Find("vr_cmd_vel_cont").GetComponent<vrcmdvelcontroller>().enabled = false;
+       //     GameObject.Find("vr_cmd_vel_cont").GetComponent<JointAnglePublisher>().enabled = false;
+       //     GameObject.Find("vr_cmd_vel_cont").GetComponent<vrcmdc30rvelcontroller>().enabled = false;
 
 
         }

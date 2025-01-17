@@ -734,6 +734,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 482130, guid: 126d619cf4daa52469682f85c1378b4a, type: 3}
   m_PrefabInstance: {fileID: 1238263094}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1238263099 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 100004, guid: 126d619cf4daa52469682f85c1378b4a, type: 3}
+  m_PrefabInstance: {fileID: 1238263094}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1538096213
 GameObject:
   m_ObjectHideFlags: 0
@@ -1407,7 +1412,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 42e9b4bb8335f4f47b9e0ecb4a7d124d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  OVRCameraRig: {fileID: 0}
+  OVRCameraRig: {fileID: 1238263099}
 --- !u!4 &1633046553
 Transform:
   m_ObjectHideFlags: 0
@@ -1577,7 +1582,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 73366864394197448b066f5dd4a13254, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rosHost: 127.0.0.1
+  rosHost: 192.168.11.48
 --- !u!4 &2107702858
 Transform:
   m_ObjectHideFlags: 0
