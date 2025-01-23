@@ -27,7 +27,7 @@ public class PapermachinePoseSubscriber : MonoBehaviour
     public float rot_offset_z = 0;
     private Vector3 rot_offset;
     private Vector3 chenged_orientation;
-    private mood_selector mode;
+    private mode_selector mode;
     private VR_cont_2 VRcontroller;
     public bool chenge_position_sw;
     FieldMainManager SimORRealSelecter;
@@ -63,7 +63,7 @@ public class PapermachinePoseSubscriber : MonoBehaviour
 
     void Callback2(PoseStampedMsg msg)
     {
-        mode = GetComponent<mood_selector>();
+        mode = GetComponent<mode_selector>();
         VRcontroller = GetComponent<VR_cont_2>();
         //Debug.Log(msg.pose.position);
         //Debug.Log(msg.pose.orientation);
@@ -88,8 +88,8 @@ public class PapermachinePoseSubscriber : MonoBehaviour
 
     void Callback(PoseStampedMsg msg)
     {
-        mode = FindObjectOfType<mood_selector>();
-        model_name_space = FindObjectOfType<Model_name>();
+        mode = FindObjectOfType<mode_selector>();
+        model_name_space = GetComponent<Model_name>();
         offset_x = model_name_space.OffsetList[0];
         offset_y = model_name_space.OffsetList[1];
         offset_z = model_name_space.OffsetList[2];
@@ -116,8 +116,8 @@ public class PapermachinePoseSubscriber : MonoBehaviour
 
     void Callback1(OdometryMsg msg)
     {
-        mode = FindObjectOfType<mood_selector>();
-        model_name_space = FindObjectOfType<Model_name>();
+        mode = FindObjectOfType<mode_selector>();
+        model_name_space = GetComponent<Model_name>();
         offset_x = model_name_space.OffsetList[0];
         offset_y = model_name_space.OffsetList[1];
         offset_z = model_name_space.OffsetList[2];

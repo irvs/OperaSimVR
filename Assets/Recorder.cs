@@ -19,11 +19,13 @@ public class Recorder : MonoBehaviour
     private float cmdLinearVel;
     private float cmdAngularVel;
     private Vector3 Current_Record;
-    public List<Vector3> RecordList = new List<Vector3>();
-    public bool RecordPlaySw;
+    
     public bool WriteSw;
-    private long PlayDeltaTime;
+    public bool RecordPlaySw;
+    
+    public List<Vector3> RecordList = new List<Vector3>();
     public List<long> TimeStampList = new List<long>();
+    private long PlayDeltaTime;
 
     // Start is called before the first frame update
     void Start()

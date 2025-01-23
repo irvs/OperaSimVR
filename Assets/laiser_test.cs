@@ -6,7 +6,7 @@ public class ControllerLay : MonoBehaviour
     public int geton_ic120 = 0;
     public int geton_zx200 = 0;
     public int geton_c30r = 0;
-    public vrcmdvelcontroller VRcont;
+   // public vrcmdvelcontroller VRcont;
     public string parentObjectName;
     public int GetOn = 0;
 

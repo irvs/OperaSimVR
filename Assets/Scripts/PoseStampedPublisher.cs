@@ -21,6 +21,12 @@ public class PoseStampedPublisher : MonoBehaviour
     // Used to determine how much time has elapsed since the last message was published
     private float timeElapsed;
 
+    public enum WorldMapOption { UnityWorld, UnityLocal, Reallocal }
+    public WorldMapOption KindsOfMap;
+    private float MapTransfer_x = 0;
+    private float MapTransfer_y = 0;
+    private float MapTransfer_z = 0;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -44,6 +50,15 @@ public class PoseStampedPublisher : MonoBehaviour
         {
             message.header.frame_id = "world";
             message.header.stamp = new TimeStamp(Clock.time);
+
+            if (KindsOfMap.ToString() == "UnityLocal")
+            {
+
+            }
+            else if (KindsOfMap.ToString() == "Reallocal")
+            {
+
+            }
 
             // Unity -> ROS transformation
             // Position: Unity(x,y,z) -> ROS(z,-x,y)

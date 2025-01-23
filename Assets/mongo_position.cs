@@ -46,7 +46,7 @@ public class Mongo_pose_writer : MonoBehaviour
         Debug.Log("check:baselink/pose");
         // ROSコネクションへのサブスクライバーの登録
         ros.RegisterPublisher<PoseStampedMsg>(WriterTopicName);
-       // Debug.Log("already:baselink/pose");
+        // Debug.Log("already:baselink/pose");
     }
 
     // Update is called once per frame
@@ -54,36 +54,35 @@ public class Mongo_pose_writer : MonoBehaviour
     {
         SW_From_cont = FindObjectOfType<Controller_manager>();
         WriteTargetObject = SW_From_cont.Machine_name;
-       // targetobject= SW_From_cont.VehicletargetObject;
+        // targetobject= SW_From_cont.VehicletargetObject;
         if (sw == 1 || SW_From_cont.DB_pose_sw == true)
         {
 
-             timeElapsed += Time.deltaTime;
+            timeElapsed += Time.deltaTime;
 
-            targetobject=GameObject.Find(WriteTargetObject);
+            targetobject = GameObject.Find(WriteTargetObject);
 
             odomMessage.pose.position.x = GameObject.Find(WriteTargetObject).transform.position.z;
-                odomMessage.pose.position.y = -targetobject.transform.position.x;
-                //Vector3 newPosition = new Vector3((float)msg.pose.position.y * (-1), (float)msg.pose.position.z, (float)msg.pose.position.x);
+            odomMessage.pose.position.y = -targetobject.transform.position.x;
 
-                odomMessage.pose.orientation.w = targetobject.transform.rotation.w;
-                odomMessage.pose.orientation.x = targetobject.transform.rotation.x;
-                odomMessage.pose.orientation.y = targetobject.transform.rotation.y;
-                odomMessage.pose.orientation.z = targetobject.transform.rotation.z;
+            odomMessage.pose.orientation.w = targetobject.transform.rotation.w;
+            odomMessage.pose.orientation.x = targetobject.transform.rotation.x;
+            odomMessage.pose.orientation.y = targetobject.transform.rotation.y;
+            odomMessage.pose.orientation.z = targetobject.transform.rotation.z;
 
 
-                if (timeElapsed >= publishMessageInterval)
-                {
-                    odomMessage.header.frame_id = robotName;
-                    odomMessage.header.stamp = new TimeStamp(Clock.time);
-                    //odomMessage.child_frame_id = childFrameName;
+            if (timeElapsed >= publishMessageInterval)
+            {
+                odomMessage.header.frame_id = robotName;
+                odomMessage.header.stamp = new TimeStamp(Clock.time);
+                //odomMessage.child_frame_id = childFrameName;
 
-                    ros.Publish(WriterTopicName, odomMessage);
-                    timeElapsed = 0.0f;
-                    Debug.Log(WriteTargetObject + " pose publish.");
-                    SW_From_cont.DB_pose_sw = false;
-                }
-
+                ros.Publish(WriterTopicName, odomMessage);
+                timeElapsed = 0.0f;
+                Debug.Log(WriteTargetObject + " pose publish.");
+                SW_From_cont.DB_pose_sw = false;
             }
+
         }
     }
+}

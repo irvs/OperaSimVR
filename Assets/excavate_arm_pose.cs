@@ -30,7 +30,7 @@ public class JointSubscriber : MonoBehaviour
     public GameObject targetObject;
     public string Subscribe_topic_name = "subscribe_topic";
     public string RealSubscribeTopicName;
-    private mood_selector mode;
+    private mode_selector mode;
     public bool SimORReal;
     FieldMainManager SimORRealSelecter;
     ROSConnection ros;
@@ -106,7 +106,7 @@ public class JointSubscriber : MonoBehaviour
     {
         //
         //Debug.Log("joint_subscribe");
-        mode = FindObjectOfType<mood_selector>();
+        mode = FindObjectOfType<mode_selector>();
         dissconnect_timer = 0.0f;
 
         if (mode.mode == 1)//Visual tool

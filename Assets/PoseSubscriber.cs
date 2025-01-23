@@ -12,12 +12,14 @@ using static UnityEditor.PlayerSettings;
 //using MyStringMsg = RosMessageTypes.HelloInterfaces.MyStringMsg;
 public class PoseSubscriber : MonoBehaviour
 {
-    public bool SimORReal;
+  //  public bool SimORReal;
+    public bool ViaDB;
     public string robotName = "robot_name";
     public GameObject targetObject;
     public string SimPhysXSubscribeTopicName;
     public string SimAGXSubscribeTopicName;
     public string RealSubscribeTopicName;
+    public string ViaDBSubscribeTopicName;
     public float offset_x = 0;
     public float offset_y = 0;
     public float offset_z = 0;
@@ -28,7 +30,7 @@ public class PoseSubscriber : MonoBehaviour
     private Vector3 chenged_orientation;
     public bool chenge_position_sw;
 
-    private mood_selector mode;
+    private mode_selector mode;
     private VR_cont_2 VRcontroller;
     FieldMainManager SimORRealSelecter;
     Model_name model_name_space;
@@ -36,28 +38,35 @@ public class PoseSubscriber : MonoBehaviour
     public Vector3 newPosition;
     public Quaternion newRotation;
     public GameObject SelectorObject;
-    public GameObject VRControllerObject;
+
 
     void Start()
     {
         ros = ROSConnection.GetOrCreateInstance();
         Debug.Log("check:baselink/pose");
-        // ROSコネクションへのサブスクライバーの登録
-        SimORRealSelecter = FindObjectOfType<FieldMainManager>();
-        if (SimORRealSelecter.ForSimOrReal.ToString() == "ForSimPhysX")
+        if (ViaDB == false)
         {
-            SimORReal = false;
-            ros.Subscribe<PoseStampedMsg>(SimPhysXSubscribeTopicName, Callback);
+            // ROSコネクションへのサブスクライバーの登録
+            SimORRealSelecter = FindObjectOfType<FieldMainManager>();
+            if (SimORRealSelecter.ForSimOrReal.ToString() == "ForSimPhysX")
+            {
+             //   SimORReal = false;
+                ros.Subscribe<PoseStampedMsg>(SimPhysXSubscribeTopicName, Callback);
+            }
+            else if (SimORRealSelecter.ForSimOrReal.ToString() == "ForSimAGX")
+            {
+              //  SimORReal = true;
+                ros.Subscribe<OdometryMsg>(SimAGXSubscribeTopicName, Callback1);
+            }
+            else if (SimORRealSelecter.ForSimOrReal.ToString() == "ForReal")
+            {
+              //  SimORReal = true;
+                ros.Subscribe<PoseStampedMsg>(RealSubscribeTopicName, Callback2);
+            }
         }
-        else if (SimORRealSelecter.ForSimOrReal.ToString() == "ForSimAGX")
+        else if (ViaDB == true)
         {
-            SimORReal = true;
-            ros.Subscribe<OdometryMsg>(SimAGXSubscribeTopicName, Callback1);
-        }
-        else if (SimORRealSelecter.ForSimOrReal.ToString() == "ForReal")
-        {
-            SimORReal = true;
-            ros.Subscribe<PoseStampedMsg>(RealSubscribeTopicName, Callback2);
+            ros.Subscribe<OdometryMsg>(ViaDBSubscribeTopicName, DBCallback);
         }
         Debug.Log("already:baselink/pose");
         //
@@ -84,47 +93,37 @@ public class PoseSubscriber : MonoBehaviour
 
     void Callback(PoseStampedMsg msg)
     {
-        mode = GetComponent<mood_selector>();
+        mode = GetComponent<mode_selector>();
         VRcontroller = GetComponent<VR_cont_2>();
         //Debug.Log(msg.pose.position);
         //Debug.Log(msg.pose.orientation);
         //
-        //Vector3 newPosition = new Vector3(((float)msg.pose.position.y * (-1)+ offset_x), ((float)msg.pose.position.z)+offset_z, ((float)msg.pose.position.x)+ offset_y);
         Vector3 newPosition = new Vector3(((float)msg.pose.position.x) + offset_y, ((float)msg.pose.position.z) + offset_z, ((float)msg.pose.position.y + offset_x));
         Quaternion newRotation = new((float)msg.pose.orientation.y * (-1), (float)msg.pose.orientation.z, (float)msg.pose.orientation.x, (float)msg.pose.orientation.w * (-1));
         rot_offset = new Vector3((float)rot_offset_x, (float)rot_offset_y, (float)rot_offset_z);
         chenged_orientation = newRotation.eulerAngles - rot_offset;
-        //Debug.Log(newPosition);
-        //Debug.Log(newRotation.eulerAngles);
         //
-        //GameObject.Find("ic120").GetComponent<CharacterController>().enabled = false;
         targetObject.transform.position = newPosition - new Vector3(55.24f, 6.3f, 63.6f);// - GameObject.Find("map_zero_point").transform.position;// -new Vector3(-65,0,50);
         targetObject.transform.eulerAngles = chenged_orientation;
     }
 
     void Callback2(PoseStampedMsg msg)
     {
-        mode = SelectorObject.GetComponent<mood_selector>();
-        VRcontroller = VRControllerObject.GetComponent<VR_cont_2>();
-      //  Debug.Log(mode + " : " + VRcontroller);
+        mode = SelectorObject.GetComponent<mode_selector>();
+        VRcontroller = targetObject.GetComponent<VR_cont_2>();
 
-            //Debug.Log(msg.pose.position);
-            //Debug.Log(msg.pose.orientation);
-            //
-            //Vector3 newPosition = new Vector3(((float)msg.pose.position.y * (-1)+ offset_x), ((float)msg.pose.position.z)+offset_z, ((float)msg.pose.position.x)+ offset_y);
-            Vector3 newPosition = new Vector3(((float)msg.pose.position.x) - ((float)21395.18), ((float)msg.pose.position.z) - offset_y, ((float)msg.pose.position.y - ((float)14034.45)));
-            // Vector3 newPosition = new Vector3(((float)14027) - offset_x, ((float)68.5) - offset_z, ((float)21420.9 - offset_y));
-            Quaternion newRotation = new((float)msg.pose.orientation.y * (-1), (float)msg.pose.orientation.z, (float)msg.pose.orientation.x, (float)msg.pose.orientation.w * (-1));
-            rot_offset = new Vector3((float)rot_offset_x, (float)rot_offset_y, (float)rot_offset_z);
-            chenged_orientation = newRotation.eulerAngles - rot_offset;
-        //Debug.Log(newPosition);
-        //Debug.Log(newRotation.eulerAngles);
+        //Debug.Log(msg.pose.position);
+        //Debug.Log(msg.pose.orientation);
+        Vector3 newPosition = new Vector3(((float)msg.pose.position.x) - ((float)21395.18), ((float)msg.pose.position.z) - offset_y, ((float)msg.pose.position.y - ((float)14034.45)));
+        Quaternion newRotation = new((float)msg.pose.orientation.y * (-1), (float)msg.pose.orientation.z, (float)msg.pose.orientation.x, (float)msg.pose.orientation.w * (-1));
+        rot_offset = new Vector3((float)rot_offset_x, (float)rot_offset_y, (float)rot_offset_z);
+        chenged_orientation = newRotation.eulerAngles - rot_offset;
+
         //
         if (mode.mode == 1) //Visual tool
         {
             if (chenge_position_sw == true)
             {
-                //GameObject.Find("ic120").GetComponent<CharacterController>().enabled = false;
                 targetObject.transform.position = newPosition + new Vector3(-36f, 0, 52f); //GameObject.Find("map_Reference point").transform.position;// -new Vector3(-65,0,50);new Vector3(55.24f, 6.3f, 63.6f);//
             }
             targetObject.transform.eulerAngles = chenged_orientation;
@@ -134,7 +133,7 @@ public class PoseSubscriber : MonoBehaviour
 
     void Callback1(OdometryMsg msg)
     {
-        mode = FindObjectOfType<mood_selector>();
+        mode = FindObjectOfType<mode_selector>();
         VRcontroller = GetComponent<VR_cont_2>();
         if (mode.mode == 1 || VRcontroller.sw == 1) //Visual tool
         {
@@ -174,6 +173,30 @@ public class PoseSubscriber : MonoBehaviour
                 //
                 //Debug.Log("rot_change_strange" + Real_Cyber_angle_diff);
             }
+        }
+    }
+
+    void DBCallback(OdometryMsg msg)
+    {
+        mode = SelectorObject.GetComponent<mode_selector>();
+        VRcontroller = targetObject.GetComponent<VR_cont_2>();
+
+        //Debug.Log(msg.pose.position);
+        //Debug.Log(msg.pose.orientation);
+        //Vector3 newPosition = new Vector3(((float)msg.pose.pose.position.x) - ((float)21395.18), ((float)msg.pose.pose.position.z) - offset_y, ((float)msg.pose.pose.position.y - ((float)14034.45)));
+        Vector3 newPosition = new Vector3(((float)msg.pose.pose.position.x), ((float)msg.pose.pose.position.z) - offset_y, ((float)msg.pose.pose.position.y));
+        Quaternion newRotation = new((float)msg.pose.pose.orientation.y * (-1), (float)msg.pose.pose.orientation.z, (float)msg.pose.pose.orientation.x, (float)msg.pose.pose.orientation.w * (-1));
+        rot_offset = new Vector3((float)rot_offset_x, (float)rot_offset_y, (float)rot_offset_z);
+        chenged_orientation = newRotation.eulerAngles - rot_offset;
+
+        //
+        if (mode.mode == 1) //Visual tool
+        {
+            if (chenge_position_sw == true)
+            {
+                targetObject.transform.position = newPosition + new Vector3(GameObject.Find("map_Reference point").transform.position.x, 0, GameObject.Find("map_Reference point").transform.position.z); //GameObject.Find("map_Reference point").transform.position;// -new Vector3(-65,0,50);new Vector3(55.24f, 6.3f, 63.6f);//
+            }
+            targetObject.transform.eulerAngles = chenged_orientation;
         }
     }
 }

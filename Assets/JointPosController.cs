@@ -11,7 +11,7 @@ public class JointPosController : MonoBehaviour
     public double initTargetPos;
     private ArticulationBody joint;
     private Float64Msg targetPos;
-    private mood_selector mode;
+    private mode_selector mode;
 
     // Start is called before the first frame update
     void Start()
@@ -42,7 +42,7 @@ public class JointPosController : MonoBehaviour
 
     void ExecuteJointPosControl(Float64Msg msg)
     {
-        mode = FindObjectOfType<mood_selector>();
+        mode = FindObjectOfType<mode_selector>();
 
         if (mode.mode == 0)//Simulater tool
         {

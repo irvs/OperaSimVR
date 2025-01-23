@@ -16,7 +16,7 @@ using RosMessageTypes.Nav;
 public class cont_joint : MonoBehaviour
 {
     Controller_manager VRManager;
-    mood_selector selected_mode;
+    mode_selector selected_mode;
     FieldMainManager PoseVeloSelector;
     JointAnglePublisher FromVRJointController;
     public int sw = 0;
@@ -108,7 +108,7 @@ public class cont_joint : MonoBehaviour
                 cmd_operation = 1;
                 //Debug.Log("geton");
 
-                selected_mode = FindObjectOfType<mood_selector>();
+                selected_mode = FindObjectOfType<mode_selector>();
                 
 
                 OVRPlayerController scriptA = targetObject.GetComponent<OVRPlayerController>();
@@ -152,7 +152,7 @@ public class cont_joint : MonoBehaviour
                 msg.Add(goalpose_bucket);
                 msg.Add(0);
                 */
-                FromVRJointController = FindObjectOfType<JointAnglePublisher>();
+                FromVRJointController = GetComponent<JointAnglePublisher>();
                 //List<float> msg = new List<float>();
                 //msg
                 //List<float> msg = FromVRJointController.listOfJointCmdList[FromVRJointController.listOfJointCmdList.Count - 1];
