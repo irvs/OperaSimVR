@@ -12,8 +12,6 @@ using PID_Controller;
 
 public class cont_crowlar : MonoBehaviour
 {
-    int publishersw = 0;
-    int zerocounter = 0;
     public float linearspeed = 1.0f;
     public float rotspeed = 1.0f;
 

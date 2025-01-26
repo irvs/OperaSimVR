@@ -13,8 +13,7 @@ using static UnityEngine.GraphicsBuffer;
 public class Controller_manager : MonoBehaviour
 {
     ControllerLay From_VRcont;
-    public bool designate_vehicle;
-    bool controller_sw;
+    public bool DesignateVehicleFromInspector;
     public bool emergency_sw = false;
     bool outside_sw =false;
     public string Machine_name;
@@ -37,7 +36,9 @@ public class Controller_manager : MonoBehaviour
     private bool button;
     public bool DB_pose_sw;
     public bool DB_joint_sw;
+    private float DiffRotPlayerMachine;
     Model_name ModelInfo;
+    OVRPlayerController PlayerControllScript;
     //
 
     // Start is called before the first frame update
@@ -50,8 +51,9 @@ public class Controller_manager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
-        if (designate_vehicle == false)
+        OVRPlayerController PlayerControllScript = PlayertargetObject.GetComponent<OVRPlayerController>();
+
+        if (DesignateVehicleFromInspector == false)
         {
             From_VRcont = FindObjectOfType<ControllerLay>();
             Machine_name = From_VRcont.GetOnVehicle;
@@ -63,18 +65,14 @@ public class Controller_manager : MonoBehaviour
                 }
                // Debug.Log(Machine_name);
             }
-                
             Machine_name = Machine_Name_List[Machine_Name_List.Count - 1];
         }
 
         //GetOnMachine = From_VRcont.GetOn;
         if ((Machine_name != null && OVRInput.Get(OVRInput.RawButton.LIndexTrigger) && GetOnMachine == 0) || (Machine_name != null && (Input.GetKeyDown(KeyCode.V)) && (GetOnMachine == 0)))  
         {
-            
             //GetOnVehicle = parentObjectName;
-            //GetOn = 1;
             GetOnMachine = 1;
-            
         }
 
 
@@ -84,7 +82,6 @@ public class Controller_manager : MonoBehaviour
             button = true;
             if ((GetOnMachine == 1) && (Player_posi_mover_SW == 0))
             {
-                Debug.Log("INPUT_BBBBBBBBBBBBB");
                 VehicletargetObject = GameObject.Find(Machine_name);
                 //Debug.Log(Machine_name);
                 ModelInfo = VehicletargetObject.GetComponent<Model_name>();
@@ -92,35 +89,27 @@ public class Controller_manager : MonoBehaviour
                 rotrigin = GameObject.Find("OVRPlayerController").transform.rotation;
                 GameObject.Find("OVRPlayerController").GetComponent<CharacterController>().enabled = false;
                 GameObject.Find("OVRPlayerController").GetComponent<Collider>().enabled = false;
+                PlayerControllScript.RotationRatchet = 45;
+                PlayerControllScript.RotationAmount = 0.5f;
                 GameObject.Find("OVRPlayerController").transform.rotation = GameObject.Find(Machine_name + "_cam").transform.rotation;
                 Player_posi_mover_SW += 1;
-                //    Debug.Log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaS");
             }
             //
             if ((Player_posi_mover_SW > 0) && outside_sw == false) 
             {
-                //  Debug.Log("BBBBcccc");
-
                 PlayertargetObject.transform.position = GameObject.Find(Machine_name + "_cam").transform.position;
-
                 num = 1;
             }
             //
             if (((Player_posi_mover_SW > 0) && OVRInput.GetDown(OVRInput.RawButton.B) && (num == 1)) || ((Player_posi_mover_SW > 0) && (num == 1)) && Input.GetKeyDown(KeyCode.B))
             {
-                //
-                OVRPlayerController scriptA = PlayertargetObject.GetComponent<OVRPlayerController>();
-                scriptA.RotationRatchet = 45;
-                scriptA.RotationAmount = 0.5f;
+                PlayerControllScript.RotationRatchet = 45;
+                PlayerControllScript.RotationAmount = 0.5f;
 
                 //
                 Player_posi_mover_SW = 0;
                 num = 0;
-                controller_sw = false;
-                //warp_triger = 0;
-                //geton_ic120 = 0;
-                //geton_zx200 = 0;
-                //geton_c30r = 0;
+
                 GetOnMachine = 0;
                 VR_cont_2 scriptB_c = GameObject.Find(Machine_name).GetComponent<VR_cont_2>();
                 if (scriptB_c != null)
@@ -149,9 +138,28 @@ public class Controller_manager : MonoBehaviour
             }
             //
             //Debug.Log(System.DateTime.Now.Millisecond);
-            if (timesec != Mathf.Floor((System.DateTime.Now.Millisecond) / 10) && (Player_posi_mover_SW > 0) && outside_sw == false) 
+            if (/*timesec != Mathf.Floor((System.DateTime.Now.Millisecond) / 10) && */(Player_posi_mover_SW > 0) && outside_sw == false) 
             {
+                Vector3 forward1 = PlayertargetObject.transform.forward;
+                // オブジェクト2の正面方向のベクトル
+                Vector3 forward2 = GameObject.Find(Machine_name + "_cam").transform.forward;
+                // 2つのオブジェクトの正面方向のなす角を求める
+              //  float angle = Vector3.Angle(forward1, forward2);
+                // 2. 2つのオブジェクトの正面方向の間の回転差を求める
+                Quaternion targetRotation = Quaternion.FromToRotation(forward1, forward2);
 
+                // 3. targetObject1をtargetObject2の正面方向に合わせる
+                PlayertargetObject.transform.Rotate(0, targetRotation.eulerAngles.y, 0);
+
+                /*
+                if (Math.Abs(angle - DiffRotPlayerMachine) >= 0.001 )
+                {
+                    PlayertargetObject.transform.Rotate(0, -(angle - DiffRotPlayerMachine), 0);
+                    Debug.Log("angle : " + angle + "  DiffRotPlayerMachine : " + DiffRotPlayerMachine + " angle - DiffRotPlayerMachine : " + (angle - DiffRotPlayerMachine));
+                }
+                */
+                /*
+                //Rotetion
                 Quaternion machine_rot_changed = GameObject.Find(Machine_name + "_cam").transform.rotation;
                 dif_rot_from_machine = machine_rot_changed.eulerAngles - machine_origin_rot.eulerAngles;
                 if (dif_rot_from_machine[0] < 90 && Mathf.Abs(dif_rot_from_machine[1]) < 330 && dif_rot_from_machine[2] < 90)
@@ -161,7 +169,10 @@ public class Controller_manager : MonoBehaviour
                     timesec = Mathf.Floor((System.DateTime.Now.Millisecond) / 10);
                     //Debug.Log("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC");
                 }
+                */
             }
+            
+
 
             
 
@@ -172,22 +183,19 @@ public class Controller_manager : MonoBehaviour
                 {
                     scriptB_c.sw = 1;
                     Debug.Log("controller on");
-                    controller_sw = true;
                 }
                 JointAnglePublisher scriptB_b = GameObject.Find(Machine_name).GetComponent<JointAnglePublisher>();
                 if (scriptB_b != null)
                 {
                     scriptB_b.sw = 1;
                     Debug.Log("controller on");
-                    controller_sw = true;
                 }
             }
             
             if (outside_sw == true)
             {
-                OVRPlayerController scriptA = PlayertargetObject.GetComponent<OVRPlayerController>();
-                scriptA.RotationRatchet = 45;
-                scriptA.RotationAmount = 0.5f;
+                PlayerControllScript.RotationRatchet = 45;
+                PlayerControllScript.RotationAmount = 0.5f;
                 //
                 Vector2 stickR = movespeed * OVRInput.Get(OVRInput.RawAxis2D.RThumbstick);
                 Playerlinear = stickR.y;
@@ -219,9 +227,8 @@ public class Controller_manager : MonoBehaviour
                     outside_sw = false;
                     num = 1;
                     Debug.Log("REgeton");
-                    OVRPlayerController scriptB = PlayertargetObject.GetComponent<OVRPlayerController>();
-                    scriptB.RotationRatchet = 0;
-                    scriptB.RotationAmount = 0.0f;
+                    PlayerControllScript.RotationRatchet = 0;
+                    PlayerControllScript.RotationAmount = 0.0f;
                     button = false;
                 }
 

@@ -24,10 +24,6 @@ public class Mongo_pose_writer : MonoBehaviour
     public string robotName = "robot_name";
     public string WriterTopicName = "/ic120_db_write/pose";// Publish Message Topic Name
 
-
-    private TwistMsg twist;
-    private double previousTime = 0.0;
-
     // Publish the cube's position and rotation every N seconds
     public float publishMessageInterval = 0.5f;//50Hz
 
