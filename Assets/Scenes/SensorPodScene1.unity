@@ -707,6 +707,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   OVRCameraRig: {fileID: 1238263095}
+  AngularSpeed: 0.2
 --- !u!1 &1513324893
 GameObject:
   m_ObjectHideFlags: 0

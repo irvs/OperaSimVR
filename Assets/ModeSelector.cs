@@ -34,6 +34,7 @@ public class mode_selector : MonoBehaviour
             GameObject.Find("ic120").transform.Find("base_link").gameObject.GetComponent<PoseStampedPublisher>().enabled = true;
             GameObject.Find("ic120").transform.Find("base_link/vessel_link").gameObject.GetComponent<VesselController>().enabled = true;
             GameObject.Find("ic120").transform.Find("base_link/vessel_link").gameObject.GetComponent<VesselSubscriber>().enabled = false;
+            GameObject.Find("zx200").transform.Find("base_link").gameObject.GetComponent<PoseStampedPublisher>().enabled = true;
             GameObject.Find("zx200").transform.Find("base_link/body_link").gameObject.GetComponent<JointPosController>().enabled = true;
             GameObject.Find("zx200").transform.Find("base_link/body_link/boom_link").gameObject.GetComponent<JointPosController>().enabled = true;
             GameObject.Find("zx200").transform.Find("base_link/body_link/boom_link/arm_link").gameObject.GetComponent<JointPosController>().enabled = true;
@@ -75,6 +76,7 @@ public class mode_selector : MonoBehaviour
             GameObject.Find("ic120").transform.Find("base_link").gameObject.GetComponent<PoseStampedPublisher>().enabled = false;
             GameObject.Find("ic120").transform.Find("base_link/vessel_link").gameObject.GetComponent<VesselController>().enabled = false;
             GameObject.Find("ic120").transform.Find("base_link/vessel_link").gameObject.GetComponent<VesselSubscriber>().enabled = true;
+            GameObject.Find("zx200").transform.Find("base_link").gameObject.GetComponent<PoseStampedPublisher>().enabled = false;
             GameObject.Find("zx200").transform.Find("base_link/body_link").gameObject.GetComponent<JointPosController>().enabled = false;
             GameObject.Find("zx200").transform.Find("base_link/body_link/boom_link").gameObject.GetComponent<JointPosController>().enabled = false;
             GameObject.Find("zx200").transform.Find("base_link/body_link/boom_link/arm_link").gameObject.GetComponent<JointPosController>().enabled = false;
@@ -119,6 +121,7 @@ public class mode_selector : MonoBehaviour
             GameObject.Find("zx200").GetComponent<JointStatePublisher>().enabled = false;
 
             GameObject.Find("ic120").transform.Find("base_link").gameObject.GetComponent<PoseStampedPublisher>().enabled = false;
+            GameObject.Find("zx200").transform.Find("base_link").gameObject.GetComponent<PoseStampedPublisher>().enabled = false;
             GameObject.Find("zx200").transform.Find("base_link/body_link").gameObject.GetComponent<JointPosController>().enabled = false;
             GameObject.Find("zx200").transform.Find("base_link/body_link/boom_link").gameObject.GetComponent<JointPosController>().enabled = false;
             GameObject.Find("zx200").transform.Find("base_link/body_link/boom_link/arm_link").gameObject.GetComponent<JointPosController>().enabled = false;
