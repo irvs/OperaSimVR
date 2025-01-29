@@ -117,7 +117,7 @@ public class PoseSubscriber : MonoBehaviour
             }
             targetObject.transform.eulerAngles = chenged_orientation;
         }
-        Debug.Log(targetObject + "position : " + (newPosition + new Vector3(-36f, 0, 52f)));
+      //  Debug.Log(targetObject + "position : " + (newPosition + new Vector3(-36f, 0, 52f)));
     }
     ///////////////////////////////////////////////////////////////////////////////////////////////
     void Callback3(OdometryMsg msg)
