@@ -7,8 +7,11 @@ using RosMessageTypes.Sensor;
 
 public class VesselSubscriber : MonoBehaviour
 {
+    public bool ViaDB;
     private ROSConnection ros;
     public string VesselSubscriberTopicName = "dump/cmd";
+    public string ViaDBVesselSubscriberTopicName;
+    private string SubscriberTopicName;
     public ArticulationBody dump_joint;
     private float angle_of_vessel;
 
@@ -31,7 +34,9 @@ public class VesselSubscriber : MonoBehaviour
             Debug.Log("No ArticulationBody are found");
         }
 
-        ros.Subscribe<JointStateMsg>(VesselSubscriberTopicName, ExecuteVesselControl);
+        if (ViaDB = true) { SubscriberTopicName = ViaDBVesselSubscriberTopicName; }
+        else if (ViaDB = false) { SubscriberTopicName = VesselSubscriberTopicName; }
+        ros.Subscribe<JointStateMsg>(SubscriberTopicName, ExecuteVesselControl);
     }
 
     // Update is called once per frame

@@ -15,6 +15,8 @@ public class PoseSubscriber : MonoBehaviour
   //  public bool SimORReal;
     public bool ViaDB;
     public bool WorldToMap;
+    public enum PoseMessageType { OdometryMsg, PoseStampedMsg }
+    public PoseMessageType PoseMsgType;
     public string robotName = "robot_name";
     public GameObject targetObject;
     public string SimPhysXSubscribeTopicName;
@@ -68,7 +70,15 @@ public class PoseSubscriber : MonoBehaviour
         }
         else if (ViaDB == true || SimORRealSelecter == true)
         {
-            ros.Subscribe<PoseStampedMsg>(ViaDBSubscribeTopicName, DBCallback);
+            if (PoseMsgType.ToString() == "PoseStampedMsg")
+            {
+                ros.Subscribe<PoseStampedMsg>(ViaDBSubscribeTopicName, DBCallbackPS);
+            }
+            else if (PoseMsgType.ToString() == "OdometryMsg")
+            {
+                ros.Subscribe<OdometryMsg>(ViaDBSubscribeTopicName, DBCallbackOd);
+            }
+
         }
         Debug.Log("already:baselink/pose");
         //
@@ -189,7 +199,7 @@ public class PoseSubscriber : MonoBehaviour
         }
     }
 
-    void DBCallback(PoseStampedMsg msg)
+    void DBCallbackPS(PoseStampedMsg msg)
     {
         mode = SelectorObject.GetComponent<mode_selector>();
         VRcontroller = targetObject.GetComponent<VR_cont_2>();
@@ -216,4 +226,57 @@ public class PoseSubscriber : MonoBehaviour
             targetObject.transform.eulerAngles = chenged_orientation;
         }
     }
+
+    void DBCallbackOd(OdometryMsg msg)
+    {
+        mode = SelectorObject.GetComponent<mode_selector>();
+        VRcontroller = targetObject.GetComponent<VR_cont_2>();
+
+        //Debug.Log(msg.pose.position);
+        //Debug.Log(msg.pose.orientation);
+        Vector3 newPosition = new Vector3(((float)msg.pose.pose.position.x), ((float)msg.pose.pose.position.z) - offset_y, ((float)msg.pose.pose.position.y));
+        if (WorldToMap == true)
+        {
+            newPosition = new Vector3(((float)msg.pose.pose.position.x) - ((float)21395.18), ((float)msg.pose.pose.position.z) - offset_y, ((float)msg.pose.pose.position.y - ((float)14034.45)));
+        }
+        //
+        Quaternion newRotation = new((float)msg.pose.pose.orientation.y * (-1), (float)msg.pose.pose.orientation.z, (float)msg.pose.pose.orientation.x, (float)msg.pose.pose.orientation.w * (-1));
+        rot_offset = new Vector3((float)rot_offset_x, (float)rot_offset_y, (float)rot_offset_z);
+        chenged_orientation = newRotation.eulerAngles - rot_offset;
+
+        //
+        if (mode.mode == 1) //Visual tool
+        {
+            if (chenge_position_sw == true)
+            {
+                targetObject.transform.position = newPosition + new Vector3(GameObject.Find("map_Reference point").transform.position.x, 0, GameObject.Find("map_Reference point").transform.position.z); //GameObject.Find("map_Reference point").transform.position;// -new Vector3(-65,0,50);new Vector3(55.24f, 6.3f, 63.6f);//
+            }
+            targetObject.transform.eulerAngles = chenged_orientation;
+        }
+    }
+
+    void PoseCheanger(Vector3 NewPosition, Quaternion NewRotation, bool MapTransfer, float OffsetX, float OffsetY, float OffsetZ, float RotOffsetX, float RotOffsetY, float RotOffsetZ, bool ChangePose, GameObject TargetObject)
+    {
+        Vector3 ModifyPosition = new Vector3((NewPosition.x), (NewPosition.z) - OffsetY, (NewPosition.y));
+        if (MapTransfer == true)
+        {
+            ModifyPosition = new Vector3((NewPosition.x) - ((float)21395.18), (NewPosition.z) - OffsetY, (NewPosition.y - ((float)14034.45)));
+        }
+        //
+
+        rot_offset = new Vector3(RotOffsetX, RotOffsetY, RotOffsetZ);
+        chenged_orientation = NewRotation.eulerAngles - rot_offset;
+
+        mode = SelectorObject.GetComponent<mode_selector>();
+        if (mode.mode == 1) //Visual tool
+        {
+            if (ChangePose == true)
+            {
+                TargetObject.transform.position = ModifyPosition + new Vector3(GameObject.Find("map_Reference point").transform.position.x, 0, GameObject.Find("map_Reference point").transform.position.z);
+            }
+            TargetObject.transform.eulerAngles = chenged_orientation;
+        }
+    }
+
+
 }
