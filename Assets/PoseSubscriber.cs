@@ -64,8 +64,16 @@ public class PoseSubscriber : MonoBehaviour
             else if (SimORRealSelecter.ForSimOrReal.ToString() == "ForReal")
             {
               //  SimORReal = true;
-                ros.Subscribe<PoseStampedMsg>(RealSubscribeTopicName, Callback2);
-               // ros.Subscribe<OdometryMsg>(RealSubscribeTopicName, Callback3);
+              //  ros.Subscribe<PoseStampedMsg>(RealSubscribeTopicName, Callback2);
+                // ros.Subscribe<OdometryMsg>(RealSubscribeTopicName, Callback3);
+                if (PoseMsgType.ToString() == "PoseStampedMsg")
+                {
+                    ros.Subscribe<PoseStampedMsg>(RealSubscribeTopicName, DBCallbackPS);
+                }
+                else if (PoseMsgType.ToString() == "OdometryMsg")
+                {
+                    ros.Subscribe<OdometryMsg>(RealSubscribeTopicName, DBCallbackOd);
+                }
             }
         }
         else if (ViaDB == true || SimORRealSelecter == true)

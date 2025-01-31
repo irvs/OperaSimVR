@@ -6,6 +6,7 @@ public class Player_Key_mover : MonoBehaviour
 {
     private float Playerlinear;
     private float PlayerUpper;
+    private float PlayerSide;
     public float LinearSpeed = 0.01f;
     public float AngularSpeed = 0.2f;
     public float UpperSpeed = 0.01f;
@@ -49,17 +50,33 @@ public class Player_Key_mover : MonoBehaviour
                 PlayerUpper = 0.0f;
                 Playerlinear = 0.0f;
             }
+            else if (Input.GetKey(KeyCode.LeftArrow) && Input.GetKey(KeyCode.LeftShift) == true)
+            {
+                PlayerSide = -LinearSpeed;
+            }
+            else if (Input.GetKey(KeyCode.RightArrow) && Input.GetKey(KeyCode.LeftShift) == true)
+            {
+                PlayerSide = LinearSpeed;
+            }
+            else if (Input.GetKeyUp(KeyCode.LeftArrow))
+            {
+                PlayerSide = 0.0f;
+            }
+            else if (Input.GetKeyUp(KeyCode.RightArrow))
+            {
+                PlayerSide = 0.0f;
+            }
             //transform.Rotate(Vector3.right * 0.1f * Time.deltaTime);
             //OVRCameraRigÇÃà íuïœçX
-            GameObject.Find("OVRPlayerController").transform.position += GameObject.Find("OVRPlayerController").transform.rotation * (new Vector3(0, 0, (Playerlinear)));
+            GameObject.Find("OVRPlayerController").transform.position += GameObject.Find("OVRPlayerController").transform.rotation * (new Vector3(PlayerSide, 0, (Playerlinear)));
             GameObject.Find("OVRPlayerController").transform.position = new(GameObject.Find("OVRPlayerController").transform.position[0], GameObject.Find("OVRPlayerController").transform.position[1]+ PlayerUpper, GameObject.Find("OVRPlayerController").transform.position[2]);
             if (VRManager.GetOnMachine != 1)
             {
-                if (Input.GetKey(KeyCode.LeftArrow))
+                if (Input.GetKey(KeyCode.LeftArrow) && Input.GetKey(KeyCode.LeftShift) == false)
                 {
                     GameObject.Find("OVRPlayerController").transform.Rotate(0, -AngularSpeed, 0);
                 }
-                else if (Input.GetKey(KeyCode.RightArrow))
+                else if (Input.GetKey(KeyCode.RightArrow) && Input.GetKey(KeyCode.LeftShift) == false)
                 {
                     GameObject.Find("OVRPlayerController").transform.Rotate(0, AngularSpeed, 0);
                 }

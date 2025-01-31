@@ -7,7 +7,7 @@ public class TerrainGenerator : MonoBehaviour
     public Texture2D heightmapTexture;    // 使用するHeightmap画像（テクスチャ）
     public Texture2D texture1;   // テクスチャ1（例: 草）
     public Texture2D texture2;   // テクスチャ2（例: 岩）
-    public float textureBlendHeight = 0.5f; // 高さに基づいてテクスチャをブレンドする境界
+    private float textureBlendHeight = 0.5f; // 高さに基づいてテクスチャをブレンドする境界
     public int TerrainWidth;//trrainの幅
     public int TerrainHeight;//terrainの奥行
     public int TerrainElevation = 600;//terrainの高さ
