@@ -46,8 +46,9 @@ public class MyServiceClient : MonoBehaviour
         texture.LoadRawTextureData(image.data);
         texture.Apply();
         // 画像を表示する（例えば、UIのImageコンポーネントに設定する）
-        GetComponent<Renderer>().material.mainTexture = texture;
+       // GetComponent<Renderer>().material.mainTexture = texture;
         Debug.Log("Display image!");
+        Debug.Log(response.terrainheight);
     }
     private void OnApplicationQuit()
     {
