@@ -87,7 +87,6 @@ public class PathWriter : MonoBehaviour
         SimORRealSelecter = FindObjectOfType<FieldMainManager>();
         foreach (var pose in msg.poses) 
         {
-            //Debug.Log($"Pose: {pose.pose.position.x}, {pose.pose.position.y}");
             angular = new (-(float)pose.pose.orientation.y, (float)pose.pose.orientation.z, (float)pose.pose.orientation.x, -(float)pose.pose.orientation.w);
             if (SimORRealSelecter.ForSimOrReal.ToString() == "ForReal")
             {

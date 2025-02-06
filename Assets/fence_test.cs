@@ -11,7 +11,7 @@ public class Fence_test : MonoBehaviour
     public float raycastDistance = 10f; // レイキャストの距離
     public LayerMask collisionLayer; // 衝突を検出するレイヤー
     string parentObjectName;
-    public GameObject targetObject;
+    private GameObject targetObject;
     Model_name name_space_of_model;
 
     void Start()

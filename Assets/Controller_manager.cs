@@ -13,6 +13,7 @@ using static UnityEngine.GraphicsBuffer;
 public class Controller_manager : MonoBehaviour
 {
     ControllerLay From_VRcont;
+   // TerrainCollisionPoint TerrainPoint;
     public bool DesignateVehicleFromInspector;
     public bool emergency_sw = false;
     bool outside_sw =false;
@@ -279,5 +280,11 @@ public class Controller_manager : MonoBehaviour
 }
 
         }//
+   //     if ((GetOnMachine == 0 && OVRInput.Get(OVRInput.RawButton.LIndexTrigger)) || (GetOnMachine == 0 && Input.GetKeyDown(KeyCode.M)))
+     //   {
+
+
+       // }
+
     } 
 }
