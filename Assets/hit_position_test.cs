@@ -63,7 +63,7 @@ public class TerrainCollisionPoint : MonoBehaviour
         }
 
         Geton_controller_manager = this.GetComponent<Controller_manager>();
-        if ((Geton_controller_manager.GetOnMachine == 0 && OVRInput.Get(OVRInput.RawButton.LIndexTrigger)) || (Geton_controller_manager.GetOnMachine == 0 && Input.GetKeyDown(KeyCode.B)))
+        if ((Geton_controller_manager.GetOnMachine == 0 && OVRInput.Get(OVRInput.RawButton.RIndexTrigger)) || (Geton_controller_manager.GetOnMachine == 0 && Input.GetKeyDown(KeyCode.B)))
         {
             PathForDB.Add(collisionPoint);
             lineRenderer.positionCount += 1;

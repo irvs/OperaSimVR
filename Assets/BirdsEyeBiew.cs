@@ -103,7 +103,7 @@ public class JoyStickMove : MonoBehaviour
         if (OVRInput.GetDown(OVRInput.RawButton.B) && birdseyeview == 1)
         {
             birdseyeview = 0;
-            GameObject.Find("OVRPlayerController").transform.position = posiorigin + new Vector3(0,1,0);
+            GameObject.Find("OVRPlayerController").transform.position = posiorigin + new Vector3(0,10,0);
             GameObject.Find("OVRPlayerController").transform.rotation = rotrigin;
             GameObject.Find("OVRPlayerController").GetComponent<CharacterController>().enabled = true;
         }
