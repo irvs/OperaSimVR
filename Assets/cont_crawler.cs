@@ -166,6 +166,14 @@ public class cont_crowlar : MonoBehaviour
                 RecordCounter += 1;
                 cmdLinearVelForPlay = (double)(CMD_Recorder.RecordList[RecordCounter][1] * VRdirective.adapter1 + VRdirective.adapter2) * linearspeed;
                 cmdAngularVelForPlay = (double)(CMD_Recorder.RecordList[RecordCounter][2] + VRdirective.rotadapter) * rotspeed;
+                if (CMD_Recorder.RecordList[RecordCounter][1] == 0)
+                {
+                    cmdLinearVelForPlay = 0.0f;
+                }
+                if (CMD_Recorder.RecordList[RecordCounter][2] == 0)
+                {
+                    cmdAngularVelForPlay = 0.0f;
+                }
             }
             if (RecordCounter == (CMD_Recorder.RecordList).Count - 1)
             {
