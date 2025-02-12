@@ -408,6 +408,7 @@ public class VR_cont_2 : MonoBehaviour
                             rotation = 0.0f;
                             adapter1 = 0.0f;
                             adapter2 = 0.0f;
+                            Debug.Log("adapter reset at 411");
                         }
                         //
                         if (Input.GetKey(KeyCode.LeftArrow) && linear_or_rot == 2 || Input.GetKey(KeyCode.LeftArrow) && selected_mode.mode == 1 || Input.GetKey(KeyCode.LeftArrow) && control_mode == 0)
@@ -529,6 +530,7 @@ public class VR_cont_2 : MonoBehaviour
                             adapter1 = 1.0f;
                             adapter2 = 0.0f;
                             rotadapter = 0.0f;
+                            Debug.Log("adapter reset at 532");
                         }
 
                         if (zerotime >= Time_Delay + 3.0f && synchronization_sw == true)
@@ -540,6 +542,7 @@ public class VR_cont_2 : MonoBehaviour
                             adapter2 = 0.0f;
                             rotadapter = 0.0f;
                             linear_or_rot = 0;
+                            Debug.Log("adapter reset at 543");
                             if (zerotime >= Time_Delay)
                             {
                                 moover_sw = 2;
@@ -1012,6 +1015,7 @@ public class VR_cont_2 : MonoBehaviour
                 adapter1 = 1.0f;
                 adapter2 = 0.0f;
                 Stop_time = 0.0f;
+                Debug.Log("adapter reset at 1015");
             }
             if (moover_sw == 3 && Stop_time > 2.0f)
             {

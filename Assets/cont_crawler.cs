@@ -166,20 +166,21 @@ public class cont_crowlar : MonoBehaviour
                 RecordCounter += 1;
                 cmdLinearVelForPlay = (double)(CMD_Recorder.RecordList[RecordCounter][1] * VRdirective.adapter1 + VRdirective.adapter2) * linearspeed;
                 cmdAngularVelForPlay = (double)(CMD_Recorder.RecordList[RecordCounter][2] + VRdirective.rotadapter) * rotspeed;
-                if (CMD_Recorder.RecordList[RecordCounter][1] == 0)
+                if (Math.Abs(CMD_Recorder.RecordList[RecordCounter][1] ) <= 0.001)
                 {
                     cmdLinearVelForPlay = 0.0f;
-                }
-                if (CMD_Recorder.RecordList[RecordCounter][2] == 0)
-                {
                     cmdAngularVelForPlay = 0.0f;
+                }
+                if (Math.Abs(CMD_Recorder.RecordList[RecordCounter][2]) <= 0.0000000000000000001) 
+                {
+                  //  cmdAngularVelForPlay = 0.0f;
                 }
             }
             if (RecordCounter == (CMD_Recorder.RecordList).Count - 1)
             {
                 //  RecordCounter = 0;
             }
-            Debug.Log("PublishingLinear" + cmdLinearVelForPlay);
+            Debug.Log("PublishingLinear" + cmdLinearVelForPlay + " : " + VRdirective.adapter1 + " : " + VRdirective.adapter2 + " : " + VRdirective.rotadapter);
             Debug.Log("PublishingAngular" + cmdAngularVelForPlay);
 
             CrawlerOperater(cmdLinearVelForPlay, cmdAngularVelForPlay);
