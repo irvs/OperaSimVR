@@ -38,8 +38,6 @@ public class cont_crowlar : MonoBehaviour
 
     private double tread_half = 2.0;
     private double previousTime = 0.0;
-    private double previousTime_for_pub = 0.0;
-    //private double yaw = 0.0;
 
     // Publish the cube's position and rotation every N seconds
     public float publishMessageInterval = 0.02f;//50Hz

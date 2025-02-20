@@ -17,7 +17,6 @@ public class VR_cont_2 : MonoBehaviour
     public bool RecordPlaySw;//cmd record play
     public int control_mode = 0;
     public bool emergency;
-    public int SimORReal;
     public float offset_x = 0;
     public float offset_y = 0;
     public float offset_z = 0;
@@ -40,9 +39,7 @@ public class VR_cont_2 : MonoBehaviour
     public List<float> CMD_linear_list = new List<float>();
     public List<float> CMD_anglar_list_for_cyber = new List<float>();
     public List<float> CMD_anglar_list = new List<float>();
-    List<string> CMD_time_list = new List<string>();
     List<Vector3> posi_list = new List<Vector3>();
-    List<float> posi_list_z = new List<float>();/////////////////////////////////////
     List<Vector3> rotation_list = new List<Vector3>();
     List<Vector3> real_posi_list = new List<Vector3>();
     List<Vector3> real_rotation_list = new List<Vector3>();
@@ -53,10 +50,8 @@ public class VR_cont_2 : MonoBehaviour
     List<float> Real_Cyber_future_length_pose_compare = new List<float>();
     List<float> Real_Cyber_future_length_anglar_compare = new List<float>();
     List<float> real_diff_anglar_list = new List<float>();
-    private Vector3 last_pose;
     private Vector3 last_rotation;
     private int last_time;
-    private Vector3 diff_pose;
     private Vector3 diff_rot;
     private Quaternion rotation_for_list;
     private float real_anglar_length = 0.0f;
@@ -64,7 +59,6 @@ public class VR_cont_2 : MonoBehaviour
     public bool synchronization_sw;
     private float zerotime;
     //
-    public float adopt_time = 1.0f;
     public float intervalInMilliseconds = 1000.0f; //    ԊԊu i ~   b j
     private DateTime nextActionTime;
     //
@@ -74,33 +68,24 @@ public class VR_cont_2 : MonoBehaviour
     Controller_manager VRManager;
     FieldMainManager SimORRealSelecter;
     Model_name model_name_space;
-    mode_selector selected_mode;
-    cont_crowlar crawler_controllor;
+    mode_selector mode;
     PoseSubscriber RealPosition;
-    int cmd_operation = 0;
     public float adapter1 = 1.0f;
     public float adapter2 = 0.0f;
     public float rotadapter = 0.0f;
     public int linear_or_rot = 0;
     private int moover_sw = 1;
-    int publishersw = 0;
     int zerocounter = 0;
     float movespeed = 5.0f;
     public float linearspeed = 1.00f;
     public float rotspeed = 0.50f;
     //
-    private double previousTime = 0.0;
-    private double previousTime_adopt = 0.0;
     private float timeElapsed;
     private float timeElapsed_CMD = 0.0f;
-    private float timeElapsed_Pose = 0.0f;
-    private float timeElapsed_adopt = 0.0f;
     private float timeElapsed_adopt_starter = 0.0f;
     private float timeElapsed_start = 0.0f;
     private float sw_timeElapsed = 0.0f;
     private float dissconnect_timer;
-    private int starter_acsel = 0;
-    private float acsel = 0.0f;
     private float vel_linear_acceleration;
     public float max_lnear_accelaration = 2.5f;
     private float max_lnear_accel_per_pub;
@@ -111,18 +96,13 @@ public class VR_cont_2 : MonoBehaviour
     private float max_angular_accel_per_pub;
     public float max_angular_deceleration = -3.2f;
     private float max_angular_deceleration_per_pub;
-    private float diff_pose_distance;
     private float side_diff = 0.0f;
-    //
-    private float point_theta;
-    private float point_distance;
     //
     private float real_pose_length = 0.0f;
     private float real_pose_length_x = 0.0f;
     private float real_pose_length_z = 0.0f;
     private float Real_Cyber_future_length_pose = 0.0f;
     private float Real_Cyber_future_anglar_diff = 0.0f;
-    private float side_anglar;
 
     private float cyber_pose_length = 0.0f;
     private int counter;
@@ -133,11 +113,8 @@ public class VR_cont_2 : MonoBehaviour
     private Quaternion newRotation;
     private int prev_control_mode;
     ROSConnection ros;
-    // private PoseStampedMsg twist;
-    //Twist
     Vector3Msg linear = new Vector3Msg(0f, 0f, 0f);
     Vector3Msg angular = new Vector3Msg(0f, 0f, 0f);
-    private mode_selector mode;
     public float Margin = 0.2f;
     public float Angular_Margin = 0.2f;
     private float Stop_time = 0.0f;
@@ -146,58 +123,40 @@ public class VR_cont_2 : MonoBehaviour
     private long real_unix_time;
     private System.DateTime real_now_time;
 
-    //public enum SimOrRealOption { ForSimPhysX, ForSimAGX, ForReal }
-
-    //public SimOrRealOption ForPhysXorAGXorReal;
 
     // Start is called before the first frame update
     void Start()
     {
         //
         VRManager = FindObjectOfType<Controller_manager>();
-        SimORRealSelecter = FindObjectOfType<FieldMainManager>();
-        if (SimORRealSelecter.ForSimOrReal.ToString() == "ForSimPhysX")
-        {
-            SimORReal = 0;
-        }
-        else if (SimORRealSelecter.ForSimOrReal.ToString() == "ForSimAGX")
-        {
-            SimORReal = 1;
-        }
-        else if (SimORRealSelecter.ForSimOrReal.ToString() == "ForReal")
-        {
-            SimORReal = 2;
-        }
-
-        if (VRManager != null)
-        {
-            Debug.Log("Player's health is: " + VRManager.num);
-        }
         // start the ROS connection
         Debug.Log("check:baselink/pose");
         ros = ROSConnection.GetOrCreateInstance();
-        ros.RegisterPublisher<BoolMsg>(controller_swTopicName);
-        ros.RegisterPublisher<BoolMsg>(EmergencyTopicName);
-        controller_sw_return_TopicName = controller_swTopicName + "_return";
-        ros.Subscribe<BoolMsg>(controller_sw_return_TopicName, SW_Callback);
-        if (SimORReal == 2)
-        {
-            SRPublishTopicName = RealPublishTopicName;
-            SRSubscribeTopicName = RealSubscribeTopicName;
-            ros.Subscribe<PoseStampedMsg>(SRSubscribeTopicName, Callback);
-        }
-        else if (SimORReal == 1)
-        {
-            SRPublishTopicName = SimAGXPublishTopicName;
-            SRSubscribeTopicName = SimAGXSubscribeTopicName;
-            ros.Subscribe<OdometryMsg>(SRSubscribeTopicName, Callback1);
-        }
-        else if (SimORReal == 0)
+        SimORRealSelecter = FindObjectOfType<FieldMainManager>();
+        if (SimORRealSelecter.ForSimOrReal.ToString() == "ForSimPhysX")
         {
             SRPublishTopicName = SimPhysXPublishTopicName;
             SRSubscribeTopicName = SimPhysXSubscribeTopicName;
             ros.Subscribe<PoseStampedMsg>(SRSubscribeTopicName, Callback);
         }
+        else if (SimORRealSelecter.ForSimOrReal.ToString() == "ForSimAGX")
+        {
+            SRPublishTopicName = SimAGXPublishTopicName;
+            SRSubscribeTopicName = SimAGXSubscribeTopicName;
+            ros.Subscribe<OdometryMsg>(SRSubscribeTopicName, Callback1);
+        }
+        else if (SimORRealSelecter.ForSimOrReal.ToString() == "ForReal")
+        {
+            SRPublishTopicName = RealPublishTopicName;
+            SRSubscribeTopicName = RealSubscribeTopicName;
+            ros.Subscribe<PoseStampedMsg>(SRSubscribeTopicName, Callback);
+        }
+
+        
+        ros.RegisterPublisher<BoolMsg>(controller_swTopicName);
+        ros.RegisterPublisher<BoolMsg>(EmergencyTopicName);
+        controller_sw_return_TopicName = controller_swTopicName + "_return";
+        ros.Subscribe<BoolMsg>(controller_sw_return_TopicName, SW_Callback);
         ros.RegisterPublisher<TwistMsg>(SRPublishTopicName);
         //
         //   twist = new PoseStampedMsg();
@@ -228,12 +187,6 @@ public class VR_cont_2 : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //for test
-        //
-        //CMD_Calculator2(new Vector3(0.0f, 0.0f, 0.0f), new Quaternion(0.0f, 0.0f, 0.0f, 0.0f), new DateTime ((long)0.05f));
-        //
-        //
-        //
         VRManager = FindObjectOfType<Controller_manager>();
 
         if (prev_sw == 1 && sw == 0)
@@ -264,8 +217,6 @@ public class VR_cont_2 : MonoBehaviour
             BoolMsg EMGmessage = new BoolMsg(
                     true
                     );
-            //Debug.Log("cont_mode1_read_list");
-            //
             if (timeElapsed >= publishMessageInterval / 2.0f)
             {
                 // Debug.Log("Publish After Delay Time");
@@ -326,23 +277,16 @@ public class VR_cont_2 : MonoBehaviour
                     sw_timeElapsed = 0.0f;
                 }
 
-                if (VRManager.Player_posi_mover_SW == 0 && sw != 1)
-                {
-                    cmd_operation = 0;
-
-                }
                 else if (VRManager.Player_posi_mover_SW > 0 || sw == 1)
                 {
-                    cmd_operation = 1;
                     //Debug.Log("geton");
 
-                    selected_mode = FindObjectOfType<mode_selector>();
+                    mode = FindObjectOfType<mode_selector>();
                     //
                     timeElapsed += Time.deltaTime;
-                    timeElapsed_Pose += Time.deltaTime;
                     sw_timeElapsed += Time.deltaTime;
 
-                    if (selected_mode.mode == 2)
+                    if (mode.mode == 2)
                     {
                         timeElapsed_CMD += Time.deltaTime;
                         timeElapsed_adopt_starter += Time.deltaTime;
@@ -368,7 +312,7 @@ public class VR_cont_2 : MonoBehaviour
                         }
                     }
                     //
-                    if (linear_or_rot == 1 || selected_mode.mode == 1 || control_mode == 0)
+                    if (linear_or_rot == 1 || mode.mode == 1 || control_mode == 0)
                     {
                         frontback = stickL.y;
                     }
@@ -376,7 +320,7 @@ public class VR_cont_2 : MonoBehaviour
                     {
                         frontback = 0.0f;
                     }
-                    if (linear_or_rot == 2 || selected_mode.mode == 1 || control_mode == 0)
+                    if (linear_or_rot == 2 || mode.mode == 1 || control_mode == 0)
                     {
                         rotation = -stickL.x;
                     }   
@@ -411,7 +355,7 @@ public class VR_cont_2 : MonoBehaviour
                             Debug.Log("adapter reset at 411");
                         }
                         //
-                        if (Input.GetKey(KeyCode.LeftArrow) && linear_or_rot == 2 || Input.GetKey(KeyCode.LeftArrow) && selected_mode.mode == 1 || Input.GetKey(KeyCode.LeftArrow) && control_mode == 0)
+                        if (Input.GetKey(KeyCode.LeftArrow) && linear_or_rot == 2 || Input.GetKey(KeyCode.LeftArrow) && mode.mode == 1 || Input.GetKey(KeyCode.LeftArrow) && control_mode == 0)
                         {
                             rotation = rotspeed;
                         }
@@ -419,7 +363,7 @@ public class VR_cont_2 : MonoBehaviour
                         {
                             rotation = 0;
                         }
-                        if (Input.GetKey(KeyCode.RightArrow) && linear_or_rot == 2 || Input.GetKey(KeyCode.RightArrow) && selected_mode.mode == 1 || Input.GetKey(KeyCode.RightArrow) && control_mode == 0)
+                        if (Input.GetKey(KeyCode.RightArrow) && linear_or_rot == 2 || Input.GetKey(KeyCode.RightArrow) && mode.mode == 1 || Input.GetKey(KeyCode.RightArrow) && control_mode == 0)
                         {
                             rotation = -rotspeed;
                         }
@@ -427,7 +371,7 @@ public class VR_cont_2 : MonoBehaviour
                         {
                             rotation = 0;
                         }
-                        if (Input.GetKey(KeyCode.UpArrow) && linear_or_rot == 1 || Input.GetKey(KeyCode.UpArrow) && selected_mode.mode == 1 || Input.GetKey(KeyCode.UpArrow) && control_mode == 0)
+                        if (Input.GetKey(KeyCode.UpArrow) && linear_or_rot == 1 || Input.GetKey(KeyCode.UpArrow) && mode.mode == 1 || Input.GetKey(KeyCode.UpArrow) && control_mode == 0)
                         {
                             frontback = linearspeed;
                         }
@@ -435,7 +379,7 @@ public class VR_cont_2 : MonoBehaviour
                         {
                             frontback = 0;
                         }
-                        if (Input.GetKey(KeyCode.DownArrow) && linear_or_rot == 1 || Input.GetKey(KeyCode.DownArrow) && selected_mode.mode == 1 || Input.GetKey(KeyCode.DownArrow) && control_mode == 0)
+                        if (Input.GetKey(KeyCode.DownArrow) && linear_or_rot == 1 || Input.GetKey(KeyCode.DownArrow) && mode.mode == 1 || Input.GetKey(KeyCode.DownArrow) && control_mode == 0)
                         {
                             frontback = -linearspeed;
                         }
@@ -504,11 +448,10 @@ public class VR_cont_2 : MonoBehaviour
                             ros.Publish(SRPublishTopicName, Twist);
                             timeElapsed = 0.0f;
                         }
-                        //   previousTime = time;
 
                     }
 
-                    if (control_mode == 1 && selected_mode.mode == 2)
+                    if (control_mode == 1 && mode.mode == 2)
                     {
                         if (prev_control_mode != control_mode)
                         {
@@ -578,11 +521,7 @@ public class VR_cont_2 : MonoBehaviour
                             {
                                 rotation = CMD_anglar_list[CMD_anglar_list.Count - 1] + max_angular_deceleration_per_pub;
                             }
-                            //if (CMD_linear_list.Count >= 1 && CMD_linear_list[CMD_linear_list.Count - 1] == 0 && frontback >= 3 )
-                            //{
-                            //    starter_acsel = 1;
-                            //    frontback = 0.5f;
-                            //}
+
                             CMD_linear_list.Add(frontback);
                             CMD_linear_list_for_cyber.Add(frontback * adapter1 + adapter2);
                             CMD_anglar_list.Add(rotation);
@@ -591,22 +530,16 @@ public class VR_cont_2 : MonoBehaviour
 
                             //TodayNow = DateTime.Now;
 
-                            //CMD_time_list.Add(DateTime.Now.ToLongTimeString());
                             //Debug.Log("cont_mode1_add_list");
 
                         }
-                        if (timeElapsed_Pose >= adopt_time)
-                        {
 
-
-                        }
                         if (timeElapsed_start > (Time_Delay + 5.0f) && CMD_linear_list.Count - (Mathf.RoundToInt(Time_Delay / publishMessageInterval)) - 1 >= 0 && CMD_anglar_list.Count - (Mathf.RoundToInt(Time_Delay / publishMessageInterval)) - 1 >= 0)
                         {
                             //
                             int CMD_time = Mathf.RoundToInt(Time_Delay / publishMessageInterval);
                             linear.x = CMD_linear_list[CMD_linear_list.Count - CMD_time - 1];
                             angular.z = CMD_anglar_list[CMD_anglar_list.Count - CMD_time - 1];
-                            //Debug.Log(CMD_time_list[CMD_time_list.Count - (CMD_time)]);
                             TwistMsg Twist = new TwistMsg(
                               linear,
                               angular
@@ -619,7 +552,6 @@ public class VR_cont_2 : MonoBehaviour
                                 ros.Publish(SRPublishTopicName, Twist);
                                 timeElapsed = 0.0f;
                             }
-                            //      previousTime = time;
 
 
                         }
@@ -634,8 +566,8 @@ public class VR_cont_2 : MonoBehaviour
                 }//
             }//
         }
-        selected_mode = FindObjectOfType<mode_selector>();
-        if (selected_mode.mode == 2 && RecordPlaySw == true)
+        mode = FindObjectOfType<mode_selector>();
+        if (mode.mode == 2 && RecordPlaySw == true)
         {
             timeElapsed_CMD += Time.deltaTime;
             timeElapsed_adopt_starter += Time.deltaTime;
@@ -666,12 +598,10 @@ public class VR_cont_2 : MonoBehaviour
         //    offset_z = model_name_space.OffsetList[2];
             //Debug.Log("moooovercallback");
             DateTime currentTime = DateTime.Now;
-            timeElapsed_adopt += Time.deltaTime;
-            if (currentTime >= nextActionTime)//(timeElapsed_adopt >= adopt_time)
+            if (currentTime >= nextActionTime)
             {
                 //Debug.Log("mooooverget");
                 posi_list.Add(targetObject.transform.position);
-                //posi_list_z.Add(GameObject.Find("ic120").transform.position.z);
                 rotation_for_list = targetObject.transform.rotation;
                 rotation_list.Add(rotation_for_list.eulerAngles);
 
@@ -718,15 +648,11 @@ public class VR_cont_2 : MonoBehaviour
            // offset_z = model_name_space.OffsetList[2];
             //Debug.Log("moooovercallback");
             DateTime currentTime = DateTime.Now;
-            timeElapsed_adopt += Time.deltaTime;
-            //double time_adopt = Time.fixedTimeAsDouble;
-            //Debug.Log(timeElapsed_adopt);
             Debug.Log(RealPosition.newPosition);
-            if (currentTime >= nextActionTime)//(timeElapsed_adopt >= adopt_time)
+            if (currentTime >= nextActionTime)
             {
                 //Debug.Log("mooooverget");
                 posi_list.Add(targetObject.transform.position);
-                //posi_list_z.Add(GameObject.Find("ic120").transform.position.z);
                 rotation_for_list = targetObject.transform.rotation;
                 rotation_list.Add(rotation_for_list.eulerAngles);
 
@@ -755,9 +681,7 @@ public class VR_cont_2 : MonoBehaviour
                 //////////////
                 /////////////
                 
-                timeElapsed_adopt = 0.0f;
             }
-            //previousTime_adopt = time_adopt;
         }
     }
 

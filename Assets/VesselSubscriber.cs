@@ -34,8 +34,14 @@ public class VesselSubscriber : MonoBehaviour
             Debug.Log("No ArticulationBody are found");
         }
 
-        if (ViaDB = true) { SubscriberTopicName = ViaDBVesselSubscriberTopicName; }
-        else if (ViaDB = false) { SubscriberTopicName = VesselSubscriberTopicName; }
+        if (ViaDB == true) 
+        { 
+            SubscriberTopicName = ViaDBVesselSubscriberTopicName; 
+        }
+        else if (ViaDB == false) 
+        {
+            SubscriberTopicName = VesselSubscriberTopicName; 
+        }
         ros.Subscribe<JointStateMsg>(SubscriberTopicName, ExecuteVesselControl);
     }
 

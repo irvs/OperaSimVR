@@ -1,7 +1,6 @@
 using UnityEngine;
 public class ControllerLay : MonoBehaviour
 {
-    int warp_triger = 0;
     public string GetOnVehicle;
 
    // public vrcmdvelcontroller VRcont;

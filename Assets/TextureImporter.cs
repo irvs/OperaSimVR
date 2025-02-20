@@ -12,7 +12,7 @@ public class ROSImageReceiver : MonoBehaviour
 
     void Start()
     {
-        ros = ROSConnection.instance;
+        ros = ROSConnection.GetOrCreateInstance();
         ros.Subscribe<ImageMsg>(topicName, OnImageReceived);
     }
 

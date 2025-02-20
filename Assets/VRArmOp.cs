@@ -10,7 +10,6 @@ using static UnityEditor.Experimental.GraphView.GraphView;
 using System.Drawing;
 using System.Drawing.Printing;
 using System.Linq;
-//using RosMessageTypes.Com3;
 using static UnityEngine.GraphicsBuffer;
 using System.ComponentModel.Composition.Primitives;
 using System.Runtime.Remoting.Messaging;
@@ -25,11 +24,10 @@ public class JointAnglePublisher : MonoBehaviour
     mode_selector selected_mode;
     public int sw = 0;
     public bool emergency;
-    public bool SimORReal=false;
+    public bool SimORReal = false;
     public int key = 0;
     public float linearspeed = 1.00f;
     public float rotspeed = 0.50f;
-    int cmd_operation = 0;
     float movespeed = 0.01f;
     ROSConnection ros;
     FieldMainManager SimORRealSelecter;
@@ -47,7 +45,6 @@ public class JointAnglePublisher : MonoBehaviour
     public string EmergencyTopicName;
     public float publishMessageFrequency = 0.5f;
     public float publishMessageInterval = 0.02f;//50Hz
-    public GameObject targetObject;
     private float timeElapsed;
     private float sw_timeElapsed = 0.0f;
     private float frontback;
@@ -84,7 +81,6 @@ public class JointAnglePublisher : MonoBehaviour
     public GameObject PlayertargetObject;
     //
     public int control_mode = 0;
-    List<float>Current_joint_CMD_List= new List<float>();
     public float Time_Delay = 5.0f;
     private float timeElapsed_start = 0.0f;
     //
@@ -93,10 +89,6 @@ public class JointAnglePublisher : MonoBehaviour
     {
         VRManager = FindObjectOfType<Controller_manager>();
         ros = ROSConnection.GetOrCreateInstance();
-        if (VRManager != null)
-        {
-            Debug.Log("Player's health is: " + VRManager.num);
-        }
         //
         SimORRealSelecter = FindObjectOfType<FieldMainManager>();
         if (SimORRealSelecter.ForSimOrReal.ToString() == "ForSimPhysX")
@@ -241,15 +233,9 @@ public class JointAnglePublisher : MonoBehaviour
                     sw_timeElapsed = 0.0f;
                 }
 
-                if (VRManager.Player_posi_mover_SW == 0 && sw != 1)
-                {
-                    cmd_operation = 0;
 
-                }
                 else if (VRManager.Player_posi_mover_SW > 0 || sw == 1)
                 {
-                    cmd_operation = 1;
-                    //Debug.Log("geton");
 
                     selected_mode = FindObjectOfType<mode_selector>();
                     dissconnect_timer += Time.deltaTime;
