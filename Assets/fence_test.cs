@@ -50,8 +50,6 @@ public class Fence_test : MonoBehaviour
         if (Physics.Raycast(objectA.position, direction.normalized, out hit, direction.magnitude, collisionLayer))
         {
             // 衝突した場合の処理
-            //Debug.Log("衝突しました！衝突したオブジェクト: " + hit.collider.gameObject.name);
-            // 例えば、衝突した位置を可視化するなど
             Debug.DrawLine(objectA.position, hit.point, Color.red);
             // 親オブジェクトの名前を取得
             Transform parentTransform = hit.collider.transform.root;

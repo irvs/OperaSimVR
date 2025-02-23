@@ -7,6 +7,7 @@ public class Player_Key_mover : MonoBehaviour
     private float Playerlinear;
     private float PlayerUpper;
     private float PlayerSide;
+    private float PlayerFrontRot;
     public float LinearSpeed = 0.01f;
     public float AngularSpeed = 0.2f;
     public float UpperSpeed = 0.01f;
@@ -24,11 +25,11 @@ public class Player_Key_mover : MonoBehaviour
         if (VRManager.GetOnMachine != 1)//VRcontroller.sw != 1)
         {
             GameObject.Find("OVRPlayerController").GetComponent<Collider>().enabled = false;
-            if (Input.GetKeyDown(KeyCode.UpArrow) && Input.GetKey(KeyCode.LeftShift) == false)
+            if (Input.GetKeyDown(KeyCode.UpArrow) && Input.GetKey(KeyCode.LeftShift) == false && Input.GetKey(KeyCode.RightShift) == false)
             {
                 Playerlinear = LinearSpeed;
             }
-            else if (Input.GetKeyDown(KeyCode.DownArrow) && Input.GetKey(KeyCode.LeftShift) == false)
+            else if (Input.GetKeyDown(KeyCode.DownArrow) && Input.GetKey(KeyCode.LeftShift) == false && Input.GetKey(KeyCode.RightShift) == false)
             {
                 Playerlinear = -LinearSpeed;
             }
@@ -66,6 +67,7 @@ public class Player_Key_mover : MonoBehaviour
             {
                 PlayerSide = 0.0f;
             }
+            
             //transform.Rotate(Vector3.right * 0.1f * Time.deltaTime);
             //OVRCameraRigÇÃà íuïœçX
             GameObject.Find("OVRPlayerController").transform.position += GameObject.Find("OVRPlayerController").transform.rotation * (new Vector3(PlayerSide, 0, (Playerlinear)));
@@ -79,6 +81,14 @@ public class Player_Key_mover : MonoBehaviour
                 else if (Input.GetKey(KeyCode.RightArrow) && Input.GetKey(KeyCode.LeftShift) == false)
                 {
                     GameObject.Find("OVRPlayerController").transform.Rotate(0, AngularSpeed, 0);
+                }
+                else if (Input.GetKey(KeyCode.UpArrow) && Input.GetKey(KeyCode.LeftShift) == false && Input.GetKey(KeyCode.RightShift) == true)
+                {
+                    GameObject.Find("OVRCameraRig").transform.Rotate(-AngularSpeed, 0, 0);
+                }
+                else if (Input.GetKey(KeyCode.DownArrow) && Input.GetKey(KeyCode.LeftShift) == false && Input.GetKey(KeyCode.RightShift) == true)
+                {
+                    GameObject.Find("OVRCameraRig").transform.Rotate(AngularSpeed, 0, 0);
                 }
             }
         }

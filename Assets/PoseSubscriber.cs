@@ -39,6 +39,7 @@ public class PoseSubscriber : MonoBehaviour
     public Quaternion newRotation;
     public GameObject SelectorObject;
     Model_name MachineManager;
+    private bool IsPapermachine;
 
 
     void Start()
@@ -79,6 +80,11 @@ public class PoseSubscriber : MonoBehaviour
             {
                 ros.Subscribe<OdometryMsg>(ViaDBSubscribeTopicName, CallbackOd);
             }
+        }
+        MachineManager = GetComponent<Model_name>();
+        if (MachineManager.ObjectTypeIsPaperMachine == true)
+        {
+            IsPapermachine = true;
         }
         Debug.Log("already:baselink/pose");
     }
@@ -210,7 +216,7 @@ public class PoseSubscriber : MonoBehaviour
         chenged_orientation = NewRotation.eulerAngles - rot_offset;
 
         mode = SelectorObject.GetComponent<mode_selector>();
-        if (mode.mode == 1) //Visual tool
+        if (mode.mode == 1 || (IsPapermachine == true && mode.mode == 2)) //Visual tool
         {
             if (chenge_position_sw == true)
             {

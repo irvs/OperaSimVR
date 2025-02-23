@@ -14,6 +14,9 @@ public class TerrainCollisionPoint : MonoBehaviour
     public Transform endPoint;    // 終点
     public LineRenderer lineRenderer;  // LineRendererの参照
     public GameObject spherePrefab;  // 衝突位置に生成する球のPrefab
+
+    // 生成された球を管理するリスト
+    private List<GameObject> sphereObjects = new List<GameObject>();
     void Start()
     {
         // LineRendererが設定されていない場合、エラーを防ぐ
@@ -52,7 +55,7 @@ public class TerrainCollisionPoint : MonoBehaviour
             }
         }
         Geton_controller_manager = this.GetComponent<Controller_manager>();
-        if ((Geton_controller_manager.GetOnMachine == 0 && OVRInput.Get(OVRInput.RawButton.LIndexTrigger)) || (Geton_controller_manager.GetOnMachine == 0 && Input.GetKeyDown(KeyCode.B)))
+        if ((Geton_controller_manager.GetOnMachine == 0 && OVRInput.Get(OVRInput.RawButton.LIndexTrigger)) || (Geton_controller_manager.GetOnMachine == 0 && Input.GetKey(KeyCode.B)))
         {
             PathForDB.Add(collisionPoint);
             lineRenderer.positionCount += 1;
@@ -111,7 +114,21 @@ public class TerrainCollisionPoint : MonoBehaviour
         // 球のPrefabが設定されている場合にインスタンス化
         if (spherePrefab != null)
         {
-            Instantiate(spherePrefab, position, Quaternion.identity);
+            // 球を生成
+            GameObject sphere = Instantiate(spherePrefab, position, Quaternion.identity);
+
+            // 生成した球をリストに追加
+            sphereObjects.Add(sphere);
+
+            // もしリストに3つ以上のオブジェクトがある場合、古いものを削除
+            if (sphereObjects.Count > 1)
+            {
+                // 最も古いオブジェクトを削除
+                Destroy(sphereObjects[0]);
+                // リストから削除
+                sphereObjects.RemoveAt(0);
+            }
         }
     }
+
 }

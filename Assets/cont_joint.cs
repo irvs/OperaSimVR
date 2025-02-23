@@ -93,19 +93,10 @@ public class cont_joint : MonoBehaviour
         if (sw == 1)
         {
 
-            if (VRManager.Player_posi_mover_SW == 0 && sw != 1)
+            if (VRManager.Player_posi_mover_SW > 0 || sw == 1)
             {
-                cmd_operation = 0;
-
-            }
-            else if (VRManager.Player_posi_mover_SW > 0 || sw == 1)
-            {
-                cmd_operation = 1;
-                //Debug.Log("geton");
-
                 selected_mode = FindObjectOfType<mode_selector>();
                 
-
                 OVRPlayerController scriptA = targetObject.GetComponent<OVRPlayerController>();
                 if (scriptA != null)
                 {
