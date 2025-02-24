@@ -16,7 +16,6 @@ public class PoseSubscriber : MonoBehaviour
     public bool WorldToMap;
     public enum PoseMessageType { OdometryMsg, PoseStampedMsg }
     public PoseMessageType PoseMsgType;
-    public string robotName = "robot_name";
     public GameObject targetObject;
     public string SimPhysXSubscribeTopicName;
     public string SimAGXSubscribeTopicName;
