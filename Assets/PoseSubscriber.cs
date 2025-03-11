@@ -223,7 +223,7 @@ public class PoseSubscriber : MonoBehaviour
             }
             targetObject.transform.eulerAngles = chenged_orientation;
         }
-        Debug.Log("pose changed");
+       // Debug.Log("pose changed");
     }
 
 }

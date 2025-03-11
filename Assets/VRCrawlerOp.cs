@@ -178,9 +178,7 @@ public class VR_cont_2 : MonoBehaviour
             sw_timeElapsed += Time.deltaTime;
             if (sw_timeElapsed >= publishMessageInterval * 50.0f)
             {
-                BoolMsg message = new BoolMsg(
-                    false
-                    );
+                BoolMsg message = new BoolMsg(false);
                 ros.Publish(controller_swTopicName, message);
                 sw_timeElapsed = 0.0f;
                 timeElapsed = 0.0f;
@@ -345,7 +343,7 @@ public class VR_cont_2 : MonoBehaviour
                     }
                     //
                     /*
-                    if ((timeElapsed >= publishMessageInterval && control_mode == 0) || (timeElapsed_CMD >= publishMessageInterval && (control_mode == 1 && mode.mode == 2));
+                    if (timeElapsed >= publishMessageInterval);
                     {
                         vel_linear_acceleration = (frontback - CMD_linear_list[CMD_linear_list.Count - 1]) / (publishMessageInterval);
                         if (vel_linear_acceleration > max_lnear_accel_per_pub && frontback >= (CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_accel_per_pub))
@@ -364,6 +362,21 @@ public class VR_cont_2 : MonoBehaviour
                         else if (vel_angular_acceleration < max_angular_deceleration_per_pub && rotation <= (CMD_anglar_list[CMD_anglar_list.Count - 1] + max_angular_accel_per_pub))
                         {
                             rotation = CMD_anglar_list[CMD_anglar_list.Count - 1] + max_angular_deceleration_per_pub;
+                        }
+                        CMD_linear_list.Add(frontback);
+                        CMD_linear_list_for_cyber.Add(frontback);
+                        CMD_anglar_list.Add(rotation);
+                        CMD_anglar_list_for_cyber.Add(rotation);
+                       // CMD_linear_list_for_cyber.Add(frontback * adapter1 + adapter2);
+                      //  CMD_anglar_list_for_cyber.Add(rotation + rotadapter);
+                        if(control_mode == 0)
+                        {
+                            linear.x = frontback;
+                            angular.z = rotation;
+                            TwistMsg Twist = new TwistMsg(linear,angular);
+                            //  Debug.Log("Publish On Time");
+                            ros.Publish(SRPublishTopicName, Twist);
+                            timeElapsed = 0.0f;
                         }
                     }
                     */
@@ -445,13 +458,12 @@ public class VR_cont_2 : MonoBehaviour
                                 moover_sw = 2;
                             }
                         }
-
                         if (moover_sw != 1)
                         {
                             frontback = 0.0f;
                             rotation = 0.0f;
                         }
-                        if (timeElapsed_CMD >= publishMessageInterval)
+                        if (timeElapsed >= publishMessageInterval)
                         {
                             vel_linear_acceleration = (frontback - CMD_linear_list[CMD_linear_list.Count - 1]) / (publishMessageInterval);
 
@@ -472,27 +484,24 @@ public class VR_cont_2 : MonoBehaviour
                             {
                                 rotation = CMD_anglar_list[CMD_anglar_list.Count - 1] + max_angular_deceleration_per_pub;
                             }
-
                             CMD_linear_list.Add(frontback);
                             CMD_linear_list_for_cyber.Add(frontback * adapter1 + adapter2);
                             CMD_anglar_list.Add(rotation);
                             CMD_anglar_list_for_cyber.Add(rotation + rotadapter);
-                            timeElapsed_CMD = 0.0f;
+                            timeElapsed = 0.0f;
                         }
 
                         if (timeElapsed_start > (Time_Delay + 5.0f) && CMD_linear_list.Count - (Mathf.RoundToInt(Time_Delay / publishMessageInterval)) - 1 >= 0 && CMD_anglar_list.Count - (Mathf.RoundToInt(Time_Delay / publishMessageInterval)) - 1 >= 0)
                         {
-                            //
                             int CMD_time = Mathf.RoundToInt(Time_Delay / publishMessageInterval);
                             linear.x = CMD_linear_list[CMD_linear_list.Count - CMD_time - 1];
                             angular.z = CMD_anglar_list[CMD_anglar_list.Count - CMD_time - 1];
                             TwistMsg Twist = new TwistMsg(linear,angular);
-                            //
-                            if (timeElapsed >= publishMessageInterval)
+                            if (timeElapsed_CMD >= publishMessageInterval)
                             {
                                 // Debug.Log("Publish After Delay Time");
                                 ros.Publish(SRPublishTopicName, Twist);
-                                timeElapsed = 0.0f;
+                                timeElapsed_CMD = 0.0f;
                             }
                         }
                         RealPosition = GetComponent<PoseSubscriber>();
