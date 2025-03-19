@@ -39,7 +39,7 @@ public class cont_joint : MonoBehaviour
     private List<ArticulationBody> targetjoints;
     private List<string> targetjointNames;
     private double targetPos;
-    public enum JointContorollerModeOption { Velocity, Fource }
+    public enum JointContorollerModeOption { Velocity, Position }
 
     public JointContorollerModeOption JointContorollerMode;
     //Twist
@@ -64,7 +64,7 @@ public class cont_joint : MonoBehaviour
 
 
     //
-    public GameObject Player;
+    public GameObject targetPlayerObject;
     public GameObject targetObject;
     //
     //call back
@@ -97,7 +97,7 @@ public class cont_joint : MonoBehaviour
             {
                 selected_mode = FindObjectOfType<mode_selector>();
                 
-                OVRPlayerController scriptA = targetObject.GetComponent<OVRPlayerController>();
+                OVRPlayerController scriptA = targetPlayerObject.GetComponent<OVRPlayerController>();
                 if (scriptA != null)
                 {
                     //Debug.Log("kaitennha" + scriptA.RotationRatchet);
@@ -107,13 +107,9 @@ public class cont_joint : MonoBehaviour
                 }
                 //
 
-                ///////////////////////////////////////////////////
-                ///////////////////////////////////////////////////
-                /////////////////////////////////////////////////////////////////////////////////////
-                ////////////////////////////////////////////////////////////////////////////////////
                 if(PoseVeloSelector.ForSimOrReal.ToString() == "ForSimPhysX")
                 {
-                    JointContorollerMode = JointContorollerModeOption.Fource;
+                    JointContorollerMode = JointContorollerModeOption.Position;
                 }
                 else if (PoseVeloSelector.ForSimOrReal.ToString() == "ForSimAGX")
                 {
@@ -127,7 +123,6 @@ public class cont_joint : MonoBehaviour
                 timeElapsed += Time.deltaTime;
                 if (timeElapsed > publishMessageFrequency)
                 {
-
                     timeElapsed = 0;
                 }
                 /*
@@ -152,7 +147,6 @@ public class cont_joint : MonoBehaviour
                 targetjoints = new List<ArticulationBody>();
                 targetjointNames = new List<string>();
                 //
-                targetObject = GameObject.Find("zx200");
                 //
                 int j = 0;
                 foreach (var joint in targetObject.GetComponentsInChildren<ArticulationBody>())
@@ -160,20 +154,14 @@ public class cont_joint : MonoBehaviour
                     //Debug.Log(joint);
                     if (joint.isActiveAndEnabled)
                     {
-                        //Debug.Log("abbbbbbbbbbbbbb");
-                        //Debug.Log(joint);
-                        //Debug.Log(j);
                         var targetujoint = joint.GetComponent<UrdfJoint>();
                         if (targetujoint && !(targetujoint is UrdfJointFixed))
                         {
-                            //Debug.Log("abbbbbbbbbbbbbb");
                             targetjoints.Add(joint);
                             targetjointNames.Add(targetujoint.jointName);
                             //
-                            //targetPos = msg[j];
                             if (FromVRJointController.listOfJointCmdList.Count - 1 >= 0)
                             {
-
                                 targetPos = FromVRJointController.listOfJointCmdList[FromVRJointController.listOfJointCmdList.Count - 1][j];
                                 Debug.Log(targetPos);
                                 if (j == 2)
@@ -183,7 +171,6 @@ public class cont_joint : MonoBehaviour
                                 targetPos = targetPos * 500.0f;
                                 var drive = joint.xDrive;//targetjoints[i].xDrive;
 
-
                                 if (JointContorollerMode.ToString() == "Velocity")
                                 {
                                     //targetVelocity = 1.1f;
@@ -191,31 +178,19 @@ public class cont_joint : MonoBehaviour
                                     drive.targetVelocity = (float)targetPos;
                                     joint.xDrive = drive;
                                 }
-                                else if (JointContorollerMode.ToString() == "Fource")
+                                else if (JointContorollerMode.ToString() == "Position")
                                 {
                                     drive.driveType = ArticulationDriveType.Force;
                                     drive.target = (float)(targetPos * Mathf.Rad2Deg);
                                     joint.xDrive = drive;//targetjoints[i].xDrive = drive;
-                                                         //Debug.Log(j + "abcd" + joint + " " + targetPos);
                                 }
-
                                 j += 1;
                             }
                         }
                     }
                 }
-
-
             }
         }
-        /*
-        if ((laiser.conum_zx200 > 0) && OVRInput.GetDown(OVRInput.RawButton.B) && (laiser.num == 1))
-        {
-            scriptA.RotationRatchet = 45;
-            scriptA.RotationAmount = 0.5f;
-            Debug.Log("kaitennha" + scriptA.RotationRatchet + scriptA.RotationAmount);
-        }
-        */
     }
 }
 
