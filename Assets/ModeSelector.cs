@@ -54,10 +54,6 @@ public class mode_selector : MonoBehaviour
             GameObject.Find("zx200").GetComponent<PoseSubscriber>().enabled = false;
             //clock
             GameObject.Find("ROS").transform.Find("WorldClock").gameObject.GetComponent<ROSClockPublisher>().enabled = true;
-            //vr controller
-        //    GameObject.Find("vr_cmd_vel_cont").GetComponent<vrcmdvelcontroller>().enabled = false;
-            //GameObject.Find("vr_cmd_vel_cont").GetComponent<JointAnglePublisher>().enabled = false;
-        //    GameObject.Find("vr_cmd_vel_cont").GetComponent<vrcmdc30rvelcontroller>().enabled = false;
 
 
         }
@@ -96,9 +92,6 @@ public class mode_selector : MonoBehaviour
             //clock
             GameObject.Find("ROS").transform.Find("WorldClock").gameObject.GetComponent<ROSClockPublisher>().enabled = false;
             //vr controller
-       //     GameObject.Find("vr_cmd_vel_cont").GetComponent<vrcmdvelcontroller>().enabled = false;
-       //     GameObject.Find("vr_cmd_vel_cont").GetComponent<JointAnglePublisher>().enabled = false;
-       //     GameObject.Find("vr_cmd_vel_cont").GetComponent<vrcmdc30rvelcontroller>().enabled = false;
 
 
         }
@@ -139,10 +132,6 @@ public class mode_selector : MonoBehaviour
             GameObject.Find("zx200").GetComponent<JointSubscriber>().enabled = false;
             GameObject.Find("zx200").GetComponent<PoseSubscriber>().enabled = false;
             //GameObject.Find("zx120").GetComponent<PoseSubscriber>().enabled = false;
-            //GameObject.Find("c30r").GetComponent<PoseSubscriber>().enabled = false;
-
-            //vr controller
-            //GameObject.Find("vr_cmd_vel_cont").GetComponent<vrcmdvelcontroller>().enabled = true;
 
 
             //clock

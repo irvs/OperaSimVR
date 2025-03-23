@@ -17,6 +17,7 @@ public class MapToWorld : MonoBehaviour
     private Vector3 ModifyWorldPosition;
     public float awaitingdebugTimestamp;
     public float requestInterval = 5.0f;
+    public bool DebugSw;
 
     // Start is called before the first frame update
     void Start()
@@ -35,7 +36,7 @@ public class MapToWorld : MonoBehaviour
         ModifyWorldPosition = new Vector3(WorldPosition.z, WorldPosition.x, WorldPosition.y);
         ModifyMapRot = new Quaternion(TargetObject.transform.rotation.x, TargetObject.transform.rotation.z, TargetObject.transform.rotation.w, TargetObject.transform.rotation.y);
 
-        if (Time.time > awaitingdebugTimestamp)
+        if (Time.time > awaitingdebugTimestamp && DebugSw == true)
         {
             Debug.Log(MapPosition);
             Debug.Log(ModifyMapPosition);

@@ -43,7 +43,6 @@ public class JointAnglePublisher : MonoBehaviour
     public string RealSubscribeTopicName;
     public string controller_swTopicName = "controller_sw_zx200";
     public string EmergencyTopicName;
-    public float publishMessageFrequency = 0.5f;
     public float publishMessageInterval = 0.02f;//50Hz
     private float timeElapsed;
     private float sw_timeElapsed = 0.0f;
@@ -70,15 +69,15 @@ public class JointAnglePublisher : MonoBehaviour
     float RBack = 0.0f;
     float LFront = 0.0f;
     float LBack = 0.0f;
-    private List<string> jointNames; 
-    private List<double> positions; 
-    private List<double> velocities; 
+    private List<string> jointNames;
+    private List<double> positions;
+    private List<double> velocities;
     private List<double> efforts;
     private List<double> JointPositions;
     private List<ArticulationBody> joints;
     private double[] Jointposition;
     //
-    public GameObject PlayertargetObject;
+    GameObject PlayertargetObject;
     //
     public int control_mode = 0;
     public float Time_Delay = 5.0f;
@@ -89,6 +88,7 @@ public class JointAnglePublisher : MonoBehaviour
     {
         VRManager = FindObjectOfType<Controller_manager>();
         ros = ROSConnection.GetOrCreateInstance();
+        PlayertargetObject = GameObject.Find("OVRPlayerController");
         //
         SimORRealSelecter = FindObjectOfType<FieldMainManager>();
         if (SimORRealSelecter.ForSimOrReal.ToString() == "ForSimPhysX")
@@ -113,7 +113,6 @@ public class JointAnglePublisher : MonoBehaviour
         }
         else if (SimORReal == false)
         {
-            
             ros.RegisterPublisher<Float64Msg>(topicName_swing);
             ros.RegisterPublisher<Float64Msg>(topicName_boom);
             ros.RegisterPublisher<Float64Msg>(topicName_arm);
@@ -124,9 +123,9 @@ public class JointAnglePublisher : MonoBehaviour
         ros.RegisterPublisher<BoolMsg>(EmergencyTopicName);
         //
         // ジョイント名、位置、速度、力の初期化
-        jointNames = new List<string> { "swing_joint", "boom_joint", "arm_joint", "bucket_joint", "bucket_end_joint" }; 
-        positions = new List<double> { 0.0, 0.0, 0.0, 0.0, 0.0 }; 
-        velocities = new List<double> { 0.0, 0.0, 0.0, 0.0, 0.0 }; 
+        jointNames = new List<string> { "swing_joint", "boom_joint", "arm_joint", "bucket_joint", "bucket_end_joint" };
+        positions = new List<double> { 0.0, 0.0, 0.0, 0.0, 0.0 };
+        velocities = new List<double> { 0.0, 0.0, 0.0, 0.0, 0.0 };
         efforts = new List<double> { 0.0, 0.0, 0.0, 0.0, 0.0 };
         JointPositions = new List<double> { 0.0, 0.0, 0.0, 0.0, 0.0 };
         //List<double> jointCmd = new List<double> { 0.0, 0.0, 0.0, 0.0 };
@@ -147,7 +146,7 @@ public class JointAnglePublisher : MonoBehaviour
                 }
             }
         }
-}
+    }
     void Update()
     {
 
@@ -164,7 +163,7 @@ public class JointAnglePublisher : MonoBehaviour
               true
               );
             //
-            if (timeElapsed >= publishMessageFrequency / 2.0f)
+            if (timeElapsed >= publishMessageInterval * 20.0f)
             {
                 ros.Publish(EmergencyTopicName, EMGmessage);
                 //
@@ -223,16 +222,13 @@ public class JointAnglePublisher : MonoBehaviour
             {
                 if (sw_timeElapsed >= publishMessageInterval * 50.0f)
                 {
-                    BoolMsg message = new BoolMsg(
-                        true
-                        );
+                    BoolMsg message = new BoolMsg(true);
                     ros.Publish(controller_swTopicName, message);
                     sw_timeElapsed = 0.0f;
                 }
 
                 else if (VRManager.Player_posi_mover_SW > 0 || sw == 1)
                 {
-
                     selected_mode = FindObjectOfType<mode_selector>();
                     dissconnect_timer += Time.deltaTime;
                     timeElapsed_start += Time.deltaTime;
@@ -249,12 +245,12 @@ public class JointAnglePublisher : MonoBehaviour
                     {
                         if (Input.GetKey(KeyCode.Y)){goalpose_swing += 0.005f;}
                         if (Input.GetKey(KeyCode.H)){goalpose_swing -= 0.005f;}
-                        if (Input.GetKey(KeyCode.U) && goalpose_boom <= 0.9594){goalpose_boom += 0.005f;}
-                        if (Input.GetKey(KeyCode.J) && goalpose_boom >= -1.2211){goalpose_boom -= 0.005f;}
+                        if (Input.GetKey(KeyCode.U) && goalpose_boom <= 0.9594){goalpose_boom += 0.01f;}
+                        if (Input.GetKey(KeyCode.J) && goalpose_boom >= -1.2211){goalpose_boom -= 0.01f;}
                         if (Input.GetKey(KeyCode.I) && goalpose_arm <= 2.35){goalpose_arm += 0.005f;}
                         if (Input.GetKey(KeyCode.K) && goalpose_arm >= 0.785){goalpose_arm -= 0.005f;}
-                        if (Input.GetKey(KeyCode.O) && goalpose_bucket <= 1.39555){goalpose_bucket += 0.005f;}
-                        if (Input.GetKey(KeyCode.L) && goalpose_bucket >= -1.2211){goalpose_bucket -= 0.005f;}
+                        if (Input.GetKey(KeyCode.O) && goalpose_bucket <= 1.39555){goalpose_bucket += 0.01f;}
+                        if (Input.GetKey(KeyCode.L) && goalpose_bucket >= -1.2211){goalpose_bucket -= 0.01f;}
 
                         //key
                         if (key == 1)
@@ -287,7 +283,6 @@ public class JointAnglePublisher : MonoBehaviour
                             if (goalpose_arm >= 0.785 && goalpose_arm <= 2.35)
                             {
                                 goalpose_arm += -stickL.y;
-
                             }
                             else if (goalpose_arm <= 0.785 && -stickL.y > 0)
                             {
@@ -297,7 +292,6 @@ public class JointAnglePublisher : MonoBehaviour
                             {
                                 goalpose_arm += -stickL.y;
                             }
-
                         }
                         if ((Mathf.Abs((OVRInput.Get(OVRInput.RawAxis2D.RThumbstick)).y) > 0.3))
                         {
@@ -313,7 +307,6 @@ public class JointAnglePublisher : MonoBehaviour
                             {
                                 goalpose_boom += stickR.y;
                             }
-                            Debug.Log("swingtest" + goalpose_boom);
                         }
                         if ((Mathf.Abs((OVRInput.Get(OVRInput.RawAxis2D.RThumbstick)).x) > 0.3))
                         {
@@ -350,7 +343,6 @@ public class JointAnglePublisher : MonoBehaviour
                             if (Jointposition[2] <= 2.35 && Jointposition[2] >= 0.959)
                             {
                                 velocity_of_arm = -0.5f * stickL.y;
-
                             }
                             if (Jointposition[2] <= 0.959 || Jointposition[2] >= 2.35)
                             {
@@ -364,7 +356,6 @@ public class JointAnglePublisher : MonoBehaviour
                             {
                                 velocity_of_arm = -0.5f * stickL.y;
                             }
-
                         }
                         else if (Mathf.Abs((OVRInput.Get(OVRInput.RawAxis2D.LThumbstick)).y) > 0.3)
                         {
@@ -518,7 +509,6 @@ public class JointAnglePublisher : MonoBehaviour
                             velocity_of_bucket = 0.0f;
                         }  
                     }
-                    //Debug.Log("swingtest" + goalpose_swing + ":" + -stickL.x);
                     //////////////////////////////////////////////////
                     //////////////////////////////////////////////////twist
                     RBack = OVRInput.Get(OVRInput.RawAxis1D.RHandTrigger);
@@ -526,35 +516,32 @@ public class JointAnglePublisher : MonoBehaviour
                     LBack = OVRInput.Get(OVRInput.RawAxis1D.LHandTrigger);
                     LFront = OVRInput.Get(OVRInput.RawAxis1D.LIndexTrigger);
 
-                        if (RFront >= 0.5 && LFront >= 0.5)
-                        {
-                            linear.x = (RFront + LFront) / 2;
-                        }
-                        else if (RFront < 0.5 && LFront >= 0.5)
-                        {
-                            //(LFront - RFront)/2
-                            angular.z = 0.3;
-                        }
-                        else if (RFront >= 0.5 && LFront < 0.5)
-                        {
-                            angular.z = -0.3;
-                        }
-                        else
-                        {
-                            linear.x = 0;
-                            angular.x = 0;
-                        }
-
+                    if (RFront >= 0.5 && LFront >= 0.5)
+                    {
+                        linear.x = (RFront + LFront) / 2;
+                    }
+                    else if (RFront < 0.5 && LFront >= 0.5)
+                    {
+                        //(LFront - RFront)/2
+                        angular.z = 0.3;
+                    }
+                    else if (RFront >= 0.5 && LFront < 0.5)
+                    {
+                        angular.z = -0.3;
+                    }
+                    else
+                    {
+                        linear.x = 0;
+                        angular.x = 0;
+                    }
                     //key
                     if (key == 1)
                     {
                         if (Input.GetKey(KeyCode.Space))
                         {
-                            // OVRManager.display.RecenterPose();
                             frontback = 0.0f;
                             rotation = 0.0f;
                         }
-                        //
                         if (Input.GetKey(KeyCode.LeftArrow))
                         {
                             rotation = rotspeed;
@@ -591,25 +578,14 @@ public class JointAnglePublisher : MonoBehaviour
                         angular.x = rotation;
                     }
 
-                    //for twist
-                    if (linear.x == 0 && angular.z == 0)
-                    {
-                        zerocounter += 1;
-                    }
-                    if ((zerocounter != 0 && linear.x != 0) | (zerocounter != 0 && angular.z != 0))
-                    {
-                        zerocounter = 0;
-                    }
-                    //
                     timeElapsed += Time.deltaTime;
                     sw_timeElapsed += Time.deltaTime;
 
-
-                    if (timeElapsed > publishMessageFrequency)
+                    if (timeElapsed > publishMessageInterval * 20.0f)
                     {
                         if (SimORReal == false)
                         {
-                            Debug.Log(goalpose_swing + "  :  " + goalpose_boom + "  :  " + goalpose_arm + "  :  " + goalpose_bucket);
+                            Debug.Log("goal_pose : " + goalpose_swing + "  :  " + goalpose_boom + "  :  " + goalpose_arm + "  :  " + goalpose_bucket);
                             positions[0] = goalpose_swing;
                             positions[1] = goalpose_boom;
                             positions[2] = goalpose_arm;
@@ -625,21 +601,13 @@ public class JointAnglePublisher : MonoBehaviour
                             }
 
                             Float64Msg angleMessage_swing = new Float64Msg
-                            {
-                                data = goalpose_swing // Set your joint angle here, e.g., transform.rotation.eulerAngles.x//
-                            };
+                            {data = goalpose_swing};
                             Float64Msg angleMessage_boom = new Float64Msg
-                            {
-                                data = goalpose_boom // Set your joint angle here, e.g., transform.rotation.eulerAngles.x//
-                            };
+                            {data = goalpose_boom};
                             Float64Msg angleMessage_arm = new Float64Msg
-                            {
-                                data = goalpose_arm // Set your joint angle here, e.g., transform.rotation.eulerAngles.x//
-                            };
+                            {data = goalpose_arm};
                             Float64Msg angleMessage_bucket = new Float64Msg
-                            {
-                                data = goalpose_bucket // Set your joint angle here, e.g., transform.rotation.eulerAngles.x//
-                            };
+                            {data = goalpose_bucket};
                             
                             //twist
                             TwistMsg Twist = new TwistMsg(
@@ -647,22 +615,18 @@ public class JointAnglePublisher : MonoBehaviour
                                angular
                             );
                             //
-
                             //Publish
                             ros.Publish(topicName_swing, angleMessage_swing);
                             ros.Publish(topicName_boom, angleMessage_boom);
                             ros.Publish(topicName_arm, angleMessage_arm);
                             ros.Publish(topicName_bucket, angleMessage_bucket);
-                            if (zerocounter <= 20)
-                            {
-                                ros.Publish(topicName_cmd_vel, Twist);
-                            }
+                            ros.Publish(topicName_cmd_vel, Twist);
                             timeElapsed = 0;
                         }
 
                         else if (SimORReal == true)
                         {
-                            Debug.Log(velocity_of_swing + "  :  " + velocity_of_boom + "  :  " + velocity_of_arm + "  :  " + velocity_of_bucket);
+                            Debug.Log("velocity : " + velocity_of_swing + "  :  " + velocity_of_boom + "  :  " + velocity_of_arm + "  :  " + velocity_of_bucket);
                             velocities[0] = velocity_of_swing;
                             velocities[1] = velocity_of_boom;
                             velocities[2] = velocity_of_arm;
@@ -671,7 +635,6 @@ public class JointAnglePublisher : MonoBehaviour
                             for (int i = 0; i < joints.Count; i++)
                             {
                                 JointPositions[i] = joints[i].jointPosition[0];
-
                             }
                             listOfJointPositionList.Add(JointPositions);
                             if (control_mode == 1 && selected_mode.mode == 2 && timeElapsed_start > (Time_Delay + 5.0f) && listOfJointCmdList.Count - (Mathf.RoundToInt(Time_Delay / publishMessageInterval)) >= 0)
@@ -681,7 +644,6 @@ public class JointAnglePublisher : MonoBehaviour
                                 velocities[1] = listOfJointCmdList[listOfJointCmdList.Count - 1 - CMD_time][1];
                                 velocities[2] = listOfJointCmdList[listOfJointCmdList.Count - 1 - CMD_time][2];
                                 velocities[3] = listOfJointCmdList[listOfJointCmdList.Count - 1 - CMD_time][3];
-
                             }
                             // List<double> を double[] に変換
                             string[] jointNamesArray = jointNames.ToArray();
@@ -693,7 +655,6 @@ public class JointAnglePublisher : MonoBehaviour
                                     new TimeStamp(Clock.time),
                                     " "
                                     );
-
                             JointStateMsg JointCMD=new JointStateMsg(
                                 header,
                                 jointNamesArray,
@@ -702,19 +663,12 @@ public class JointAnglePublisher : MonoBehaviour
                                 effortsArray
                             );
                             ros.Publish(Real_topicName_joint_velocity, JointCMD);
-                            /*
-                            if (zerocounter <= 20)
-                            {
-                                ros.Publish(topicName_cmd_vel, Twist);
-                            }
-                            */
                             timeElapsed = 0;
                         }
                     }
                 }
             }
         }
-
     }
 
     void Callback(JointStateMsg msg)

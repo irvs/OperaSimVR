@@ -8,7 +8,7 @@ using RosMessageTypes.Sensor;
 using Unity.Robotics.UrdfImporter;
 using Unity.Robotics.Core;
 using System;
-//using MyStringMsg = RosMessageTypes.HelloInterfaces.MyStringMsg;
+
 public class JointSubscriber : MonoBehaviour
 {
     public bool ViaDB;
@@ -18,10 +18,8 @@ public class JointSubscriber : MonoBehaviour
     private double pos_of_boom_joint;
     private double pos_of_arm_joint;
     private double pos_of_bucket_joint;
-    private double pos_of_end_joint;
     private List<ArticulationBody> joints;
     private List<string> jointNames;
-    //
     private List<ArticulationBody> targetjoints;
     private List<string> targetjointNames;
     private double targetPos;
@@ -76,8 +74,6 @@ public class JointSubscriber : MonoBehaviour
 
         if (mode.mode == 1)//Visual tool
         {
-
-
             //
             targetjoints = new List<ArticulationBody>();
             targetjointNames = new List<string>();
@@ -86,7 +82,6 @@ public class JointSubscriber : MonoBehaviour
             pos_of_boom_joint = msg.position[1];
             pos_of_arm_joint = msg.position[2];
             pos_of_bucket_joint = msg.position[3];
-            // pos_of_end_joint = msg.position[4];
             //
             if (JointChengeSw == true)
             {
