@@ -1330,22 +1330,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 1631856785}
   m_Enabled: 1
   m_EditorHideFlags: 0
-<<<<<<< HEAD
-  m_Script: {fileID: 11500000, guid: a955160ba62df9a478a8f69c02b696d8, type: 3}
-=======
   m_Script: {fileID: 11500000, guid: 6e1fa31c80aaa99409351bdf478180a7, type: 3}
->>>>>>> 36254724b5a1a09ba4eb0e255b23c9444de46800
   m_Name: 
   m_EditorClassIdentifier: 
   topicName: /client1/compressed
   skybox: {fileID: 1173748156}
-<<<<<<< HEAD
-  mainCamera: {fileID: 1173748157}
-  displayFrequency: 72
-=======
   displayFrequency: 72
   defaultSkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
->>>>>>> 36254724b5a1a09ba4eb0e255b23c9444de46800
 --- !u!1 &1716687188
 GameObject:
   m_ObjectHideFlags: 0

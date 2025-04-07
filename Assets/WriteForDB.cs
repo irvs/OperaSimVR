@@ -30,7 +30,7 @@ public class WriteForDB : MonoBehaviour
     private List<double> targetpose;
     private List<double> targetrot;
 
-    // ƒT[ƒrƒXƒŠƒNƒGƒXƒg‚ğ‘—M
+    // ï¿½Tï¿½[ï¿½rï¿½Xï¿½ï¿½ï¿½Nï¿½Gï¿½Xï¿½gï¿½ğ‘—M
     void Start()
     {
         ros = ROSConnection.GetOrCreateInstance();
@@ -48,27 +48,16 @@ public class WriteForDB : MonoBehaviour
             RecordType = "Position";
             WriteTarget = "test_PATH";
             //RecordName = "";
-<<<<<<< HEAD
-            targetpose = new List<double> { 0.0f, 0.0f, 0.0f };
-            targetrot = new List<double> { 0.0f, 0.0f, 0.0f, 0.0f };
-=======
             targetpose = new List<double> { 0.0f, 0.0f, 0.0f};
             targetrot = new List<double> { 0.0f, 0.0f, 0.0f, 0.0f};
->>>>>>> 36254724b5a1a09ba4eb0e255b23c9444de46800
 
             if (Time.time > awaitingResponseUntilTimestamp && AcceptedRequest == false)
             {
                 TmsdbTerrainDBPoseWriteSrvRequest DBWriterequest = new TmsdbTerrainDBPoseWriteSrvRequest();
                 DBWriterequest.machine_name = MachineName;
-<<<<<<< HEAD
 
                 DBWriterequest.machine_kinds = MachineKinds;
                 //   DBWriterequest.record_name = RecordName;
-=======
-                
-                DBWriterequest.machine_kinds = MachineKinds;
-             //   DBWriterequest.record_name = RecordName;
->>>>>>> 36254724b5a1a09ba4eb0e255b23c9444de46800
                 DBWriterequest.record_type = RecordType;
                 DBWriterequest.write_target = WriteTarget;
 
@@ -80,11 +69,6 @@ public class WriteForDB : MonoBehaviour
                 DBWriterequest.pose.pose.orientation.y = targetrot[1];
                 DBWriterequest.pose.pose.orientation.z = targetrot[2];
                 DBWriterequest.pose.pose.orientation.w = targetrot[3];
-<<<<<<< HEAD
-
-=======
-                
->>>>>>> 36254724b5a1a09ba4eb0e255b23c9444de46800
                 ros.SendServiceMessage<TmsdbTerrainDBPoseWriteSrvResponse>(serviceName, DBWriterequest, OnServiceResponse);
                 awaitingResponseUntilTimestamp = Time.time + requestInterval;
                 Debug.Log("Service Requested");
