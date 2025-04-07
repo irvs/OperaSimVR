@@ -77,13 +77,13 @@ public class PathWriter : MonoBehaviour
     void Callback(PathMsg msg)
     {
        // mode = FindObjectOfType<mood_selector>();
-        Debug.Log("path_get");
-        Debug.Log(msg.ToString());
-        Debug.Log(msg.poses.ToString());
+      //  Debug.Log("path_get");
+      //  Debug.Log(msg.ToString());
+      //  Debug.Log(msg.poses.ToString());
        // Debug.Log(msg.poses[10].ToString());
         path_list.Clear();
         path_angular_list.Clear();
-        Debug.Log($"Received path with {msg.poses.Length} waypoints"); // 受信したパスのデータを表示
+       // Debug.Log($"Received path with {msg.poses.Length} waypoints"); // 受信したパスのデータを表示
         SimORRealSelecter = FindObjectOfType<FieldMainManager>();
         foreach (var pose in msg.poses) 
         {

@@ -53,10 +53,17 @@ public class VesselSubscriber : MonoBehaviour
 
     void ExecuteVesselControl(JointStateMsg msg)
     {
-        angle_of_vessel = (float)msg.position[1] ;
-       // Debug.Log("Dump Target Position:" + angle_of_vessel);
-        var drive = dump_joint.xDrive;
-        drive.target = (float)(angle_of_vessel * Mathf.Rad2Deg);
-        dump_joint.xDrive = drive;
+        if (msg.position.Length > 1)
+        {
+            angle_of_vessel = (float)msg.position[1];
+            // Debug.Log("Dump Target Position:" + angle_of_vessel);
+            var drive = dump_joint.xDrive;
+            drive.target = (float)(angle_of_vessel * Mathf.Rad2Deg);
+            dump_joint.xDrive = drive;
+        }
+        else
+        {
+           // Debug.LogWarning("Received position array does not have enough elements");
+        }
     }
 }

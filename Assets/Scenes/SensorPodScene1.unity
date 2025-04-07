@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657826, g: 0.49641263, b: 0.57481676, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -1283,6 +1283,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1631856787}
   - component: {fileID: 1631856786}
+  - component: {fileID: 1631856788}
   m_Layer: 0
   m_Name: ThetaImageSubscriber
   m_TagString: Untagged
@@ -1297,7 +1298,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1631856785}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3a329dfba72f94d4eafdef02e0c959b2, type: 3}
   m_Name: 
@@ -1320,6 +1321,22 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1631856788
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1631856785}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a955160ba62df9a478a8f69c02b696d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  topicName: /client1/compressed
+  skybox: {fileID: 1173748156}
+  mainCamera: {fileID: 1173748157}
+  displayFrequency: 72
 --- !u!1 &1716687188
 GameObject:
   m_ObjectHideFlags: 0

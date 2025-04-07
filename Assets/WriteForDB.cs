@@ -1,3 +1,4 @@
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -45,16 +46,18 @@ public class WriteForDB : MonoBehaviour
             MachineName = "ic120";
             MachineKinds = "ic120";
             RecordType = "Position";
-            targetpose = new List<double> { 0.0f, 0.0f, 0.0f};
-            targetrot = new List<double> { 0.0f, 0.0f, 0.0f, 0.0f};
+            WriteTarget = "test_PATH";
+            //RecordName = "";
+            targetpose = new List<double> { 0.0f, 0.0f, 0.0f };
+            targetrot = new List<double> { 0.0f, 0.0f, 0.0f, 0.0f };
 
             if (Time.time > awaitingResponseUntilTimestamp && AcceptedRequest == false)
             {
                 TmsdbTerrainDBPoseWriteSrvRequest DBWriterequest = new TmsdbTerrainDBPoseWriteSrvRequest();
                 DBWriterequest.machine_name = MachineName;
-                /*
+
                 DBWriterequest.machine_kinds = MachineKinds;
-                DBWriterequest.record_name = RecordName;
+                //   DBWriterequest.record_name = RecordName;
                 DBWriterequest.record_type = RecordType;
                 DBWriterequest.write_target = WriteTarget;
 
@@ -66,14 +69,14 @@ public class WriteForDB : MonoBehaviour
                 DBWriterequest.pose.pose.orientation.y = targetrot[1];
                 DBWriterequest.pose.pose.orientation.z = targetrot[2];
                 DBWriterequest.pose.pose.orientation.w = targetrot[3];
-                */
+
                 ros.SendServiceMessage<TmsdbTerrainDBPoseWriteSrvResponse>(serviceName, DBWriterequest, OnServiceResponse);
                 awaitingResponseUntilTimestamp = Time.time + requestInterval;
                 Debug.Log("Service Requested");
             }
         }
-        
-        
+
+
     }
 
     void OnServiceResponse(TmsdbTerrainDBPoseWriteSrvResponse response)
@@ -81,6 +84,6 @@ public class WriteForDB : MonoBehaviour
         Debug.Log("Written!");
 
         AcceptedRequest = true;
-        
+
     }
 }
