@@ -15,7 +15,10 @@ public class ThetaImageSubscriber1 : MonoBehaviour
     private Texture2D texture2D;
     private byte[] imageData;
     public bool isImageReceived = false; // 画像が受信されたかどうかのフラグ
-    private bool SkyChanged = false; 
+    private bool SkyChanged = false;
+
+    private bool isSubscribed = false;
+    private ROSConnection rosConnection;
 
     // 何も設定していないSkyboxを設定するための変数
     public Material defaultSkyboxMaterial;
@@ -23,6 +26,7 @@ public class ThetaImageSubscriber1 : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        rosConnection = ROSConnection.GetOrCreateInstance();
         ROSConnection.GetOrCreateInstance().Subscribe<CompressedImageMsg>(topicName, RenderThetaImage);
         texture2D = new Texture2D(1, 1);
         texture2D.Apply();
@@ -49,6 +53,23 @@ public class ThetaImageSubscriber1 : MonoBehaviour
             }
         //  }
         SkyChanged = isImageReceived;
+
+        // サブスクライブON/OFFの切り替えを行う例
+        if (Input.GetKeyDown(KeyCode.P)) // 'S'キーで切り替え
+        {
+           // Unsubscribe();
+            
+            if (isSubscribed)
+            {
+                Unsubscribe();
+            }
+            else
+            {
+                Subscribe();
+            }
+            
+        }
+
     }
 
     // 画像がサブスクライブされた場合に呼び出されるメソッド
@@ -81,4 +102,28 @@ public class ThetaImageSubscriber1 : MonoBehaviour
     {
         skybox.material = defaultSkyboxMaterial; // 何も設定していないSkyboxに戻す
     }
+
+    // サブスクライブを開始するメソッド
+    private void Subscribe()
+    {
+        if (!isSubscribed)
+        {
+            rosConnection.Subscribe<CompressedImageMsg>(topicName, RenderThetaImage);
+            isSubscribed = true;
+            Debug.Log("Subscribed to the topic: " + topicName);
+        }
+    }
+
+    // サブスクライブを停止するメソッド
+    private void Unsubscribe()
+    {
+        if (isSubscribed)
+        {
+            rosConnection.Unsubscribe(topicName);
+            Debug.Log("Unsubscribed from the topic: 1 : " + topicName);
+            isSubscribed = false;
+            Debug.Log("Unsubscribed from the topic: " + topicName);
+        }
+    }
+
 }
