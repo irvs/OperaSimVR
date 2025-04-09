@@ -14,11 +14,12 @@ public class ThetaImageSubscriber1 : MonoBehaviour
     public float displayFrequency = 72.0f; // Up to 90Hz?
     private Texture2D texture2D;
     private byte[] imageData;
-    public bool isImageReceived = false; // 画像が受信されたかどうかのフラグ
-    private bool SkyChanged = false;
+    public bool isImageReceived = true; // 画像が受信されたかどうかのフラグ
+    private bool SkyChanged = true;
 
     private bool isSubscribed = false;
     private ROSConnection rosConnection;
+    private Vector3 PosOrigin;
 
     // 何も設定していないSkyboxを設定するための変数
     public Material defaultSkyboxMaterial;
@@ -41,16 +42,20 @@ public class ThetaImageSubscriber1 : MonoBehaviour
     void Update()
     {
         // 例えば、何かの条件で切り替え（キー入力など）
-      //  if (Input.GetKeyDown(KeyCode.P)) // スペースキーで切り替える例
-       // {
-            if (isImageReceived == true && SkyChanged != isImageReceived)
-            {
-                ResetSkybox(); // サブスクライブした画像が表示されていればデフォルトのSkyboxに戻す
-            }
-            else if (isImageReceived == false && SkyChanged != isImageReceived)
-            {
-                DisplayImage(); // サブスクライブした画像が無ければ、何も設定していないSkyboxに切り替える
-            }
+        //  if (Input.GetKeyDown(KeyCode.P)) // スペースキーで切り替える例
+        // {
+        if (isImageReceived == true && SkyChanged != isImageReceived)
+        {
+            ResetSkybox(); // サブスクライブした画像が表示されていればデフォルトのSkyboxに戻す
+            Unsubscribe();
+            ResetCameraPosition();
+        }
+        else if (isImageReceived == false && SkyChanged != isImageReceived)
+        {
+            DisplayImage(); // サブスクライブした画像が無ければ、何も設定していないSkyboxに切り替える
+            Subscribe();
+            ChangeCameraPosition();
+        }
         //  }
         SkyChanged = isImageReceived;
 
@@ -108,6 +113,7 @@ public class ThetaImageSubscriber1 : MonoBehaviour
     {
         if (!isSubscribed)
         {
+            rosConnection = ROSConnection.GetOrCreateInstance();
             rosConnection.Subscribe<CompressedImageMsg>(topicName, RenderThetaImage);
             isSubscribed = true;
             Debug.Log("Subscribed to the topic: " + topicName);
@@ -123,7 +129,23 @@ public class ThetaImageSubscriber1 : MonoBehaviour
             Debug.Log("Unsubscribed from the topic: 1 : " + topicName);
             isSubscribed = false;
             Debug.Log("Unsubscribed from the topic: " + topicName);
+            rosConnection = null;
         }
+    }
+
+    private void ChangeCameraPosition()
+    {
+        PosOrigin = GameObject.Find("OVRPlayerController").transform.position;
+        GameObject.Find("OVRPlayerController").GetComponent<CharacterController>().enabled = false;
+        GameObject.Find("OVRPlayerController").GetComponent<Collider>().enabled = false;
+        GameObject.Find("OVRPlayerController").transform.position = new Vector3(0.0f,10000.0f,0.0f);
+    }
+
+    private void ResetCameraPosition()
+    {
+        GameObject.Find("OVRPlayerController").transform.position = PosOrigin;
+       // GameObject.Find("OVRPlayerController").GetComponent<CharacterController>().enabled = true;
+       // GameObject.Find("OVRPlayerController").GetComponent<Collider>().enabled = true;
     }
 
 }
