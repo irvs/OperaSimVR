@@ -150,7 +150,7 @@ public class Controller_manager : MonoBehaviour
                 Quaternion targetRotation = Quaternion.FromToRotation(forward1, forward2);
 
                 // 3. targetObject1‚ðtargetObject2‚Ì³–Ê•ûŒü‚É‡‚í‚¹‚é
-                PlayertargetObject.transform.Rotate(0, targetRotation.eulerAngles.y, 0);
+           //     PlayertargetObject.transform.Rotate(0, targetRotation.eulerAngles.y, 0);
 
                 /*
                 if (Math.Abs(angle - DiffRotPlayerMachine) >= 0.001 )
