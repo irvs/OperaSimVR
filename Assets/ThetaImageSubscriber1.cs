@@ -36,8 +36,10 @@ public class ThetaImageSubscriber1 : MonoBehaviour
     void Update()
     {
         // 例えば、何かの条件で切り替え（キー入力など）
-        //  if (Input.GetKeyDown(KeyCode.P)) // スペースキーで切り替える例
-        // {
+        if (Input.GetKey(KeyCode.LeftShift) ||(OVRInput.GetDown(OVRInput.RawButton.B)) && isImageReceived == true) // スペースキーで切り替える例
+        {
+            isImageReceived = false;
+        }
         if (isImageReceived == true && SkyChanged != isImageReceived)
         {
             ResetSkybox(); // サブスクライブした画像が表示されていればデフォルトのSkyboxに戻す
@@ -53,9 +55,7 @@ public class ThetaImageSubscriber1 : MonoBehaviour
             Subscribe();
             ChangeCameraPosition();
         }
-        //  }
         SkyChanged = isImageReceived;
-
     }
 
     // 画像がサブスクライブされた場合に呼び出されるメソッド
@@ -71,8 +71,6 @@ public class ThetaImageSubscriber1 : MonoBehaviour
             // skyboxにテクスチャを設定
             skybox.material.SetTexture("_MainTex", texture2D);
 
-            // 画像が受信されたことを記録
-            //isImageReceived = false;
         }
     }
 
@@ -109,7 +107,6 @@ public class ThetaImageSubscriber1 : MonoBehaviour
             {
                 Debug.Log("Subscribed topic name is null");
             }
-            
         }
     }
 
@@ -126,7 +123,6 @@ public class ThetaImageSubscriber1 : MonoBehaviour
                 Debug.Log("Unsubscribed from the topic: " + topicName);
                 //  rosConnection = null;
             }
-
         }
     }
 

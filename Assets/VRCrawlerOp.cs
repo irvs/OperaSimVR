@@ -62,7 +62,6 @@ public class VR_cont_2 : MonoBehaviour
     private DateTime nextActionTime;
     //
     public int key = 1;
-    public bool TimeSynchronize;
     //
     Controller_manager VRManager;
     FieldMainManager SimORRealSelecter;
@@ -117,8 +116,6 @@ public class VR_cont_2 : MonoBehaviour
     private float Stop_time = 0.0f;
     private float frontback = 0.0f;
     private float rotation = 0.0f;
-    private long real_unix_time;
-    private System.DateTime real_now_time;
 
     // Start is called before the first frame update
     void Start()
@@ -526,13 +523,6 @@ public class VR_cont_2 : MonoBehaviour
         }
     }
 
-    DateTime UnixTimeToDateTime(long unixTime)
-    {
-        // Unixエポックは1970年1月1日 00:00:00 UTCからの秒数なので、それを基にDateTimeを作成
-        DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-        return epoch.AddSeconds(unixTime).ToLocalTime(); // ローカルタイムに変換
-    }
-
     void Callback1(OdometryMsg msg)
     {
         mode = FindObjectOfType<mode_selector>();
@@ -548,11 +538,6 @@ public class VR_cont_2 : MonoBehaviour
                 rotation_for_list = targetObject.transform.rotation;
                 rotation_list.Add(rotation_for_list.eulerAngles);
 
-                if (TimeSynchronize == true)
-                {
-                    real_unix_time = msg.header.stamp.sec;
-                    real_now_time = UnixTimeToDateTime(real_unix_time);
-                }
                 //////////////
                 //       newPosition = new Vector3(((float)msg.pose.pose.position.x + offset_x), ((float)msg.pose.pose.position.z) + offset_z, ((float)msg.pose.pose.position.y) + offset_y);
                 //       newRotation = new((float)msg.pose.pose.orientation.x, (float)msg.pose.pose.orientation.z, (float)msg.pose.pose.orientation.y, (float)msg.pose.pose.orientation.w);
@@ -584,11 +569,7 @@ public class VR_cont_2 : MonoBehaviour
                 posi_list.Add(targetObject.transform.position);
                 rotation_for_list = targetObject.transform.rotation;
                 rotation_list.Add(rotation_for_list.eulerAngles);
-                if (TimeSynchronize == true)
-                {
-                    real_unix_time = msg.header.stamp.sec;
-                    real_now_time = UnixTimeToDateTime(real_unix_time);
-                }
+
                 Vector3 newPosition = new Vector3(((float)msg.pose.position.x) - ((float)21395.18), ((float)msg.pose.position.z) - offset_y, ((float)msg.pose.position.y - ((float)14034.45)));
                 Quaternion newRotation = new((float)msg.pose.orientation.y * (-1), (float)msg.pose.orientation.z, (float)msg.pose.orientation.x, (float)msg.pose.orientation.w * (-1));
                 Vector3 rot_offset = new Vector3((float)rot_offset_x, (float)rot_offset_y, (float)rot_offset_z);

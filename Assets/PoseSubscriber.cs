@@ -3,13 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using Unity.Robotics.ROSTCPConnector;
 using RosMessageTypes.BuiltinInterfaces;
-using RosMessageTypes.Std;
 using RosMessageTypes.Geometry;
 using RosMessageTypes.Nav;
 using Unity.Robotics.Core;
 using System;
 using static UnityEditor.PlayerSettings;
-//using MyStringMsg = RosMessageTypes.HelloInterfaces.MyStringMsg;
 public class PoseSubscriber : MonoBehaviour
 {
     public bool ViaDB;
@@ -136,84 +134,29 @@ public class PoseSubscriber : MonoBehaviour
 
     void CallbackPS(PoseStampedMsg msg)
     {
-       // mode = SelectorObject.GetComponent<mode_selector>();
         MachineManager = targetObject.GetComponent<Model_name>();
-
         Vector3 newPosition = new Vector3(((float)msg.pose.position.x), ((float)msg.pose.position.z) , ((float)msg.pose.position.y));
         Quaternion newRotation = new((float)msg.pose.orientation.y * (-1), (float)msg.pose.orientation.z, (float)msg.pose.orientation.x, (float)msg.pose.orientation.w * (-1));
         PoseCheanger(newPosition, newRotation, MachineManager.offset_z, MachineManager.offset_y, MachineManager.offset_x, MachineManager.offset_adoptor_x, MachineManager.offset_adoptor_y, MachineManager.offset_adoptor_z);
-
-        /*
-        //Debug.Log(msg.pose.position);
-        //Debug.Log(msg.pose.orientation);
-        Vector3 newPosition = new Vector3(((float)msg.pose.position.x), ((float)msg.pose.position.z) - offset_y, ((float)msg.pose.position.y));
-        if (WorldToMap == true)
-        {
-            newPosition = new Vector3(((float)msg.pose.position.x) - ((float)21395.18), ((float)msg.pose.position.z) - offset_y, ((float)msg.pose.position.y - ((float)14034.45)));
-        }
-        //
-        Quaternion newRotation = new((float)msg.pose.orientation.y * (-1), (float)msg.pose.orientation.z, (float)msg.pose.orientation.x, (float)msg.pose.orientation.w * (-1));
-        rot_offset = new Vector3((float)rot_offset_x, (float)rot_offset_y, (float)rot_offset_z);
-        chenged_orientation = newRotation.eulerAngles - rot_offset;
-
-        //
-        if (mode.mode == 1) //Visual tool
-        {
-            if (chenge_position_sw == true)
-            {
-                targetObject.transform.position = newPosition + new Vector3(GameObject.Find("map_Reference point").transform.position.x, 0, GameObject.Find("map_Reference point").transform.position.z); //GameObject.Find("map_Reference point").transform.position;// -new Vector3(-65,0,50);new Vector3(55.24f, 6.3f, 63.6f);//
-            }
-            targetObject.transform.eulerAngles = chenged_orientation;
-        }
-        */
     }
 
     void CallbackOd(OdometryMsg msg)
     {
-        //  mode = SelectorObject.GetComponent<mode_selector>();
         MachineManager = targetObject.GetComponent<Model_name>();
-
         Vector3 newPosition = new Vector3(((float)msg.pose.pose.position.x), ((float)msg.pose.pose.position.z), ((float)msg.pose.pose.position.y));
         Quaternion newRotation = new((float)msg.pose.pose.orientation.y * (-1), (float)msg.pose.pose.orientation.z, (float)msg.pose.pose.orientation.x, (float)msg.pose.pose.orientation.w * (-1));
         PoseCheanger(newPosition, newRotation, MachineManager.offset_z, MachineManager.offset_y, MachineManager.offset_x, MachineManager.offset_adoptor_x, MachineManager.offset_adoptor_y, MachineManager.offset_adoptor_z);
-
-        /*
-        //Debug.Log(msg.pose.position);
-        //Debug.Log(msg.pose.orientation);
-        Vector3 newPosition = new Vector3(((float)msg.pose.pose.position.x), ((float)msg.pose.pose.position.z) - offset_y, ((float)msg.pose.pose.position.y));
-        if (WorldToMap == true)
-        {
-            newPosition = new Vector3(((float)msg.pose.pose.position.x) - ((float)21395.18), ((float)msg.pose.pose.position.z) - offset_y, ((float)msg.pose.pose.position.y - ((float)14034.45)));
-        }
-        //
-        Quaternion newRotation = new((float)msg.pose.pose.orientation.y * (-1), (float)msg.pose.pose.orientation.z, (float)msg.pose.pose.orientation.x, (float)msg.pose.pose.orientation.w * (-1));
-        rot_offset = new Vector3((float)rot_offset_x, (float)rot_offset_y, (float)rot_offset_z);
-        chenged_orientation = newRotation.eulerAngles - rot_offset;
-
-        //
-        if (mode.mode == 1) //Visual tool
-        {
-            if (chenge_position_sw == true)
-            {
-                targetObject.transform.position = newPosition + new Vector3(GameObject.Find("map_Reference point").transform.position.x, 0, GameObject.Find("map_Reference point").transform.position.z); //GameObject.Find("map_Reference point").transform.position;// -new Vector3(-65,0,50);new Vector3(55.24f, 6.3f, 63.6f);//
-            }
-            targetObject.transform.eulerAngles = chenged_orientation;
-        }
-        */
     }
 
     void PoseCheanger(Vector3 NewPosition, Quaternion NewRotation, float OffsetX, float OffsetY, float OffsetZ, float RotOffsetX, float RotOffsetY, float RotOffsetZ)
     {
         Vector3 ModifyPosition = new Vector3((NewPosition.x), (NewPosition.y) - OffsetY, (NewPosition.z));
-
         if (WorldToMap == true)
         {
             ModifyPosition = new Vector3((NewPosition.x) - OffsetX, (NewPosition.y) - OffsetY, (NewPosition.z - OffsetZ));
         }
-
         rot_offset = new Vector3(RotOffsetX, RotOffsetY, RotOffsetZ);
         chenged_orientation = NewRotation.eulerAngles - rot_offset;
-
         mode = SelectorObject.GetComponent<mode_selector>();
         if (mode.mode == 1 || (IsPapermachine == true && mode.mode == 2)) //Visual tool
         {
@@ -225,5 +168,4 @@ public class PoseSubscriber : MonoBehaviour
         }
        // Debug.Log("pose changed");
     }
-
 }
