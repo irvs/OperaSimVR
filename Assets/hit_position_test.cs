@@ -79,7 +79,7 @@ public class TerrainCollisionPoint : MonoBehaviour
             if (Physics.Raycast(rays, out hits))
             {
                 // 衝突した場合、衝突点を表示
-                Debug.Log("衝突した位置: " + hits.point);
+             //   Debug.Log("衝突した位置: " + hits.point);
             }
         }
     }
@@ -92,22 +92,7 @@ public class TerrainCollisionPoint : MonoBehaviour
             lineRenderer.SetPosition(i, PathForDB[i]);
         }
     }
-    void ConnectRay(Vector3 origin, Vector3 target)
-    {
-        // 始点から終点への方向を計算
-        Vector3 direction = target - origin;
-        // Rayを作成（始点と方向を指定）
-        Ray ray = new Ray(origin, direction);
-        // Rayを可視化（デバッグ用）
-        Debug.DrawRay(origin, direction, Color.red);
-        // Raycastを飛ばして衝突するかを確認
-        RaycastHit hit;
-        if (Physics.Raycast(ray, out hit))
-        {
-            // 衝突した場合、衝突点を表示
-            Debug.Log("衝突した位置: " + hit.point);
-        }
-    }
+
     // 衝突位置に球を生成する関数
     void CreateSphereAtCollisionPoint(Vector3 position)
     {

@@ -36,9 +36,9 @@ public class ThetaImageSubscriber1 : MonoBehaviour
     void Update()
     {
         // 例えば、何かの条件で切り替え（キー入力など）
-        if (Input.GetKey(KeyCode.LeftShift) ||(OVRInput.GetDown(OVRInput.RawButton.B)) && isImageReceived == true) // スペースキーで切り替える例
+        if ((Input.GetKey(KeyCode.B) || OVRInput.GetDown(OVRInput.RawButton.B)) && isImageReceived == false) // スペースキーで切り替える例
         {
-            isImageReceived = false;
+            isImageReceived = true;
         }
         if (isImageReceived == true && SkyChanged != isImageReceived)
         {

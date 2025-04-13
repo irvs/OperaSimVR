@@ -64,7 +64,6 @@ public class JointAnglePublisher : MonoBehaviour
     //Twist
     Vector3Msg linear = new Vector3Msg(0f, 0f, 0f);
     Vector3Msg angular = new Vector3Msg(0f, 0f, 0f);
-    int zerocounter = 0;
     float RFront = 0.0f;
     float RBack = 0.0f;
     float LFront = 0.0f;
