@@ -135,16 +135,16 @@ public class PoseSubscriber : MonoBehaviour
     void CallbackPS(PoseStampedMsg msg)
     {
         MachineManager = targetObject.GetComponent<Model_name>();
-        Vector3 newPosition = new Vector3(((float)msg.pose.position.x), ((float)msg.pose.position.z) , ((float)msg.pose.position.y));
-        Quaternion newRotation = new((float)msg.pose.orientation.y * (-1), (float)msg.pose.orientation.z, (float)msg.pose.orientation.x, (float)msg.pose.orientation.w * (-1));
+        newPosition = new Vector3(((float)msg.pose.position.x), ((float)msg.pose.position.z) , ((float)msg.pose.position.y));
+        newRotation = new((float)msg.pose.orientation.y * (-1), (float)msg.pose.orientation.z, (float)msg.pose.orientation.x, (float)msg.pose.orientation.w * (-1));
         PoseCheanger(newPosition, newRotation, MachineManager.offset_z, MachineManager.offset_y, MachineManager.offset_x, MachineManager.offset_adoptor_x, MachineManager.offset_adoptor_y, MachineManager.offset_adoptor_z);
     }
 
     void CallbackOd(OdometryMsg msg)
     {
         MachineManager = targetObject.GetComponent<Model_name>();
-        Vector3 newPosition = new Vector3(((float)msg.pose.pose.position.x), ((float)msg.pose.pose.position.z), ((float)msg.pose.pose.position.y));
-        Quaternion newRotation = new((float)msg.pose.pose.orientation.y * (-1), (float)msg.pose.pose.orientation.z, (float)msg.pose.pose.orientation.x, (float)msg.pose.pose.orientation.w * (-1));
+        newPosition = new Vector3(((float)msg.pose.pose.position.x), ((float)msg.pose.pose.position.z), ((float)msg.pose.pose.position.y));
+        newRotation = new((float)msg.pose.pose.orientation.y * (-1), (float)msg.pose.pose.orientation.z, (float)msg.pose.pose.orientation.x, (float)msg.pose.pose.orientation.w * (-1));
         PoseCheanger(newPosition, newRotation, MachineManager.offset_z, MachineManager.offset_y, MachineManager.offset_x, MachineManager.offset_adoptor_x, MachineManager.offset_adoptor_y, MachineManager.offset_adoptor_z);
     }
 
@@ -168,4 +168,11 @@ public class PoseSubscriber : MonoBehaviour
         }
        // Debug.Log("pose changed");
     }
+
+    void Update()
+    {
+     //   Debug.Log(newPosition);
+     //   Debug.Log( newRotation);
+    }
+
 }
