@@ -8,6 +8,7 @@ TagManager:
   - wheel
   - manip
   - Terrain
+  - SensorPod
   layers:
   - Default
   - TransparentFX

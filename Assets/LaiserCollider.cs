@@ -5,6 +5,7 @@ public class ControllerLay : MonoBehaviour
 
    // public vrcmdvelcontroller VRcont;
     public string parentObjectName;
+    public string OneBeforeRootObjectName;
     public string hitObjectName;
     public int GetOn = 0;
 
@@ -45,7 +46,7 @@ public class ControllerLay : MonoBehaviour
             //Debug.Log(GameObject.Find(parentObjectName).transform.position);
             //
             Transform current = other.gameObject.transform;
-            // ルート（親がいないところ）までたどる
+            // ルートまでたどる
             while (current.parent.parent != null)
             {
                 current = current.parent;
@@ -55,9 +56,10 @@ public class ControllerLay : MonoBehaviour
             if (parentObjectName != "OVRPlayerController" && parentObjectName != null)
             {
                 GetOnVehicle = parentObjectName;
-                Debug.Log(current);
-                Debug.Log("Hit Object Name: " + hitObjectName);
-                Debug.Log("Parent Object Name: " + parentObjectName);
+                OneBeforeRootObjectName = current.gameObject.name;
+                Debug.Log(OneBeforeRootObjectName);
+                // Debug.Log("Hit Object Name: " + hitObjectName);
+                // Debug.Log("Parent Object Name: " + parentObjectName);
             }
         }
     }
