@@ -14,32 +14,7 @@ public class ParentColorChanger : MonoBehaviour
             {
                 childRenderer.material.color = newColor;
             }
-            Debug.Log("Color have changed. : " + gameObject.name);
+            //Debug.Log("Color have changed. : " + gameObject.name);
         }
-        /*
-        // 親オブジェクトから"ChildObjectName"という名前の子オブジェクトを取得
-        //Transform childTransform = transform.Find("ChildObjectName");
-
-
-        if (childTransform != null)
-        {
-            // 子オブジェクトのRendererコンポーネントを取得
-            Renderer childRenderer = childTransform.GetComponent<Renderer>();
-
-            if (childRenderer != null)
-            {
-                // 子オブジェクトの色を変更
-                childRenderer.material.color = newColor;
-            }
-            else
-            {
-                Debug.LogWarning("Renderer component not found on child object.");
-            }
-        }
-        else
-        {
-            Debug.LogWarning("Child object not found.");
-        }
-        */
     }
 }
