@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SensorPodNamespase : MonoBehaviour
+public class SensorCameraNamespase : MonoBehaviour
 {
     public string ImageTopicName;
 

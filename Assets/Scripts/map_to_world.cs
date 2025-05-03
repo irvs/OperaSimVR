@@ -18,6 +18,7 @@ public class MapToWorld : MonoBehaviour
     public float awaitingdebugTimestamp;
     public float requestInterval = 5.0f;
     public bool DebugSw;
+    public GameObject Reference;
 
     // Start is called before the first frame update
     void Start()
@@ -28,8 +29,9 @@ public class MapToWorld : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        ReferencePointPose = GameObject.Find("map_Reference point").transform.position;
-        ReferencePointRot = GameObject.Find("map_Reference point").transform.rotation;
+        Reference = GameObject.Find("MapReferencePoint");
+        ReferencePointPose = Reference.transform.position;
+        ReferencePointRot = Reference.transform.rotation;
         MapPosition = TargetObject.transform.position - ReferencePointPose;
         ModifyMapPosition = new Vector3(MapPosition.x, MapPosition.z, 0.0f);
         WorldPosition = MapPosition + new Vector3(MapRefetenceX, MapRefetenceZ, MapRefetenceY);

@@ -13,15 +13,15 @@ using static UnityEngine.GraphicsBuffer;
 public class Controller_manager : MonoBehaviour
 {
     ControllerLay From_VRcont;
-   // TerrainCollisionPoint TerrainPoint;
+    // TerrainCollisionPoint TerrainPoint;
     public bool DesignateVehicleFromInspector;
     public bool emergency_sw = false;
-    bool outside_sw =false;
+    bool outside_sw = false;
     public string Machine_name;
     GameObject VehicletargetObject;
     public int GetOnMachine = 0;
     List<string> Machine_Name_List = new List<string>();
-    
+
     public int Player_posi_mover_SW = 0;
 
     Vector3 posiorigin;
@@ -33,12 +33,15 @@ public class Controller_manager : MonoBehaviour
     float timesec = Mathf.Floor((System.DateTime.Now.Millisecond) / 10);
     float deltatimesec = System.DateTime.Now.Millisecond;
     public GameObject PlayertargetObject;
+    GameObject MachineCameraPosition;
     private float Playerlinear;
     private bool button;
     public bool DB_pose_sw;
     public bool DB_joint_sw;
     private float DiffRotPlayerMachine;
     Model_name ModelInfo;
+    SensorCameraNamespase SensorCameraInfo;
+    ThetaImageSubscriber1 SensorCamerasImageSubscriber;
     OVRPlayerController PlayerControllScript;
     //
 
@@ -53,7 +56,6 @@ public class Controller_manager : MonoBehaviour
     void Update()
     {
         OVRPlayerController PlayerControllScript = PlayertargetObject.GetComponent<OVRPlayerController>();
-
         if (DesignateVehicleFromInspector == false)
         {
             From_VRcont = FindObjectOfType<ControllerLay>();
@@ -64,59 +66,69 @@ public class Controller_manager : MonoBehaviour
                 {
                     Machine_Name_List.Add(Machine_name);
                 }
-               // Debug.Log(Machine_name);
+                // Debug.Log(Machine_name);
             }
             Machine_name = Machine_Name_List[Machine_Name_List.Count - 1];
         }
 
-        //GetOnMachine = From_VRcont.GetOn;
-        if ((Machine_name != null && OVRInput.Get(OVRInput.RawButton.LIndexTrigger) && GetOnMachine == 0) || (Machine_name != null && (Input.GetKeyDown(KeyCode.V)) && (GetOnMachine == 0)))  
+        if (GetOnMachine == 0 && (Machine_name != null && Machine_name != "") && (OVRInput.Get(OVRInput.RawButton.LIndexTrigger) || Input.GetKeyDown(KeyCode.V)))
         {
             GetOnMachine = 1;
+            Debug.Log(Machine_name);
         }
 
-
-        if (Machine_name != null && Machine_name != "OVRPlayerController")
+        if (Machine_name != null && Machine_name != "" && Machine_name != "OVRPlayerController")
         {
-            //
             button = true;
             if ((GetOnMachine == 1) && (Player_posi_mover_SW == 0))
             {
                 VehicletargetObject = GameObject.Find(Machine_name);
-                //Debug.Log(Machine_name);
                 ModelInfo = VehicletargetObject.GetComponent<Model_name>();
-                posiorigin = GameObject.Find("OVRPlayerController").transform.position;
-                rotrigin = GameObject.Find("OVRPlayerController").transform.rotation;
-                GameObject.Find("OVRPlayerController").GetComponent<CharacterController>().enabled = false;
-                GameObject.Find("OVRPlayerController").GetComponent<Collider>().enabled = false;
-                PlayerControllScript.RotationRatchet = 45;
-                PlayerControllScript.RotationAmount = 0.5f;
-                GameObject.Find("OVRPlayerController").transform.rotation = GameObject.Find(Machine_name + "_cam").transform.rotation;
-                Player_posi_mover_SW += 1;
+                if (ModelInfo != null)
+                {
+                    MachineCameraPosition = GameObject.Find(Machine_name + "_cam");
+                    //Debug.Log(Machine_name+" + machine");
+                    posiorigin = PlayertargetObject.transform.position;
+                    rotrigin = PlayertargetObject.transform.rotation;
+                    PlayertargetObject.GetComponent<CharacterController>().enabled = false;
+                    PlayertargetObject.GetComponent<Collider>().enabled = false;
+                    PlayerControllScript.RotationRatchet = 45;
+                    PlayerControllScript.RotationAmount = 0.5f;
+                    PlayertargetObject.transform.rotation = MachineCameraPosition.transform.rotation;
+                    Player_posi_mover_SW += 1;
+                }
+                SensorCamerasImageSubscriber = VehicletargetObject.GetComponent<ThetaImageSubscriber1>();
+                
+                if (SensorCamerasImageSubscriber != null)
+                {
+                    button = false;
+                    posiorigin = PlayertargetObject.transform.position;
+                    SensorCameraInfo = GameObject.Find(From_VRcont.OneBeforeRootObjectName).GetComponent<SensorCameraNamespase>();
+                    SensorCamerasImageSubscriber.topicName = SensorCameraInfo.ImageTopicName;
+                    num = 1;
+                    SensorCamerasImageSubscriber.isImageReceived = false;
+                }
             }
-            //
-            if ((Player_posi_mover_SW > 0) && outside_sw == false) 
+            if ((Player_posi_mover_SW > 0) && outside_sw == false)
             {
-                PlayertargetObject.transform.position = GameObject.Find(Machine_name + "_cam").transform.position;
+                PlayertargetObject.transform.position = MachineCameraPosition.transform.position;
                 num = 1;
             }
-            //
-            if (((Player_posi_mover_SW > 0) && OVRInput.GetDown(OVRInput.RawButton.B) && (num == 1)) || ((Player_posi_mover_SW > 0) && (num == 1)) && Input.GetKeyDown(KeyCode.B))
+            if (((Player_posi_mover_SW > 0 || GetOnMachine == 1) && OVRInput.GetDown(OVRInput.RawButton.B) && (num == 1)) || ((Player_posi_mover_SW > 0 || GetOnMachine == 1) && (num == 1)) && Input.GetKeyDown(KeyCode.B))
             {
                 PlayerControllScript.RotationRatchet = 45;
                 PlayerControllScript.RotationAmount = 0.5f;
 
-                //
                 Player_posi_mover_SW = 0;
                 num = 0;
 
                 GetOnMachine = 0;
-                VR_cont_2 scriptB_c = GameObject.Find(Machine_name).GetComponent<VR_cont_2>();
+                VR_cont_2 scriptB_c = VehicletargetObject.GetComponent<VR_cont_2>();
                 if (scriptB_c != null)
                 {
                     scriptB_c.sw = 0;
                 }
-                JointAnglePublisher scriptB_b = GameObject.Find(Machine_name).GetComponent<JointAnglePublisher>();
+                JointAnglePublisher scriptB_b = VehicletargetObject.GetComponent<JointAnglePublisher>();
                 if (scriptB_b != null)
                 {
                     scriptB_b.sw = 0;
@@ -133,23 +145,23 @@ public class Controller_manager : MonoBehaviour
                 }
                 PlayertargetObject.GetComponent<Collider>().enabled = true;
                 PlayertargetObject.GetComponent<CharacterController>().enabled = true;
-                Debug.Log("BAAABBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB");
+                Debug.Log("Get off.");
 
             }
             //
             //Debug.Log(System.DateTime.Now.Millisecond);
-            if (/*timesec != Mathf.Floor((System.DateTime.Now.Millisecond) / 10) && */(Player_posi_mover_SW > 0) && outside_sw == false) 
+            if (/*timesec != Mathf.Floor((System.DateTime.Now.Millisecond) / 10) && */(Player_posi_mover_SW > 0) && outside_sw == false)
             {
                 Vector3 forward1 = PlayertargetObject.transform.forward;
                 // オブジェクト2の正面方向のベクトル
-                Vector3 forward2 = GameObject.Find(Machine_name + "_cam").transform.forward;
+                Vector3 forward2 = MachineCameraPosition.transform.forward;
                 // 2つのオブジェクトの正面方向のなす角を求める
-              //  float angle = Vector3.Angle(forward1, forward2);
+                //  float angle = Vector3.Angle(forward1, forward2);
                 // 2. 2つのオブジェクトの正面方向の間の回転差を求める
                 Quaternion targetRotation = Quaternion.FromToRotation(forward1, forward2);
 
                 // 3. targetObject1をtargetObject2の正面方向に合わせる
-           //     PlayertargetObject.transform.Rotate(0, targetRotation.eulerAngles.y, 0);
+                //     PlayertargetObject.transform.Rotate(0, targetRotation.eulerAngles.y, 0);
 
                 /*
                 if (Math.Abs(angle - DiffRotPlayerMachine) >= 0.001 )
@@ -160,38 +172,34 @@ public class Controller_manager : MonoBehaviour
                 */
                 /*
                 //Rotetion
-                Quaternion machine_rot_changed = GameObject.Find(Machine_name + "_cam").transform.rotation;
+                Quaternion machine_rot_changed = MachineCameraPosition.transform.rotation;
                 dif_rot_from_machine = machine_rot_changed.eulerAngles - machine_origin_rot.eulerAngles;
                 if (dif_rot_from_machine[0] < 90 && Mathf.Abs(dif_rot_from_machine[1]) < 330 && dif_rot_from_machine[2] < 90)
                 {
                     PlayertargetObject.transform.Rotate(0, dif_rot_from_machine[1], 0);
-                    machine_origin_rot = GameObject.Find(Machine_name + "_cam").transform.rotation;
+                    machine_origin_rot = MachineCameraPosition.transform.rotation;
                     timesec = Mathf.Floor((System.DateTime.Now.Millisecond) / 10);
                     //Debug.Log("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC");
                 }
                 */
             }
-            
-
-
-            
 
             if (((Player_posi_mover_SW > 0) && OVRInput.GetDown(OVRInput.RawButton.X) && (num == 1) && OVRInput.Get(OVRInput.RawButton.LIndexTrigger) == true) || ((Player_posi_mover_SW > 0) && (num == 1)) && Input.GetKeyDown(KeyCode.X))
             {
-                VR_cont_2 scriptB_c = GameObject.Find(Machine_name).GetComponent<VR_cont_2>();
+                VR_cont_2 scriptB_c = VehicletargetObject.GetComponent<VR_cont_2>();
                 if (scriptB_c != null)
                 {
                     scriptB_c.sw = 1;
                     Debug.Log("controller on");
                 }
-                JointAnglePublisher scriptB_b = GameObject.Find(Machine_name).GetComponent<JointAnglePublisher>();
+                JointAnglePublisher scriptB_b = VehicletargetObject.GetComponent<JointAnglePublisher>();
                 if (scriptB_b != null)
                 {
                     scriptB_b.sw = 1;
                     Debug.Log("controller on");
                 }
             }
-            
+
             if (outside_sw == true)
             {
                 PlayerControllScript.RotationRatchet = 45;
@@ -208,18 +216,18 @@ public class Controller_manager : MonoBehaviour
                     Playerlinear = -0.01f;
                 }
                 //OVRCameraRigの位置変更
-                GameObject.Find("OVRPlayerController").transform.position += GameObject.Find("OVRPlayerController").transform.rotation * (new Vector3(0, 0, (Playerlinear)));
+                PlayertargetObject.transform.position += PlayertargetObject.transform.rotation * (new Vector3(0, 0, (Playerlinear)));
                 if (Input.GetKey(KeyCode.Q))
                 {
-                    GameObject.Find("OVRPlayerController").transform.Rotate(0, -0.2f, 0);
+                    PlayertargetObject.transform.Rotate(0, -0.2f, 0);
                 }
                 else if (Input.GetKey(KeyCode.E))
                 {
-                    GameObject.Find("OVRPlayerController").transform.Rotate(0, 0.2f, 0);
+                    PlayertargetObject.transform.Rotate(0, 0.2f, 0);
                 }
                 if (Math.Abs(stickR.x) > 0.2)
                 {
-                    GameObject.Find("OVRPlayerController").transform.Rotate(0, stickR.x, 0);
+                    PlayertargetObject.transform.Rotate(0, stickR.x, 0);
                 }
 
                 if ((OVRInput.GetDown(OVRInput.RawButton.X) && OVRInput.Get(OVRInput.RawButton.LIndexTrigger) == false && outside_sw == true) || (Input.GetKeyDown(KeyCode.Z) && outside_sw == true))
@@ -231,41 +239,33 @@ public class Controller_manager : MonoBehaviour
                     PlayerControllScript.RotationAmount = 0.0f;
                     button = false;
                 }
-
-                
             }
-
             if ((OVRInput.GetDown(OVRInput.RawButton.X) && OVRInput.Get(OVRInput.RawButton.LIndexTrigger) == false && outside_sw == false && button == true) || (Input.GetKeyDown(KeyCode.Z) && outside_sw == false && button == true))
             {
                 Debug.Log("outside");
                 outside_sw = true;
-
             }
             if ((OVRInput.GetDown(OVRInput.RawButton.Y)) || (Input.GetKeyDown(KeyCode.C)))
             {
                 emergency_sw = true;
-                VR_cont_2 EMG_sw = GameObject.Find(Machine_name).GetComponent<VR_cont_2>();
+                VR_cont_2 EMG_sw = VehicletargetObject.GetComponent<VR_cont_2>();
                 if (EMG_sw != null)
                 {
                     EMG_sw.emergency = true;
                     Debug.Log("emergency");
                 }
-                
-
             }
             if ((OVRInput.GetDown(OVRInput.RawButton.Y) && OVRInput.Get(OVRInput.RawButton.RIndexTrigger) == true) || Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.C))
             {
                 emergency_sw = false;
-                VR_cont_2 EMG_sw = GameObject.Find(Machine_name).GetComponent<VR_cont_2>();
+                VR_cont_2 EMG_sw = VehicletargetObject.GetComponent<VR_cont_2>();
                 if (EMG_sw != null)
                 {
                     EMG_sw.emergency = false;
                     Debug.Log("unlock emergency");
                 }
-                
-
             }
-            if ((OVRInput.GetDown(OVRInput.RawButton.A) && OVRInput.Get(OVRInput.RawButton.RIndexTrigger) == false)|| Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.A))
+            if ((OVRInput.GetDown(OVRInput.RawButton.A) && OVRInput.Get(OVRInput.RawButton.RIndexTrigger) == false) || Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.A))
             {
                 Debug.Log("DB writer on");
                 if (ModelInfo.KindsOfHeavyMachinery.ToString() == "IC120")
@@ -276,14 +276,7 @@ public class Controller_manager : MonoBehaviour
                 {
                     DB_joint_sw = true;
                 }
-}
-
+            }
         }//
-   //     if ((GetOnMachine == 0 && OVRInput.Get(OVRInput.RawButton.LIndexTrigger)) || (GetOnMachine == 0 && Input.GetKeyDown(KeyCode.M)))
-     //   {
-
-
-       // }
-
-    } 
+    }
 }

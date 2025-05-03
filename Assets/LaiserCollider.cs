@@ -17,14 +17,7 @@ public class ControllerLay : MonoBehaviour
         if (parentObject != null)
         {
             parentObjectName = parentObject.name;
-            //Debug.Log("Parent Object Name: " + parentObjectName);
-            //
-            //
-
             Debug.Log(GameObject.Find(parentObjectName).transform.position);
-            //
-
-            //
         }
         else
         {
@@ -42,17 +35,16 @@ public class ControllerLay : MonoBehaviour
         {
             parentObjectName = parentObject.name;
             //Debug.Log("Parent Object Name is: " + parentObjectName); 
-            //
-            //Debug.Log(GameObject.Find(parentObjectName).transform.position);
-            //
             Transform current = other.gameObject.transform;
-            // ルートまでたどる
-            while (current.parent.parent != null)
+            if (current != null)
             {
-                current = current.parent;
+                // ルートまでたどる
+                while (current.parent.parent != null)
+                {
+                    current = current.parent;
+                }
             }
-          //  Transform root = current;
-            //
+
             if (parentObjectName != "OVRPlayerController" && parentObjectName != null)
             {
                 GetOnVehicle = parentObjectName;

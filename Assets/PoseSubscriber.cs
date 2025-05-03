@@ -37,7 +37,7 @@ public class PoseSubscriber : MonoBehaviour
     public GameObject SelectorObject;
     Model_name MachineManager;
     private bool IsPapermachine;
-
+    public GameObject Reference;
 
     void Start()
     {
@@ -151,6 +151,7 @@ public class PoseSubscriber : MonoBehaviour
     void PoseCheanger(Vector3 NewPosition, Quaternion NewRotation, float OffsetX, float OffsetY, float OffsetZ, float RotOffsetX, float RotOffsetY, float RotOffsetZ)
     {
         Vector3 ModifyPosition = new Vector3((NewPosition.x), (NewPosition.y) - OffsetY, (NewPosition.z));
+        Reference = GameObject.Find("MapReferencePoint");
         if (WorldToMap == true)
         {
             ModifyPosition = new Vector3((NewPosition.x) - OffsetX, (NewPosition.y) - OffsetY, (NewPosition.z - OffsetZ));
@@ -162,7 +163,7 @@ public class PoseSubscriber : MonoBehaviour
         {
             if (chenge_position_sw == true)
             {
-                targetObject.transform.position = ModifyPosition + new Vector3(GameObject.Find("map_Reference point").transform.position.x, 0, GameObject.Find("map_Reference point").transform.position.z);
+                targetObject.transform.position = ModifyPosition + new Vector3(Reference.transform.position.x, 0, Reference.transform.position.z);
             }
             targetObject.transform.eulerAngles = chenged_orientation;
         }

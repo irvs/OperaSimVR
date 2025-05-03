@@ -13,9 +13,6 @@ using UnityEngine.WSA;
 
 public class PathWriter : MonoBehaviour
 {
-    private PathMsg twist;
-    public string robotName = "robot_name";
-    public GameObject targetObject;
     public string Subscribe_topic_name = "subscribe_topic";
     public float offset_x = 0;
     public float offset_y = 0;
@@ -26,25 +23,19 @@ public class PathWriter : MonoBehaviour
     private List<Quaternion> path_angular_list = new List<Quaternion>();
     private Quaternion angular;
     ROSConnection ros;
-    //public List<Vector3> pathPoints;  // 経路の座標リスト
     private LineRenderer lineRenderer;
+    public GameObject Reference;
 
     // Start is called before the first frame update
     void Start()
     {
         ros = ROSConnection.GetOrCreateInstance();
-        //Debug.Log("aaaaaaaa");
-        twist = new PathMsg();
-        Debug.Log("check:baselink/pose");
         // ROSコネクションへのサブスクライバーの登録
         ros.Subscribe<PathMsg>(Subscribe_topic_name, Callback);
-        Debug.Log("already:baselink/pose");
+        Debug.Log("already:PathWriter");
         //
         //
         lineRenderer = gameObject.AddComponent<LineRenderer>();
-        // LineRendererコンポーネントの取得
-       // lineRenderer = GetComponent<LineRenderer>();
-
         // LineRendererの設定
         lineRenderer.positionCount = path_list.Count;  // 頂点の数を設定
         lineRenderer.startWidth = 0.1f;  // 線の太さ（開始）
@@ -53,94 +44,42 @@ public class PathWriter : MonoBehaviour
         lineRenderer.startColor = Color.red; // 線の開始色
         lineRenderer.endColor = Color.green; // 線の終了色
 
+        Reference = GameObject.Find("MapReferencePoint");
+
         // 各座標をLineRendererに設定
         for (int i = 0; i < path_list.Count; i++)
         {
             lineRenderer.SetPosition(i, path_list[i]);
         }
-        //
-        //
-    }
-    /*
-    void UpdatePath(List<Vector3> newPath)
-    {
-        pathPoints = newPath;
-        lineRenderer.positionCount = path_list.Count;
 
-        for (int i = 0; i < pathPoints.Count; i++)
-        {
-            lineRenderer.SetPosition(i, path_list[i]);
-        }
     }
-    */
 
     void Callback(PathMsg msg)
     {
-       // mode = FindObjectOfType<mood_selector>();
-      //  Debug.Log("path_get");
-      //  Debug.Log(msg.ToString());
-      //  Debug.Log(msg.poses.ToString());
-       // Debug.Log(msg.poses[10].ToString());
         path_list.Clear();
         path_angular_list.Clear();
        // Debug.Log($"Received path with {msg.poses.Length} waypoints"); // 受信したパスのデータを表示
         SimORRealSelecter = FindObjectOfType<FieldMainManager>();
+        
         foreach (var pose in msg.poses) 
         {
             angular = new (-(float)pose.pose.orientation.y, (float)pose.pose.orientation.z, (float)pose.pose.orientation.x, -(float)pose.pose.orientation.w);
             if (SimORRealSelecter.ForSimOrReal.ToString() == "ForReal")
             {
-                path_list.Add(new Vector3(((float)pose.pose.position.x) + offset_x + (GameObject.Find("map_Reference point").transform.position)[0], 0.0f + offset_y, ((float)pose.pose.position.y) + offset_z + (GameObject.Find("map_Reference point").transform.position)[2]));
+                path_list.Add(new Vector3(((float)pose.pose.position.x) + offset_x + (Reference.transform.position)[0], 0.0f + offset_y, ((float)pose.pose.position.y) + offset_z + (Reference.transform.position)[2]));
             }
             else
             {
                 path_list.Add(new Vector3(-(float)pose.pose.position.y, 0.0f, (float)pose.pose.position.x));
             }
-            new Vector3(-36f, 0, 52f); //GameObject.Find("map_Reference point")new Vector3(-36f, 0, 52f); //GameObject.Find("map_Reference point")
             path_angular_list.Add(angular);
-            //targetObject.transform.position = new Vector3(-(float)pose.pose.position.y,0.0f,(float)pose.pose.position.x);
-        }
-        if(path_list.Count > 500) 
-        {
-            targetObject.transform.position = path_list[500];
-            targetObject.transform.rotation = path_angular_list[500];
-        }
-        else if(path_list.Count <= 500)
-        {
-            targetObject.transform.position = path_list[path_list.Count-1];
-            targetObject.transform.rotation = path_angular_list[path_angular_list.Count - 1];
         }
 
-        /*
-        if (mode.mood == 1) //Visual tool
-        {
-            //Debug.Log("zxcvbnm");
-            //Debug.Log(msg.pose.orientation);
-            //
-            Vector3 newPosition = new Vector3(((float)msg.pose.position.y * (-1) + offset_x), ((float)msg.pose.position.z) + offset_z, ((float)msg.pose.position.x) + offset_y);
-            Quaternion newRotation = new((float)msg.pose.orientation.y * (-1), (float)msg.pose.orientation.z, (float)msg.pose.orientation.x, (float)msg.pose.orientation.w * (-1));
-            //Debug.Log(newPosition);
-            //Debug.Log(newRotation.eulerAngles);
-            //
-            // targetObject.GetComponent<Rigidbody>().isKinematic = false;
-            targetObject.transform.position = newPosition;
-            
-            //
-            targetObject.transform.rotation = newRotation;
-            targetObject.GetComponent<Rigidbody>().isKinematic = true;
-            //
-            //Debug.Log("rot_change_strange" + Real_Cyber_angle_diff);
-        }*/
-        
-            
             lineRenderer.positionCount = path_list.Count;
 
             for (int i = 0; i < path_list.Count; i++)
             {
                 lineRenderer.SetPosition(i, path_list[i]);
             }
-        
-
     }
-
 }
