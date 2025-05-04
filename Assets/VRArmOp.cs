@@ -121,7 +121,7 @@ public class JointAnglePublisher : MonoBehaviour
         ros.RegisterPublisher<TwistMsg>(topicName_cmd_vel);
         ros.RegisterPublisher<BoolMsg>(EmergencyTopicName);
         //
-        // ƒWƒ‡ƒCƒ“ƒg–¼AˆÊ’uA‘¬“xA—Í‚Ì‰Šú‰»
+        // ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½gï¿½ï¿½ï¿½Aï¿½Ê’uï¿½Aï¿½ï¿½ï¿½xï¿½Aï¿½Í‚Ìï¿½ï¿½ï¿½ï¿½ï¿½
         jointNames = new List<string> { "swing_joint", "boom_joint", "arm_joint", "bucket_joint", "bucket_end_joint" };
         positions = new List<double> { 0.0, 0.0, 0.0, 0.0, 0.0 };
         velocities = new List<double> { 0.0, 0.0, 0.0, 0.0, 0.0 };
@@ -172,12 +172,12 @@ public class JointAnglePublisher : MonoBehaviour
                 velocity_of_bucket = 0.0f;
                 velocities = new List<double> { 0.0, 0.0, 0.0, 0.0 };
                 listOfJointCmdList.Add(velocities);
-                // List<double> ‚ğ double[] ‚É•ÏŠ·
+                // List<double> ï¿½ï¿½ double[] ï¿½É•ÏŠï¿½
                 string[] jointNamesArray = jointNames.ToArray();
                 double[] positionsArray = positions.ToArray();
                 double[] velocitiesArray = velocities.ToArray();
                 double[] effortsArray = efforts.ToArray();
-                // •ÏŠ·‚µ‚½”z—ñ‚ğŠÖ”‚É“n‚·
+                // ï¿½ÏŠï¿½ï¿½ï¿½ï¿½ï¿½ï¿½zï¿½ï¿½ï¿½ï¿½Öï¿½ï¿½É“nï¿½ï¿½
                 HeaderMsg header = new HeaderMsg(
                         new TimeStamp(Clock.time),
                         " "
@@ -226,7 +226,7 @@ public class JointAnglePublisher : MonoBehaviour
                     sw_timeElapsed = 0.0f;
                 }
 
-                else if (VRManager.Player_posi_mover_SW > 0 || sw == 1)
+                else if (VRManager.PlayerPoseMove_SW > 0 || sw == 1)
                 {
                     selected_mode = FindObjectOfType<mode_selector>();
                     dissconnect_timer += Time.deltaTime;
@@ -644,12 +644,12 @@ public class JointAnglePublisher : MonoBehaviour
                                 velocities[2] = listOfJointCmdList[listOfJointCmdList.Count - 1 - CMD_time][2];
                                 velocities[3] = listOfJointCmdList[listOfJointCmdList.Count - 1 - CMD_time][3];
                             }
-                            // List<double> ‚ğ double[] ‚É•ÏŠ·
+                            // List<double> ï¿½ï¿½ double[] ï¿½É•ÏŠï¿½
                             string[] jointNamesArray = jointNames.ToArray();
                             double[] positionsArray = positions.ToArray();
                             double[] velocitiesArray = velocities.ToArray();
                             double[] effortsArray = efforts.ToArray();
-                            // •ÏŠ·‚µ‚½”z—ñ‚ğŠÖ”‚É“n‚·
+                            // ï¿½ÏŠï¿½ï¿½ï¿½ï¿½ï¿½ï¿½zï¿½ï¿½ï¿½ï¿½Öï¿½ï¿½É“nï¿½ï¿½
                             HeaderMsg header = new HeaderMsg(
                                     new TimeStamp(Clock.time),
                                     " "

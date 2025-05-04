@@ -15,6 +15,8 @@ public class mode_selector : MonoBehaviour
     public int mode = 0;
     private int prev_mode;
     private int mode_return;
+    GameObject Dump1;
+    GameObject Excavator1;
 
     //void Start()
     void Update()
@@ -25,33 +27,38 @@ public class mode_selector : MonoBehaviour
             {
                 prev_mode = mode;
             }
-            ///for simulator
-            GameObject.Find("ic120").GetComponent<DiffDriveController>().enabled = true;
-            GameObject.Find("zx200").GetComponent<DiffDriveController>().enabled = true;
-            GameObject.Find("ic120").GetComponent<JointStatePublisher>().enabled = true;
-            GameObject.Find("zx200").GetComponent<JointStatePublisher>().enabled = true;
+            Dump1 = GameObject.Find("ic120");
+            Excavator1 = GameObject.Find("zx200");
 
-            GameObject.Find("ic120").transform.Find("base_link").gameObject.GetComponent<PoseStampedPublisher>().enabled = true;
-            GameObject.Find("ic120").transform.Find("base_link/vessel_link").gameObject.GetComponent<VesselController>().enabled = true;
-            GameObject.Find("ic120").transform.Find("base_link/vessel_link").gameObject.GetComponent<VesselSubscriber>().enabled = false;
-            GameObject.Find("zx200").transform.Find("base_link").gameObject.GetComponent<PoseStampedPublisher>().enabled = true;
-            GameObject.Find("zx200").transform.Find("base_link/body_link").gameObject.GetComponent<JointPosController>().enabled = true;
-            GameObject.Find("zx200").transform.Find("base_link/body_link/boom_link").gameObject.GetComponent<JointPosController>().enabled = true;
-            GameObject.Find("zx200").transform.Find("base_link/body_link/boom_link/arm_link").gameObject.GetComponent<JointPosController>().enabled = true;
-            GameObject.Find("zx200").transform.Find("base_link/body_link/boom_link/arm_link/bucket_link").gameObject.GetComponent<JointPosController>().enabled = true;
-            //Debug.Log("asdf");
+            //for simulator
+            Dump1.GetComponent<DiffDriveController>().enabled = true;
+            Dump1.GetComponent<JointStatePublisher>().enabled = true;
+
+            Dump1.transform.Find("base_link").gameObject.GetComponent<PoseStampedPublisher>().enabled = true;
+            Dump1.transform.Find("base_link/vessel_link").gameObject.GetComponent<VesselController>().enabled = true;
+            Dump1.transform.Find("base_link/vessel_link").gameObject.GetComponent<VesselSubscriber>().enabled = false;
             //ic120 controllor
-            GameObject.Find("ic120").GetComponent<cont_crowlar>().enabled = false;
-            GameObject.Find("ic120").GetComponent<Rigidbody>().isKinematic = false;
-            //zx200 controllor
-            GameObject.Find("zx200").GetComponent<cont_joint>().enabled = true;
-            GameObject.Find("zx200").GetComponent<Rigidbody>().isKinematic = false;
+            Dump1.GetComponent<cont_crowlar>().enabled = false;
+            Dump1.GetComponent<Rigidbody>().isKinematic = false;
             //ic120 visualize
-            //GameObject.Find("ic120").GetComponent<JointSubscriber_zx200>().enabled = false;
-            GameObject.Find("ic120").GetComponent<PoseSubscriber>().enabled = false;
+            Dump1.GetComponent<PoseSubscriber>().enabled = false;
+            
+            //for simulator
+            Excavator1.GetComponent<DiffDriveController>().enabled = true;
+            Excavator1.GetComponent<JointStatePublisher>().enabled = true;
+
+            Excavator1.transform.Find("base_link").gameObject.GetComponent<PoseStampedPublisher>().enabled = true;
+            Excavator1.transform.Find("base_link/body_link").gameObject.GetComponent<JointPosController>().enabled = true;
+            Excavator1.transform.Find("base_link/body_link/boom_link").gameObject.GetComponent<JointPosController>().enabled = true;
+            Excavator1.transform.Find("base_link/body_link/boom_link/arm_link").gameObject.GetComponent<JointPosController>().enabled = true;
+            Excavator1.transform.Find("base_link/body_link/boom_link/arm_link/bucket_link").gameObject.GetComponent<JointPosController>().enabled = true;
+            //zx200 controllor
+            Excavator1.GetComponent<cont_joint>().enabled = true;
+            Excavator1.GetComponent<Rigidbody>().isKinematic = false;
             //zx200 visualize
-            GameObject.Find("zx200").GetComponent<JointSubscriber>().enabled = false;
-            GameObject.Find("zx200").GetComponent<PoseSubscriber>().enabled = false;
+            Excavator1.GetComponent<JointSubscriber>().enabled = false;
+            Excavator1.GetComponent<PoseSubscriber>().enabled = false;
+            
             //clock
             GameObject.Find("ROS").transform.Find("WorldClock").gameObject.GetComponent<ROSClockPublisher>().enabled = true;
 
@@ -63,31 +70,38 @@ public class mode_selector : MonoBehaviour
             {
                 prev_mode = mode;
             }
+            Dump1 = GameObject.Find("ic120");
+            Excavator1 = GameObject.Find("zx200");
             ///for simulator
-            GameObject.Find("ic120").GetComponent<DiffDriveController>().enabled = false;
-            GameObject.Find("zx200").GetComponent<DiffDriveController>().enabled = false;
-            GameObject.Find("ic120").GetComponent<JointStatePublisher>().enabled = false;
-            GameObject.Find("zx200").GetComponent<JointStatePublisher>().enabled = false;
-
-            GameObject.Find("ic120").transform.Find("base_link").gameObject.GetComponent<PoseStampedPublisher>().enabled = false;
-            GameObject.Find("ic120").transform.Find("base_link/vessel_link").gameObject.GetComponent<VesselController>().enabled = false;
-            GameObject.Find("ic120").transform.Find("base_link/vessel_link").gameObject.GetComponent<VesselSubscriber>().enabled = true;
-            GameObject.Find("zx200").transform.Find("base_link").gameObject.GetComponent<PoseStampedPublisher>().enabled = false;
-            GameObject.Find("zx200").transform.Find("base_link/body_link").gameObject.GetComponent<JointPosController>().enabled = false;
-            GameObject.Find("zx200").transform.Find("base_link/body_link/boom_link").gameObject.GetComponent<JointPosController>().enabled = false;
-            GameObject.Find("zx200").transform.Find("base_link/body_link/boom_link/arm_link").gameObject.GetComponent<JointPosController>().enabled = false;
-            GameObject.Find("zx200").transform.Find("base_link/body_link/boom_link/arm_link/bucket_link").gameObject.GetComponent<JointPosController>().enabled = false;
+            Dump1.GetComponent<DiffDriveController>().enabled = false;
+            
+            Dump1.GetComponent<JointStatePublisher>().enabled = false;
+            
+            Dump1.transform.Find("base_link").gameObject.GetComponent<PoseStampedPublisher>().enabled = false;
+            Dump1.transform.Find("base_link/vessel_link").gameObject.GetComponent<VesselController>().enabled = false;
+            Dump1.transform.Find("base_link/vessel_link").gameObject.GetComponent<VesselSubscriber>().enabled = true;
             //ic120 controllor
-            GameObject.Find("ic120").GetComponent<cont_crowlar>().enabled = false;
-            GameObject.Find("ic120").GetComponent<Rigidbody>().isKinematic = true;
+            Dump1.GetComponent<cont_crowlar>().enabled = false;
+            Dump1.GetComponent<Rigidbody>().isKinematic = true;
+
+            Dump1.GetComponent<PoseSubscriber>().enabled = true;
+
+            ///for simulator
+            Excavator1.GetComponent<DiffDriveController>().enabled = false;
+            Excavator1.GetComponent<JointStatePublisher>().enabled = false;
+
+            Excavator1.transform.Find("base_link").gameObject.GetComponent<PoseStampedPublisher>().enabled = false;
+            Excavator1.transform.Find("base_link/body_link").gameObject.GetComponent<JointPosController>().enabled = false;
+            Excavator1.transform.Find("base_link/body_link/boom_link").gameObject.GetComponent<JointPosController>().enabled = false;
+            Excavator1.transform.Find("base_link/body_link/boom_link/arm_link").gameObject.GetComponent<JointPosController>().enabled = false;
+            Excavator1.transform.Find("base_link/body_link/boom_link/arm_link/bucket_link").gameObject.GetComponent<JointPosController>().enabled = false;
+
             //zx200 controllor
-            GameObject.Find("zx200").GetComponent<cont_joint>().enabled = false;
-            GameObject.Find("zx200").GetComponent<Rigidbody>().isKinematic = true;
-            //ic120 visualize
-            //GameObject.Find("ic120").GetComponent<JointSubscriber_ic120>().enabled = true;
-            GameObject.Find("ic120").GetComponent<PoseSubscriber>().enabled = true;
+            Excavator1.GetComponent<cont_joint>().enabled = false;
+            Excavator1.GetComponent<Rigidbody>().isKinematic = true;
+
             //zx200 visualize
-            GameObject.Find("zx200").GetComponent<JointSubscriber>().enabled = true;
+            Excavator1.GetComponent<JointSubscriber>().enabled = true;
             //GameObject.Find("zx200").GetComponent<PoseSubscriber>().enabled = true;
             //clock
             GameObject.Find("ROS").transform.Find("WorldClock").gameObject.GetComponent<ROSClockPublisher>().enabled = false;
@@ -107,32 +121,36 @@ public class mode_selector : MonoBehaviour
                 }
                 prev_mode = mode;
             }
+            Dump1 = GameObject.Find("ic120");
+            Excavator1 = GameObject.Find("zx200");
             ///for simulator
-            GameObject.Find("ic120").GetComponent<DiffDriveController>().enabled = false;
-            GameObject.Find("zx200").GetComponent<DiffDriveController>().enabled = false;
-            GameObject.Find("ic120").GetComponent<JointStatePublisher>().enabled = false;
-            GameObject.Find("zx200").GetComponent<JointStatePublisher>().enabled = false;
-
-            GameObject.Find("ic120").transform.Find("base_link").gameObject.GetComponent<PoseStampedPublisher>().enabled = false;
-            GameObject.Find("zx200").transform.Find("base_link").gameObject.GetComponent<PoseStampedPublisher>().enabled = false;
-            GameObject.Find("zx200").transform.Find("base_link/body_link").gameObject.GetComponent<JointPosController>().enabled = false;
-            GameObject.Find("zx200").transform.Find("base_link/body_link/boom_link").gameObject.GetComponent<JointPosController>().enabled = false;
-            GameObject.Find("zx200").transform.Find("base_link/body_link/boom_link/arm_link").gameObject.GetComponent<JointPosController>().enabled = false;
-            GameObject.Find("zx200").transform.Find("base_link/body_link/boom_link/arm_link/bucket_link").gameObject.GetComponent<JointPosController>().enabled = false;
+            Dump1.GetComponent<DiffDriveController>().enabled = false;
+            Dump1.GetComponent<JointStatePublisher>().enabled = false;
+            
+            Dump1.transform.Find("base_link").gameObject.GetComponent<PoseStampedPublisher>().enabled = false;
             //ic120 controllor
-            GameObject.Find("ic120").GetComponent<cont_crowlar>().enabled = true;
-            GameObject.Find("ic120").GetComponent<Rigidbody>().isKinematic = false;
-            //zx200 controllor
-            GameObject.Find("zx200").GetComponent<cont_joint>().enabled = true;
-            GameObject.Find("zx200").GetComponent<Rigidbody>().isKinematic = false;
+            Dump1.GetComponent<cont_crowlar>().enabled = true;
+            Dump1.GetComponent<Rigidbody>().isKinematic = false;
             //ic120 visualize
             //GameObject.Find("ic120").GetComponent<JointSubscriber_ic120>().enabled = false;
-            GameObject.Find("ic120").GetComponent<PoseSubscriber>().enabled = true;
-            //zx200 visualize
-            GameObject.Find("zx200").GetComponent<JointSubscriber>().enabled = false;
-            GameObject.Find("zx200").GetComponent<PoseSubscriber>().enabled = false;
-            //GameObject.Find("zx120").GetComponent<PoseSubscriber>().enabled = false;
+            Dump1.GetComponent<PoseSubscriber>().enabled = true;
 
+            ///for simulator
+            Excavator1.GetComponent<DiffDriveController>().enabled = false;
+            Excavator1.GetComponent<JointStatePublisher>().enabled = false;
+
+            Excavator1.transform.Find("base_link").gameObject.GetComponent<PoseStampedPublisher>().enabled = false;
+            Excavator1.transform.Find("base_link/body_link").gameObject.GetComponent<JointPosController>().enabled = false;
+            Excavator1.transform.Find("base_link/body_link/boom_link").gameObject.GetComponent<JointPosController>().enabled = false;
+            Excavator1.transform.Find("base_link/body_link/boom_link/arm_link").gameObject.GetComponent<JointPosController>().enabled = false;
+            Excavator1.transform.Find("base_link/body_link/boom_link/arm_link/bucket_link").gameObject.GetComponent<JointPosController>().enabled = false;
+            //zx200 controllor
+            Excavator1.GetComponent<cont_joint>().enabled = true;
+            Excavator1.GetComponent<Rigidbody>().isKinematic = false;
+            //zx200 visualize
+            Excavator1.GetComponent<JointSubscriber>().enabled = false;
+            Excavator1.GetComponent<PoseSubscriber>().enabled = false;
+            //GameObject.Find("zx120").GetComponent<PoseSubscriber>().enabled = false;
 
             //clock
             GameObject.Find("ROS").transform.Find("WorldClock").gameObject.GetComponent<ROSClockPublisher>().enabled = false;

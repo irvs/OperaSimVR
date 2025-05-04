@@ -14,17 +14,17 @@ public class PoseSubscriber : MonoBehaviour
     public bool WorldToMap;
     public enum PoseMessageType { OdometryMsg, PoseStampedMsg }
     public PoseMessageType PoseMsgType;
-    public GameObject targetObject;
+    GameObject targetObject;
     public string SimPhysXSubscribeTopicName;
     public string SimAGXSubscribeTopicName;
     public string RealSubscribeTopicName;
     public string ViaDBSubscribeTopicName;
-    public float offset_x = 0;
-    public float offset_y = 0;
-    public float offset_z = 0;
-    public float rot_offset_x = 0;
-    public float rot_offset_y = 0;
-    public float rot_offset_z = 0;
+    float offset_x = 0;
+    float offset_y = 0;
+    float offset_z = 0;
+    float rot_offset_x = 0;
+    float rot_offset_y = 0;
+    float rot_offset_z = 0;
     private Vector3 rot_offset;
     private Vector3 chenged_orientation;
     public bool chenge_position_sw;
@@ -34,13 +34,16 @@ public class PoseSubscriber : MonoBehaviour
     ROSConnection ros;
     public Vector3 newPosition;
     public Quaternion newRotation;
-    public GameObject SelectorObject;
+    GameObject SelectorObject;
     Model_name MachineManager;
     private bool IsPapermachine;
-    public GameObject Reference;
+    GameObject Reference;
 
     void Start()
     {
+        targetObject = this.gameObject;
+        SelectorObject = GameObject.Find("FieldManager");
+        Reference = GameObject.Find("MapReferencePoint");
         ros = ROSConnection.GetOrCreateInstance();
         Debug.Log("check:baselink/pose");
         if (ViaDB == false)
@@ -137,7 +140,7 @@ public class PoseSubscriber : MonoBehaviour
         MachineManager = targetObject.GetComponent<Model_name>();
         newPosition = new Vector3(((float)msg.pose.position.x), ((float)msg.pose.position.z) , ((float)msg.pose.position.y));
         newRotation = new((float)msg.pose.orientation.y * (-1), (float)msg.pose.orientation.z, (float)msg.pose.orientation.x, (float)msg.pose.orientation.w * (-1));
-        PoseCheanger(newPosition, newRotation, MachineManager.offset_z, MachineManager.offset_y, MachineManager.offset_x, MachineManager.offset_adoptor_x, MachineManager.offset_adoptor_y, MachineManager.offset_adoptor_z);
+        PoseCheanger(newPosition, newRotation, MachineManager.Offset_z, MachineManager.Offset_y, MachineManager.Offset_x, MachineManager.OffsetRotation_x, MachineManager.OffsetRotation_y, MachineManager.OffsetRotation_z);
     }
 
     void CallbackOd(OdometryMsg msg)
@@ -145,7 +148,7 @@ public class PoseSubscriber : MonoBehaviour
         MachineManager = targetObject.GetComponent<Model_name>();
         newPosition = new Vector3(((float)msg.pose.pose.position.x), ((float)msg.pose.pose.position.z), ((float)msg.pose.pose.position.y));
         newRotation = new((float)msg.pose.pose.orientation.y * (-1), (float)msg.pose.pose.orientation.z, (float)msg.pose.pose.orientation.x, (float)msg.pose.pose.orientation.w * (-1));
-        PoseCheanger(newPosition, newRotation, MachineManager.offset_z, MachineManager.offset_y, MachineManager.offset_x, MachineManager.offset_adoptor_x, MachineManager.offset_adoptor_y, MachineManager.offset_adoptor_z);
+        PoseCheanger(newPosition, newRotation, MachineManager.Offset_z, MachineManager.Offset_y, MachineManager.Offset_x, MachineManager.OffsetRotation_x, MachineManager.OffsetRotation_y, MachineManager.OffsetRotation_z);
     }
 
     void PoseCheanger(Vector3 NewPosition, Quaternion NewRotation, float OffsetX, float OffsetY, float OffsetZ, float RotOffsetX, float RotOffsetY, float RotOffsetZ)
@@ -172,8 +175,10 @@ public class PoseSubscriber : MonoBehaviour
 
     void Update()
     {
-     //   Debug.Log(newPosition);
-     //   Debug.Log( newRotation);
+        //   Debug.Log(newPosition);
+        //   Debug.Log( newRotation);
+        //Debug.Log(targetObject);
+       // Debug.Log(Reference.transform.position);
     }
 
 }

@@ -22,7 +22,7 @@ public class Player_Key_mover : MonoBehaviour
     void Update()
     {
         VRManager = FindObjectOfType<Controller_manager>();
-        if (VRManager.GetOnMachine != 1)//VRcontroller.sw != 1)
+        if (VRManager.PlayerPoseMove_SW == 0)//VRcontroller.sw != 1)
         {
             GameObject.Find("OVRPlayerController").GetComponent<Collider>().enabled = false;
             if (Input.GetKeyDown(KeyCode.UpArrow) && Input.GetKey(KeyCode.LeftShift) == false && Input.GetKey(KeyCode.RightShift) == false)
@@ -72,7 +72,7 @@ public class Player_Key_mover : MonoBehaviour
             //OVRCameraRigÇÃà íuïœçX
             GameObject.Find("OVRPlayerController").transform.position += GameObject.Find("OVRPlayerController").transform.rotation * (new Vector3(PlayerSide, 0, (Playerlinear)));
             GameObject.Find("OVRPlayerController").transform.position = new(GameObject.Find("OVRPlayerController").transform.position[0], GameObject.Find("OVRPlayerController").transform.position[1]+ PlayerUpper, GameObject.Find("OVRPlayerController").transform.position[2]);
-            if (VRManager.GetOnMachine != 1)
+            if (VRManager.PlayerPoseMove_SW == 0)
             {
                 if (Input.GetKey(KeyCode.LeftArrow) && Input.GetKey(KeyCode.LeftShift) == false)
                 {

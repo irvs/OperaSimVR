@@ -54,7 +54,7 @@ public class VR_cont_2 : MonoBehaviour
     private Vector3 diff_rot;
     private Quaternion rotation_for_list;
     private float real_anglar_length = 0.0f;
-    public GameObject targetObject;
+    GameObject targetObject;
     public bool synchronization_sw;
     private float zerotime;
     //
@@ -120,6 +120,7 @@ public class VR_cont_2 : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        targetObject = this.gameObject;
         Debug.Log("check:baselink/pose");
         ros = ROSConnection.GetOrCreateInstance();
         SimORRealSelecter = FindObjectOfType<FieldMainManager>();
@@ -236,7 +237,7 @@ public class VR_cont_2 : MonoBehaviour
                     sw_timeElapsed = 0.0f;
                 }
 
-                else if (VRManager.Player_posi_mover_SW > 0 || sw == 1)
+                else if (VRManager.PlayerPoseMove_SW > 0 || sw == 1)
                 {
                     mode = FindObjectOfType<mode_selector>();
                     timeElapsed += Time.deltaTime;

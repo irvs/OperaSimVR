@@ -43,7 +43,7 @@ public class cont_joint : MonoBehaviour
         PoseVeloSelector = FindObjectOfType<FieldMainManager>();
         if (sw == 1)
         {
-            if (VRManager.Player_posi_mover_SW > 0 || sw == 1)
+            if (VRManager.PlayerPoseMove_SW > 0 || sw == 1)
             {
                 selected_mode = FindObjectOfType<mode_selector>();
                 OVRPlayerController scriptA = targetPlayerObject.GetComponent<OVRPlayerController>();

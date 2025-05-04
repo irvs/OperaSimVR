@@ -24,11 +24,12 @@ public class PathWriter : MonoBehaviour
     private Quaternion angular;
     ROSConnection ros;
     private LineRenderer lineRenderer;
-    public GameObject Reference;
+    GameObject Reference;
 
     // Start is called before the first frame update
     void Start()
     {
+        Reference = GameObject.Find("MapReferencePoint");
         ros = ROSConnection.GetOrCreateInstance();
         // ROSコネクションへのサブスクライバーの登録
         ros.Subscribe<PathMsg>(Subscribe_topic_name, Callback);
