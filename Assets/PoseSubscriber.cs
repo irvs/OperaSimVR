@@ -27,13 +27,15 @@ public class PoseSubscriber : MonoBehaviour
     float rot_offset_z = 0;
     private Vector3 rot_offset;
     private Vector3 chenged_orientation;
-    public bool chenge_position_sw;
+    public bool ChengePosition_sw;
 
     private mode_selector mode;
     FieldMainManager SimORRealSelecter;
     ROSConnection ros;
-    public Vector3 newPosition;
-    public Quaternion newRotation;
+    Vector3 newPosition;
+    Quaternion newRotation;
+    public Vector3 MapMachinePosition;
+    public Quaternion MapMachineRotation;
     GameObject SelectorObject;
     Model_name MachineManager;
     private bool IsPapermachine;
@@ -164,7 +166,7 @@ public class PoseSubscriber : MonoBehaviour
         mode = SelectorObject.GetComponent<mode_selector>();
         if (mode.mode == 1 || (IsPapermachine == true && mode.mode == 2)) //Visual tool
         {
-            if (chenge_position_sw == true)
+            if (ChengePosition_sw == true)
             {
                 targetObject.transform.position = ModifyPosition + new Vector3(Reference.transform.position.x, 0, Reference.transform.position.z);
             }

@@ -13,18 +13,16 @@ public class JointSubscriber : MonoBehaviour
 {
     public bool ViaDB;
     public bool JointChengeSw;
-    private JointStateMsg twist;
     private double pos_of_swing_joint;
     private double pos_of_boom_joint;
     private double pos_of_arm_joint;
     private double pos_of_bucket_joint;
-    private List<ArticulationBody> joints;
     private List<string> jointNames;
     private List<ArticulationBody> targetjoints;
     private List<string> targetjointNames;
     private double targetPos;
     private float dissconnect_timer;
-    public GameObject targetObject;
+    GameObject targetObject;
     public string PhysXSubscribeTopicName;
     public string AGXSubscribeTopicName;
     public string RealSubscribeTopicName;
@@ -36,7 +34,7 @@ public class JointSubscriber : MonoBehaviour
 
     void Start()
     {
-        twist = new JointStateMsg();
+        targetObject = this.gameObject;
         ros = ROSConnection.GetOrCreateInstance();
         SimORRealSelecter = FindObjectOfType<FieldMainManager>();
         if (SimORRealSelecter.ForSimOrReal.ToString() == "ForSimPhysX")

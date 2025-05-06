@@ -17,20 +17,10 @@ public class VR_cont_2 : MonoBehaviour
     public bool RecordPlaySw;//cmd record play
     public int control_mode = 0;
     public bool emergency;
-    public float offset_x = 0;
-    public float offset_y = 0;
-    public float offset_z = 0;
-    public float rot_offset_x = 0;
-    public float rot_offset_y = 0;
-    public float rot_offset_z = 0;
     public string SimPhysXPublishTopicName;
     public string SimAGXPublishTopicName;
     public string RealPublishTopicName;
     private string SRPublishTopicName;
-    public string SimPhysXSubscribeTopicName;
-    public string SimAGXSubscribeTopicName;
-    public string RealSubscribeTopicName;
-    private string SRSubscribeTopicName;
     public string controller_swTopicName = "controller_sw";
     private string controller_sw_return_TopicName;
     public string EmergencyTopicName;
@@ -74,8 +64,8 @@ public class VR_cont_2 : MonoBehaviour
     public int linear_or_rot = 0;
     private int moover_sw = 1;
     float movespeed = 5.0f;
-    public float linearspeed = 1.00f;
-    public float rotspeed = 0.50f;
+    public float LinearSpeed = 1.00f;
+    public float RotSpeed = 0.50f;
     //
     private float timeElapsed;
     private float timeElapsed_CMD = 0.0f;
@@ -84,14 +74,14 @@ public class VR_cont_2 : MonoBehaviour
     private float sw_timeElapsed = 0.0f;
     private float dissconnect_timer;
     private float vel_linear_acceleration;
-    public float max_lnear_accelaration = 2.5f;
+    public float MaxLinearAcceleration = 2.5f;
     private float max_lnear_accel_per_pub;
-    public float max_lnear_deceleration = -2.5f;
+    public float MaxLinearDeceleration = -2.5f;
     private float max_lnear_deceleration_per_pub;
     private float vel_angular_acceleration;
-    public float max_angular_accelaration = 3.2f;
+    public float MaxAngularAcceleration = 3.2f;
     private float max_angular_accel_per_pub;
-    public float max_angular_deceleration = -3.2f;
+    public float MaxAngularDeceleration = -3.2f;
     private float max_angular_deceleration_per_pub;
     private float side_diff = 0.0f;
     //
@@ -127,20 +117,14 @@ public class VR_cont_2 : MonoBehaviour
         if (SimORRealSelecter.ForSimOrReal.ToString() == "ForSimPhysX")
         {
             SRPublishTopicName = SimPhysXPublishTopicName;
-            SRSubscribeTopicName = SimPhysXSubscribeTopicName;
-            ros.Subscribe<PoseStampedMsg>(SRSubscribeTopicName, Callback);
         }
         else if (SimORRealSelecter.ForSimOrReal.ToString() == "ForSimAGX")
         {
             SRPublishTopicName = SimAGXPublishTopicName;
-            SRSubscribeTopicName = SimAGXSubscribeTopicName;
-            ros.Subscribe<OdometryMsg>(SRSubscribeTopicName, Callback1);
         }
         else if (SimORRealSelecter.ForSimOrReal.ToString() == "ForReal")
         {
             SRPublishTopicName = RealPublishTopicName;
-            SRSubscribeTopicName = RealSubscribeTopicName;
-            ros.Subscribe<PoseStampedMsg>(SRSubscribeTopicName, Callback);
         }
 
         ros.RegisterPublisher<BoolMsg>(controller_swTopicName);
@@ -161,10 +145,10 @@ public class VR_cont_2 : MonoBehaviour
         real_posi_list.Add(new Vector3(0.0f, 0.0f, 0.0f));
         posi_list.Add(new Vector3(0.0f, 0.0f, 0.0f));
         Real_Cyber_future_length_anglar_compare.Add(0.0f);
-        max_lnear_accel_per_pub = publishMessageInterval * max_lnear_accelaration;
-        max_lnear_deceleration_per_pub = publishMessageInterval * max_lnear_deceleration;
-        max_angular_accel_per_pub = publishMessageInterval * max_angular_accelaration;
-        max_angular_deceleration_per_pub = publishMessageInterval * max_angular_deceleration;
+        max_lnear_accel_per_pub = publishMessageInterval * MaxLinearAcceleration;
+        max_lnear_deceleration_per_pub = publishMessageInterval * MaxLinearDeceleration;
+        max_angular_accel_per_pub = publishMessageInterval * MaxAngularAcceleration;
+        max_angular_deceleration_per_pub = publishMessageInterval * MaxAngularDeceleration;
     }
     // Update is called once per frame
     void Update()
@@ -308,7 +292,7 @@ public class VR_cont_2 : MonoBehaviour
                         //
                         if (Input.GetKey(KeyCode.LeftArrow) && linear_or_rot == 2 || Input.GetKey(KeyCode.LeftArrow) && mode.mode == 1 || Input.GetKey(KeyCode.LeftArrow) && control_mode == 0)
                         {
-                            rotation = rotspeed;
+                            rotation = RotSpeed;
                         }
                         if (Input.GetKeyUp(KeyCode.LeftArrow))
                         {
@@ -316,7 +300,7 @@ public class VR_cont_2 : MonoBehaviour
                         }
                         if (Input.GetKey(KeyCode.RightArrow) && linear_or_rot == 2 || Input.GetKey(KeyCode.RightArrow) && mode.mode == 1 || Input.GetKey(KeyCode.RightArrow) && control_mode == 0)
                         {
-                            rotation = -rotspeed;
+                            rotation = -RotSpeed;
                         }
                         if (Input.GetKeyUp(KeyCode.RightArrow))
                         {
@@ -324,7 +308,7 @@ public class VR_cont_2 : MonoBehaviour
                         }
                         if (Input.GetKey(KeyCode.UpArrow) && linear_or_rot == 1 || Input.GetKey(KeyCode.UpArrow) && mode.mode == 1 || Input.GetKey(KeyCode.UpArrow) && control_mode == 0)
                         {
-                            frontback = linearspeed;
+                            frontback = LinearSpeed;
                         }
                         if (Input.GetKeyUp(KeyCode.UpArrow))
                         {
@@ -332,7 +316,7 @@ public class VR_cont_2 : MonoBehaviour
                         }
                         if (Input.GetKey(KeyCode.DownArrow) && linear_or_rot == 1 || Input.GetKey(KeyCode.DownArrow) && mode.mode == 1 || Input.GetKey(KeyCode.DownArrow) && control_mode == 0)
                         {
-                            frontback = -linearspeed;
+                            frontback = -LinearSpeed;
                         }
                         if (Input.GetKeyUp(KeyCode.DownArrow))
                         {
@@ -505,9 +489,22 @@ public class VR_cont_2 : MonoBehaviour
                         RealPosition = GetComponent<PoseSubscriber>();
                        // Debug.Log(RealPosition);
                       //  Debug.Log(RealPosition.newPosition);
-                        newPosition = RealPosition.newPosition;
-                        newRotation = RealPosition.newRotation;
-                        
+                        newPosition = RealPosition.MapMachinePosition;
+                        newRotation = RealPosition.MapMachineRotation;
+                        mode = FindObjectOfType<mode_selector>();
+                        dissconnect_timer = 0.0f;
+
+                        if (mode.mode == 2 && control_mode == 1 && sw == 1) //Controll mode (Pose modify)
+                        {
+                            DateTime currentTime = DateTime.Now;
+                            if (currentTime >= nextActionTime)
+                            {
+                                posi_list.Add(targetObject.transform.position);
+                                rotation_for_list = targetObject.transform.rotation;
+                                rotation_list.Add(rotation_for_list.eulerAngles);
+                                CMD_Calculator(newPosition, newRotation, DateTime.Now, timeElapsed_adopt_starter);
+                            }
+                        }
                     }
                 }//
             }//
@@ -524,67 +521,7 @@ public class VR_cont_2 : MonoBehaviour
         }
     }
 
-    void Callback1(OdometryMsg msg)
-    {
-        mode = FindObjectOfType<mode_selector>();
-        dissconnect_timer = 0.0f;
-
-        if (mode.mode == 2 && control_mode == 1 && sw == 1) //Controll mode (Pose modify)
-        {
-            RealPosition = GetComponent<PoseSubscriber>();
-            DateTime currentTime = DateTime.Now;
-            if (currentTime >= nextActionTime)
-            {
-                posi_list.Add(targetObject.transform.position);
-                rotation_for_list = targetObject.transform.rotation;
-                rotation_list.Add(rotation_for_list.eulerAngles);
-
-                //////////////
-                //       newPosition = new Vector3(((float)msg.pose.pose.position.x + offset_x), ((float)msg.pose.pose.position.z) + offset_z, ((float)msg.pose.pose.position.y) + offset_y);
-                //       newRotation = new((float)msg.pose.pose.orientation.x, (float)msg.pose.pose.orientation.z, (float)msg.pose.pose.orientation.y, (float)msg.pose.pose.orientation.w);
-                //       NewRotation = newRotation.eulerAngles;
-                //////////////
-                newPosition = RealPosition.newPosition + new Vector3(-36f, 0, 52f);
-                newRotation = RealPosition.newRotation;
-                Debug.Log(newPosition);
-                //////////////
-                CMD_Calculator(newPosition, newRotation, currentTime, timeElapsed_adopt_starter);
-                /////////////
-            }
-        }
-    }
-
-    void Callback(PoseStampedMsg msg)
-    {
-       // Debug.Log("callback");
-        mode = FindObjectOfType<mode_selector>();
-        dissconnect_timer = 0.0f;
-
-        if (mode.mode == 2 && control_mode == 1 && sw == 1) //Controll mode (Pose modify)
-        {
-            RealPosition = targetObject.GetComponent<PoseSubscriber>();
-            DateTime currentTime = DateTime.Now;
-            Debug.Log(RealPosition.newPosition);
-            if (currentTime >= nextActionTime)
-            {
-                posi_list.Add(targetObject.transform.position);
-                rotation_for_list = targetObject.transform.rotation;
-                rotation_list.Add(rotation_for_list.eulerAngles);
-
-                Vector3 newPosition = new Vector3(((float)msg.pose.position.x) - ((float)21395.18), ((float)msg.pose.position.z) - offset_y, ((float)msg.pose.position.y - ((float)14034.45)));
-                Quaternion newRotation = new((float)msg.pose.orientation.y * (-1), (float)msg.pose.orientation.z, (float)msg.pose.orientation.x, (float)msg.pose.orientation.w * (-1));
-                Vector3 rot_offset = new Vector3((float)rot_offset_x, (float)rot_offset_y, (float)rot_offset_z);
-                Vector3 chenged_orientation = newRotation.eulerAngles - rot_offset;
-                Quaternion newRotationQuo = Quaternion.Euler(chenged_orientation);
-                Vector3 newPositionChanged = newPosition + new Vector3(-36f, 0, 52f);
-                //////////////
-                //   newPosition = RealPosition.newPosition;
-                //   newRotation = RealPosition.newRotation;
-                //////////////
-                CMD_Calculator(newPositionChanged, newRotationQuo, currentTime, timeElapsed_adopt_starter);
-            }
-        }
-    }
+    
 
     void CMD_Calculator(Vector3 RealPosition, Quaternion realRotation, DateTime NowTime, float TimeElapsed_adopt_starter_param)
     {

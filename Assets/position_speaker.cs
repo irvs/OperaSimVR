@@ -18,8 +18,8 @@ public class position_speaker : MonoBehaviour
     void Update()
     {
         RealPosition = GetComponent<PoseSubscriber>();
-        newPosition = RealPosition.newPosition;
-        newRotation = RealPosition.newRotation;
+        newPosition = RealPosition.MapMachinePosition;
+        newRotation = RealPosition.MapMachineRotation;
         Debug.Log(newPosition);
         Debug.Log(newRotation);
     }

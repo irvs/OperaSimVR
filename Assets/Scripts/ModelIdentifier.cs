@@ -23,9 +23,6 @@ public class Model_name : MonoBehaviour
     {
         targetObject = this.gameObject;
         Modelname = targetObject.name;
-
-
-
         OffsetList.Add(0.0f);
         OffsetList.Add(0.0f);
         OffsetList.Add(0.0f);
