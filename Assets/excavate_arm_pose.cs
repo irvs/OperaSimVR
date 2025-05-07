@@ -30,6 +30,7 @@ public class JointSubscriber : MonoBehaviour
     private string SubscribeJointTopicName;
     private mode_selector mode;
     FieldMainManager SimORRealSelecter;
+    public List<double> JointPositions;
     ROSConnection ros;
 
     void Start()
@@ -80,6 +81,14 @@ public class JointSubscriber : MonoBehaviour
             pos_of_boom_joint = msg.position[1];
             pos_of_arm_joint = msg.position[2];
             pos_of_bucket_joint = msg.position[3];
+            JointPositions[0] = msg.position[0];
+            JointPositions[1] = msg.position[1];
+            JointPositions[2] = msg.position[2];
+            JointPositions[3] = msg.position[3];
+            JointPositions[4] = msg.velocity[0];
+            JointPositions[5] = msg.velocity[1];
+            JointPositions[6] = msg.velocity[2];
+            JointPositions[7] = msg.velocity[3];
             //
             if (JointChengeSw == true)
             {

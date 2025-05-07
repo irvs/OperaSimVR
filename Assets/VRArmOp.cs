@@ -31,6 +31,7 @@ public class JointAnglePublisher : MonoBehaviour
     float movespeed = 0.01f;
     ROSConnection ros;
     FieldMainManager SimORRealSelecter;
+    JointSubscriber RealJointAngular;
     public string topicName_cmd_vel = "zx200/tracks/cmd_vel";
     public string topicName_swing = "/zx200/swing/cmd";
     public string topicName_boom = "/zx200/boom/cmd";
@@ -38,9 +39,6 @@ public class JointAnglePublisher : MonoBehaviour
     public string topicName_bucket = "/zx200/bucket/cmd";
     public string topicname_joint = "/zx200/front_cmd";
     public string Real_topicName_joint_velocity = "/zx200/front_cmd/for_ROS";
-    public string SimPhysXSubscribeTopicName;
-    public string SimAGXSubscribeTopicName;
-    public string RealSubscribeTopicName;
     public string controller_swTopicName = "controller_sw_zx200";
     public string EmergencyTopicName;
     public float publishMessageInterval = 0.02f;//50Hz
@@ -90,21 +88,6 @@ public class JointAnglePublisher : MonoBehaviour
         PlayertargetObject = GameObject.Find("OVRPlayerController");
         //
         SimORRealSelecter = FindObjectOfType<FieldMainManager>();
-        if (SimORRealSelecter.ForSimOrReal.ToString() == "ForSimPhysX")
-        {
-            SimORReal = false;
-            ros.Subscribe<JointStateMsg>(SimPhysXSubscribeTopicName, Callback);
-        }
-        else if (SimORRealSelecter.ForSimOrReal.ToString() == "ForSimAGX")
-        {
-            SimORReal = true;
-            ros.Subscribe<JointStateMsg>(SimAGXSubscribeTopicName, Callback);
-        }
-        else if (SimORRealSelecter.ForSimOrReal.ToString() == "ForReal")
-        {
-            SimORReal = true;
-            ros.Subscribe<JointStateMsg>(RealSubscribeTopicName, Callback);
-        }
         //
         if (SimORReal == true)
         {
@@ -665,38 +648,36 @@ public class JointAnglePublisher : MonoBehaviour
                             timeElapsed = 0;
                         }
                     }
+                    ///for prev
+                    selected_mode = FindObjectOfType<mode_selector>();
+                    dissconnect_timer = 0.0f;
+                    if (selected_mode.mode == 2)//Visual tool
+                    {
+                        RealJointAngular = GetComponent<JointSubscriber>();
+                        float pos_of_swing = (float)RealJointAngular.JointPositions[0];
+                        float pos_of_boom = (float)RealJointAngular.JointPositions[1];
+                        float pos_of_arm = (float)RealJointAngular.JointPositions[2];
+                        float pos_of_bucket = (float)RealJointAngular.JointPositions[3];
+                        float velo_of_swing = (float)RealJointAngular.JointPositions[4];
+                        float velo_of_boom = (float)RealJointAngular.JointPositions[5];
+                        float velo_of_arm = (float)RealJointAngular.JointPositions[6];
+                        float velo_of_bucket = (float)RealJointAngular.JointPositions[7];
+
+                        int CMD_time = Mathf.RoundToInt(Time_Delay / publishMessageInterval);
+                        /*
+                        float AtTimePosi_swing = (float)listOfJointPositionList[listOfJointPositionList.Count - 1 - CMD_time][0];
+                        float AtTimePosi_boom = (float)listOfJointPositionList[listOfJointPositionList.Count - 1 - CMD_time][1];
+                        float AtTimePosi_arm = (float)listOfJointPositionList[listOfJointPositionList.Count - 1 - CMD_time][2];
+                        float AtTimePosi_bucket = (float)listOfJointPositionList[listOfJointPositionList.Count - 1 - CMD_time][3];
+                        float AtTimeVelo_swing = (float)listOfJointCmdList[listOfJointCmdList.Count - 1 - CMD_time][0];
+                        float AtTimeVelo_boom = (float)listOfJointCmdList[listOfJointCmdList.Count - 1 - CMD_time][1];
+                        float AtTimeVelo_arm = (float)listOfJointCmdList[listOfJointCmdList.Count - 1 - CMD_time][2];
+                        float AtTimeVelo_bucket = (float)listOfJointCmdList[listOfJointCmdList.Count - 1 - CMD_time][3];
+                        */
+
+                    }
                 }
             }
-        }
-    }
-
-    void Callback(JointStateMsg msg)
-    {
-        selected_mode = FindObjectOfType<mode_selector>();
-        dissconnect_timer = 0.0f;
-        if (selected_mode.mode == 2)//Visual tool
-        {
-            float pos_of_swing = (float)msg.position[0];
-            float pos_of_boom = (float)msg.position[1];
-            float pos_of_arm = (float)msg.position[2];
-            float pos_of_bucket = (float)msg.position[3];
-            float velo_of_swing = (float)msg.velocity[0];
-            float velo_of_boom = (float)msg.velocity[1];
-            float velo_of_arm = (float)msg.velocity[2];
-            float velo_of_bucket = (float)msg.velocity[3];
-
-            int CMD_time = Mathf.RoundToInt(Time_Delay / publishMessageInterval);
-            /*
-            float AtTimePosi_swing = (float)listOfJointPositionList[listOfJointPositionList.Count - 1 - CMD_time][0];
-            float AtTimePosi_boom = (float)listOfJointPositionList[listOfJointPositionList.Count - 1 - CMD_time][1];
-            float AtTimePosi_arm = (float)listOfJointPositionList[listOfJointPositionList.Count - 1 - CMD_time][2];
-            float AtTimePosi_bucket = (float)listOfJointPositionList[listOfJointPositionList.Count - 1 - CMD_time][3];
-            float AtTimeVelo_swing = (float)listOfJointCmdList[listOfJointCmdList.Count - 1 - CMD_time][0];
-            float AtTimeVelo_boom = (float)listOfJointCmdList[listOfJointCmdList.Count - 1 - CMD_time][1];
-            float AtTimeVelo_arm = (float)listOfJointCmdList[listOfJointCmdList.Count - 1 - CMD_time][2];
-            float AtTimeVelo_bucket = (float)listOfJointCmdList[listOfJointCmdList.Count - 1 - CMD_time][3];
-            */
-
         }
     }
 }
