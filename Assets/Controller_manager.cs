@@ -41,7 +41,7 @@ public class Controller_manager : MonoBehaviour
     private float DiffRotPlayerMachine;
     Model_name ModelInfo;
     SensorCameraNamespase SensorCameraInfo;
-    ThetaImageSubscriber1 SensorCamerasImageSubscriber;
+    SensorCameraImageSubscriber SensorCamerasImageSubscriber;
     OVRPlayerController PlayerControllScript;
     //
 
@@ -88,7 +88,7 @@ public class Controller_manager : MonoBehaviour
                 if (ModelInfo != null)
                 {
                     MachineCameraPosition = GameObject.Find(Machine_name + "_cam");
-                    //Debug.Log(Machine_name+" + machine");
+                    //Debug.Log(Machine_name : " + machine");
                     posiorigin = PlayertargetObject.transform.position;
                     rotrigin = PlayertargetObject.transform.rotation;
                     PlayertargetObject.GetComponent<CharacterController>().enabled = false;
@@ -96,9 +96,10 @@ public class Controller_manager : MonoBehaviour
                     PlayerControllScript.RotationRatchet = 45;
                     PlayerControllScript.RotationAmount = 0.5f;
                     PlayertargetObject.transform.rotation = MachineCameraPosition.transform.rotation;
+                    PlayertargetObject.transform.SetParent(MachineCameraPosition.transform);///////////////
                     PlayerPoseMove_SW += 1;
                 }
-                SensorCamerasImageSubscriber = VehicletargetObject.GetComponent<ThetaImageSubscriber1>();
+                SensorCamerasImageSubscriber = VehicletargetObject.GetComponent<SensorCameraImageSubscriber>();
                 
                 if (SensorCamerasImageSubscriber != null)
                 {
@@ -119,6 +120,7 @@ public class Controller_manager : MonoBehaviour
             {
                 PlayerControllScript.RotationRatchet = 45;
                 PlayerControllScript.RotationAmount = 0.5f;
+                PlayerControllScript.transform.SetParent(null); // 子オブジェクト解除/////
 
                 PlayerPoseMove_SW = 0;
                 num = 0;

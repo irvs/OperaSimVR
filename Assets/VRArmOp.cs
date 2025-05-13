@@ -1,21 +1,13 @@
 using UnityEngine;
 using Unity.Robotics.ROSTCPConnector;
 using RosMessageTypes.Std;
+using RosMessageTypes.Geometry;
+using RosMessageTypes.Sensor;
 using System.Collections;
 using System.Collections.Generic;
 using System;
-using RosMessageTypes.Geometry;
-using RosMessageTypes.Sensor;
-using static UnityEditor.Experimental.GraphView.GraphView;
-using System.Drawing;
-using System.Drawing.Printing;
 using System.Linq;
-using static UnityEngine.GraphicsBuffer;
-using System.ComponentModel.Composition.Primitives;
-using System.Runtime.Remoting.Messaging;
-using UnityEngine.UIElements;
 using Unity.Robotics.Core;
-using UnityEngine.Analytics;
 using Unity.Robotics.UrdfImporter;
 
 public class JointAnglePublisher : MonoBehaviour

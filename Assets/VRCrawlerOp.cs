@@ -5,10 +5,7 @@ using System;
 using Unity.Robotics.ROSTCPConnector;
 using RosMessageTypes.Geometry;
 using RosMessageTypes.Std;
-using RosMessageTypes.Nav;
-using System.Drawing.Printing;
 using System.Linq;
-using static UnityEngine.GraphicsBuffer;
 
 public class VR_cont_2 : MonoBehaviour
 {

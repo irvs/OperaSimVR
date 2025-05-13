@@ -2,8 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Robotics.ROSTCPConnector;
-using RosMessageTypes.BuiltinInterfaces;
-using RosMessageTypes.Std;
 using RosMessageTypes.Sensor;
 using Unity.Robotics.UrdfImporter;
 using Unity.Robotics.Core;

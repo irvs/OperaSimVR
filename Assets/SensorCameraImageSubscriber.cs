@@ -6,10 +6,10 @@ using Unity.Robotics.ROSTCPConnector;
 using RosMessageTypes.Sensor;
 using RosMessageTypes.Std;
 
-public class ThetaImageSubscriber1 : MonoBehaviour
+public class SensorCameraImageSubscriber : MonoBehaviour
 {
     public string topicName = "/client1/theta_image";
-    public List<string> topicNameList = new List<string>();
+   // public List<string> topicNameList = new List<string>();
     public Skybox skybox;
     public float displayFrequency = 72.0f; // Up to 90Hz?
     private Texture2D texture2D;
@@ -20,7 +20,7 @@ public class ThetaImageSubscriber1 : MonoBehaviour
     private bool isSubscribed = false;
     private ROSConnection rosConnection;
     private Vector3 PosOrigin;
-    public int SensorPodsNumber = 1;
+   // public int SensorPodsNumber = 1;
     private bool IsVRorKey;
 
     // ‰½‚àÝ’è‚µ‚Ä‚¢‚È‚¢Skybox‚ðÝ’è‚·‚é‚½‚ß‚Ì•Ï”
@@ -92,10 +92,10 @@ public class ThetaImageSubscriber1 : MonoBehaviour
     {
         if (!isSubscribed)
         {
-            if (SensorPodsNumber >= 1 && SensorPodsNumber <= topicNameList.Count)
-            {
-                topicName = topicNameList[SensorPodsNumber - 1];
-            }
+           // if (SensorPodsNumber >= 1 && SensorPodsNumber <= topicNameList.Count)
+           // {
+           //     topicName = topicNameList[SensorPodsNumber - 1];
+           // }
             if (topicName != null)
             {
                 rosConnection = ROSConnection.GetOrCreateInstance();

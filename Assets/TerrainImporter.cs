@@ -10,7 +10,7 @@ using Unity.Robotics.Core;
 using RosMessageTypes.TmsMsgDb;
 using RosMessageTypes.Shape;
 using Assimp;
-public class MyServiceClient : MonoBehaviour
+public class TerrainReaderClient : MonoBehaviour
 {
     ROSConnection ros;
  //   private string serviceName = "output/terrain/heightmap/image";
