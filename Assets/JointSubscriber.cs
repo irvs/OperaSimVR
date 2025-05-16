@@ -48,7 +48,7 @@ public class JointSubscriber : MonoBehaviour
         {
             SubscribeJointTopicName = RealSubscribeTopicName;
         }
-        if (ViaDB == true || SimORRealSelecter.ViaDB == true)
+        if (ViaDB == true)// || SimORRealSelecter.ViaDB == true)
         {
             SubscribeJointTopicName = ViaDBSubscribeTopicName;
         }
