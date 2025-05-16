@@ -36,7 +36,7 @@ public class ControllerLay : MonoBehaviour
             parentObjectName = parentObject.name;
             //Debug.Log("Parent Object Name is: " + parentObjectName); 
             Transform current = other.gameObject.transform;
-            if (current != null)
+            if (current != null && current.parent != null)
             {
                 // ルートまでたどる
                 while (current.parent.parent != null)
