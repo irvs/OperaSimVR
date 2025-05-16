@@ -9,7 +9,6 @@ using RosMessageTypes.Std;
 public class SensorCameraImageSubscriber : MonoBehaviour
 {
     public string topicName = "/client1/theta_image";
-   // public List<string> topicNameList = new List<string>();
     public Skybox skybox;
     public float displayFrequency = 72.0f; // Up to 90Hz?
     private Texture2D texture2D;
@@ -92,10 +91,6 @@ public class SensorCameraImageSubscriber : MonoBehaviour
     {
         if (!isSubscribed)
         {
-           // if (SensorPodsNumber >= 1 && SensorPodsNumber <= topicNameList.Count)
-           // {
-           //     topicName = topicNameList[SensorPodsNumber - 1];
-           // }
             if (topicName != null)
             {
                 rosConnection = ROSConnection.GetOrCreateInstance();

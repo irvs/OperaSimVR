@@ -111,6 +111,7 @@ public class Controller_manager : MonoBehaviour
 
                 PlayerPoseMove_SW = 0;
                 num = 0;
+                SensorCamerasImageSubscriber.isImageReceived = true;
 
                 GetOnMachine = 0;
                 VR_cont_2 scriptB_c = VehicletargetObject.GetComponent<VR_cont_2>();
