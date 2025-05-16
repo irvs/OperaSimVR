@@ -1,18 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Unity.Robotics.ROSTCPConnector;
-using RosMessageTypes.BuiltinInterfaces;
-using RosMessageTypes.Std;
-using RosMessageTypes.Geometry;
-using RosMessageTypes.Nav;
-using Unity.Robotics.Core;
-using System;
 
 public class mode_selector : MonoBehaviour
 {
     // Start is called before the first frame update
     public int mode = 0;
+    public enum ModeOption { NormalModeSimulator, PlayMode , PreviewMode , Else }
+    public ModeOption WhichMode;
+    string WhichModePrev;
     private int prev_mode;
     private int mode_return;
     GameObject Dump1;
@@ -21,6 +17,15 @@ public class mode_selector : MonoBehaviour
     //void Start()
     void Update()
     {
+        if (WhichMode.ToString() != WhichModePrev)
+        {
+            if (WhichMode.ToString() == "NormalModeSimulator"){mode = 0;}
+            else if (WhichMode.ToString() == "PlayMode") { mode = 1; }
+            else if (WhichMode.ToString() == "PreviewMode") { mode = 2; }
+            else if (WhichMode.ToString() == "Else") { mode = 10; }
+            WhichModePrev= WhichMode.ToString();
+        }
+
         if (mode == 0) //simlator
         {
             if (mode != prev_mode)
