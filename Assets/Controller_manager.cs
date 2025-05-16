@@ -1,19 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static Unity.Burst.Intrinsics.Arm;
-using static UnityEditor.Experimental.GraphView.GraphView;
 using System;
-using Unity.Robotics.ROSTCPConnector;
-using RosMessageTypes.Geometry;
-using System.Drawing.Printing;
-using System.Linq;
-using static UnityEngine.GraphicsBuffer;
+
 
 public class Controller_manager : MonoBehaviour
 {
     ControllerLay From_VRcont;
-    // TerrainCollisionPoint TerrainPoint;
     public bool DesignateVehicleFromInspector;
     public bool emergency_sw = false;
     bool outside_sw = false;
@@ -21,17 +14,11 @@ public class Controller_manager : MonoBehaviour
     GameObject VehicletargetObject;
     public int GetOnMachine = 0;
     List<string> Machine_Name_List = new List<string>();
-
     public int PlayerPoseMove_SW = 0;
-
     Vector3 posiorigin;
     Quaternion rotrigin;
     int num = 0;
     public float movespeed = 1.0f;
-    Quaternion machine_origin_rot;
-    Vector3 dif_rot_from_machine;
-    float timesec = Mathf.Floor((System.DateTime.Now.Millisecond) / 10);
-    float deltatimesec = System.DateTime.Now.Millisecond;
     GameObject PlayertargetObject;
     GameObject MachineCameraPosition;
     private float Playerlinear;
@@ -150,41 +137,6 @@ public class Controller_manager : MonoBehaviour
                 PlayertargetObject.GetComponent<CharacterController>().enabled = true;
                 Debug.Log("Get off.");
 
-            }
-            //
-            //Debug.Log(System.DateTime.Now.Millisecond);
-            if (/*timesec != Mathf.Floor((System.DateTime.Now.Millisecond) / 10) && */(PlayerPoseMove_SW > 0) && outside_sw == false)
-            {
-                Vector3 forward1 = PlayertargetObject.transform.forward;
-                // オブジェクト2の正面方向のベクトル
-                Vector3 forward2 = MachineCameraPosition.transform.forward;
-                // 2つのオブジェクトの正面方向のなす角を求める
-                //  float angle = Vector3.Angle(forward1, forward2);
-                // 2. 2つのオブジェクトの正面方向の間の回転差を求める
-                Quaternion targetRotation = Quaternion.FromToRotation(forward1, forward2);
-
-                // 3. targetObject1をtargetObject2の正面方向に合わせる
-                //     PlayertargetObject.transform.Rotate(0, targetRotation.eulerAngles.y, 0);
-
-                /*
-                if (Math.Abs(angle - DiffRotPlayerMachine) >= 0.001 )
-                {
-                    PlayertargetObject.transform.Rotate(0, -(angle - DiffRotPlayerMachine), 0);
-                    Debug.Log("angle : " + angle + "  DiffRotPlayerMachine : " + DiffRotPlayerMachine + " angle - DiffRotPlayerMachine : " + (angle - DiffRotPlayerMachine));
-                }
-                */
-                /*
-                //Rotetion
-                Quaternion machine_rot_changed = MachineCameraPosition.transform.rotation;
-                dif_rot_from_machine = machine_rot_changed.eulerAngles - machine_origin_rot.eulerAngles;
-                if (dif_rot_from_machine[0] < 90 && Mathf.Abs(dif_rot_from_machine[1]) < 330 && dif_rot_from_machine[2] < 90)
-                {
-                    PlayertargetObject.transform.Rotate(0, dif_rot_from_machine[1], 0);
-                    machine_origin_rot = MachineCameraPosition.transform.rotation;
-                    timesec = Mathf.Floor((System.DateTime.Now.Millisecond) / 10);
-                    //Debug.Log("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC");
-                }
-                */
             }
 
             if (((PlayerPoseMove_SW > 0) && OVRInput.GetDown(OVRInput.RawButton.X) && (num == 1) && OVRInput.Get(OVRInput.RawButton.LIndexTrigger) == true) || ((PlayerPoseMove_SW > 0) && (num == 1)) && Input.GetKeyDown(KeyCode.X))
