@@ -1,17 +1,10 @@
-using RosMessageTypes.Geometry;
-using RosMessageTypes.Std;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.Robotics.ROSTCPConnector;
 using UnityEngine;
-using System;
-using static UnityEditor.Experimental.GraphView.GraphView;
-using System.Drawing;
-using RosMessageTypes.Sensor;
 using Unity.Robotics.UrdfImporter;
-using RosMessageTypes.BuiltinInterfaces;
-using Unity.Robotics.Core;
-using RosMessageTypes.Nav;
+
+
+
 
 public class cont_joint : MonoBehaviour
 {
@@ -20,7 +13,6 @@ public class cont_joint : MonoBehaviour
     FieldMainManager PoseVeloSelector;
     JointAnglePublisher FromVRJointController;
     public int sw = 0;
-    ROSConnection ros;
     public float publishMessageFrequency = 0.5f;
     private float timeElapsed;
     private List<ArticulationBody> targetjoints;

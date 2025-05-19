@@ -3,15 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 public class TerrainCollisionPoint : MonoBehaviour
 {
-    public OVRRayHelper ovrRayHelper;  // OVRRayHelperの参照
     public Transform handAnchor;       // 手の位置（HandAnchor）
     public Terrain terrain;            // 衝突したいTerrain
     public float rayLength = 10f;      // Rayの長さ（デフォルト10ユニット）
     private Vector3 collisionPoint;
     Controller_manager Geton_controller_manager;
     List<Vector3> PathForDB = new List<Vector3>();
-    public Transform startPoint;  // 始点
-    public Transform endPoint;    // 終点
     public LineRenderer lineRenderer;  // LineRendererの参照
     public GameObject spherePrefab;  // 衝突位置に生成する球のPrefab
 
