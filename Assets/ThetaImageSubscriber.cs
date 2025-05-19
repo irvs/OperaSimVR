@@ -13,7 +13,7 @@ public class ThetaImageSubscriber : MonoBehaviour
     public Skybox skybox;
     public float displayFrequency = 72.0f; // Up to 90Hz?
     private Texture2D texture2D;
-    private byte[] imageData;
+
 
     // Start is called before the first frame update
     void Start()

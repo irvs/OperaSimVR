@@ -52,7 +52,6 @@ public class VR_cont_2 : MonoBehaviour
     //
     Controller_manager VRManager;
     FieldMainManager SimORRealSelecter;
-    Model_name model_name_space;
     mode_selector mode;
     PoseSubscriber RealPosition;
     public float adapter1 = 1.0f;

@@ -5,14 +5,9 @@ public class Fence_test : MonoBehaviour
     public Transform objectA; // 1つ目のオブジェクト
     public Transform objectB; // 2つ目のオブジェクト
     private LineRenderer lineRenderer; // LineRendererコンポーネント
-    // 線の幅（太さ）
-    public float lineWidth = 0.2f;  // 線の幅（0.1f ～ 1.0f程度で調整）
-
-    public float raycastDistance = 10f; // レイキャストの距離
     public LayerMask collisionLayer; // 衝突を検出するレイヤー
     string parentObjectName;
     private GameObject targetObject;
-    Model_name name_space_of_model;
 
     void Start()
     {

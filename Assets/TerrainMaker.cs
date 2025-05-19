@@ -5,7 +5,6 @@ public class TerrainGenerator : MonoBehaviour
     public Terrain terrain;
     public Texture2D heightmap;  // 高さマップ画像
     public Texture2D texture1;   // テクスチャ1（例: 草）
-    private float textureBlendHeight = 0.5f; // 高さに基づいてテクスチャをブレンドする境界
     public int TerrainWidth;//trrainの幅
     public int TerrainHeight;//terrainの奥行
     public int TerrainElevation = 600;//terrainの高さ
@@ -56,7 +55,6 @@ public class TerrainGenerator : MonoBehaviour
 
         // 高さマップに基づいて地形を設定
         terrain.terrainData.SetHeights(0, 0, heights);
-
         // 地形のterrainDataを取得
         TerrainData ThisterrainData = terrain.terrainData;
         // TerrainColliderを更新
@@ -71,17 +69,13 @@ public class TerrainGenerator : MonoBehaviour
     {
         // 地形にテクスチャを適用
         TerrainLayer[] terrainLayers = new TerrainLayer[2];
-
         // テクスチャ1を設定
         TerrainLayer layer1 = new TerrainLayer();
         layer1.diffuseTexture = texture1;
-
         // テクスチャのタイルサイズとオフセットを設定
         layer1.tileSize = new Vector2(WidthTexture, HeightTexture);  // テクスチャのサイズ (タイルあたりの広さ)
         layer1.tileOffset = new Vector2(OffsetWidthTexture, OffsetHeightTexture);  // テクスチャのオフセット (位置の調整)
-
         terrainLayers[0] = layer1;
-
         // 地形にTerrainLayerを設定
         terrain.terrainData.terrainLayers = terrainLayers;
 
@@ -94,28 +88,14 @@ public class TerrainGenerator : MonoBehaviour
         if (originalHeights != null)
         {
             terrain.terrainData.size = new Vector3(originalwidth, TerrainElevation, originalheight);
-            terrain.terrainData.SetHeights(0, 0, originalHeights);  // 高さマップを元に戻す
-                                                                    //
-
+            terrain.terrainData.SetHeights(0, 0, originalHeights);  // 高さマップを元に戻す                                                                    //
             // 地形のterrainDataを取得
             TerrainData ThisterrainData = terrain.terrainData;
             // TerrainColliderを更新
             // terrainDataが更新されると、TerrainColliderも自動的に更新されますが、念のため再設定します
             terrain.GetComponent<TerrainCollider>().terrainData = ThisterrainData;
-
             // これで、TerrainColliderが新しい高さに基づいて衝突判定を行います
-            //
             Debug.Log("Terrain return!!!.");
         }
     }
-    /// 
-    /// 
-    /// </summary>
-    /*
-    private void OnApplicationQuit()
-    {
-        RestoreOriginalTerrainState();
-        Debug.Log("Terrain reset.");
-    }
-    */
 }
