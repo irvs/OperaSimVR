@@ -51,7 +51,7 @@ public class TerrainCollisionPoint : MonoBehaviour
                 CreateSphereAtCollisionPoint(collisionPoint);
             }
         }
-        Geton_controller_manager = this.GetComponent<Controller_manager>();
+        Geton_controller_manager = FindObjectOfType<Controller_manager>();
         if ((Geton_controller_manager.GetOnMachine == 0 && OVRInput.Get(OVRInput.RawButton.LIndexTrigger)) || (Geton_controller_manager.GetOnMachine == 0 && Input.GetKey(KeyCode.B)))
         {
             PathForDB.Add(collisionPoint);

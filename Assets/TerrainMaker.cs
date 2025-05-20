@@ -4,7 +4,7 @@ public class TerrainGenerator : MonoBehaviour
 {
     public Terrain terrain;
     public Texture2D heightmap;  // 高さマップ画像
-    public Texture2D texture1;   // テクスチャ1（例: 草）
+    public Texture2D texture;   // テクスチャ1（例: 草）
     public int TerrainWidth;//trrainの幅
     public int TerrainHeight;//terrainの奥行
     public int TerrainElevation = 600;//terrainの高さ
@@ -71,7 +71,7 @@ public class TerrainGenerator : MonoBehaviour
         TerrainLayer[] terrainLayers = new TerrainLayer[2];
         // テクスチャ1を設定
         TerrainLayer layer1 = new TerrainLayer();
-        layer1.diffuseTexture = texture1;
+        layer1.diffuseTexture = texture;
         // テクスチャのタイルサイズとオフセットを設定
         layer1.tileSize = new Vector2(WidthTexture, HeightTexture);  // テクスチャのサイズ (タイルあたりの広さ)
         layer1.tileOffset = new Vector2(OffsetWidthTexture, OffsetHeightTexture);  // テクスチャのオフセット (位置の調整)

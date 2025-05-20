@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using TMPro;
 
 
 public class Controller_manager : MonoBehaviour
@@ -31,6 +32,9 @@ public class Controller_manager : MonoBehaviour
     SensorCameraImageSubscriber SensorCamerasImageSubscriber;
     OVRPlayerController PlayerControllScript;
     //
+    public TextMeshProUGUI myTMPText;
+    public string WriteWord;
+    private bool Sensorpod;
 
     // Start is called before the first frame update
     void Start()
@@ -75,6 +79,7 @@ public class Controller_manager : MonoBehaviour
                 if (ModelInfo != null)
                 {
                     MachineCameraPosition = GameObject.Find(Machine_name + "_cam");
+                    Sensorpod = false;
                     //Debug.Log(Machine_name : " + machine");
                     posiorigin = PlayertargetObject.transform.position;
                     rotrigin = PlayertargetObject.transform.rotation;
@@ -85,17 +90,20 @@ public class Controller_manager : MonoBehaviour
                     PlayertargetObject.transform.rotation = MachineCameraPosition.transform.rotation;
                     PlayertargetObject.transform.SetParent(MachineCameraPosition.transform);///////////////
                     PlayerPoseMove_SW += 1;
+                    UpdateTextWithMarkup(Machine_name, "#ff000055");
                 }
                 SensorCamerasImageSubscriber = VehicletargetObject.GetComponent<SensorCameraImageSubscriber>();
                 
                 if (SensorCamerasImageSubscriber != null)
                 {
                     button = false;
+                    Sensorpod = true;
                     posiorigin = PlayertargetObject.transform.position;
                     SensorCameraInfo = GameObject.Find(From_VRcont.OneBeforeRootObjectName).GetComponent<SensorCameraNamespase>();
                     SensorCamerasImageSubscriber.topicName = SensorCameraInfo.ImageTopicName;
                     num = 1;
                     SensorCamerasImageSubscriber.isImageReceived = false;
+                    UpdateTextWithMarkup(From_VRcont.OneBeforeRootObjectName, "#ff000055");
                 }
             }
             if ((PlayerPoseMove_SW > 0) && outside_sw == false)
@@ -111,7 +119,7 @@ public class Controller_manager : MonoBehaviour
 
                 PlayerPoseMove_SW = 0;
                 num = 0;
-                SensorCamerasImageSubscriber.isImageReceived = true;
+                if (Sensorpod == true) { SensorCamerasImageSubscriber.isImageReceived = true; }
 
                 GetOnMachine = 0;
                 VR_cont_2 scriptB_c = VehicletargetObject.GetComponent<VR_cont_2>();
@@ -136,6 +144,7 @@ public class Controller_manager : MonoBehaviour
                 }
                 PlayertargetObject.GetComponent<Collider>().enabled = true;
                 PlayertargetObject.GetComponent<CharacterController>().enabled = true;
+                UpdateTextWithMarkup("", "#ff000055");
                 Debug.Log("Get off.");
 
             }
@@ -235,4 +244,14 @@ public class Controller_manager : MonoBehaviour
             }
         }
     }
+
+    public void UpdateTextWithMarkup(string baseText, string colorCode)
+    {
+        if (myTMPText != null)
+        {
+            string coloredText = $"<mark={colorCode}>{baseText}</mark>";
+            myTMPText.text = coloredText;
+        }
+    }
+
 }

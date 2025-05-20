@@ -2,12 +2,9 @@ using UnityEngine;
 public class ControllerLay : MonoBehaviour
 {
     public string GetOnVehicle;
-
-   // public vrcmdvelcontroller VRcont;
     public string parentObjectName;
     public string OneBeforeRootObjectName;
     public string hitObjectName;
-    public int GetOn = 0;
 
     void OnCollisionEnter(Collision collision)
     {
