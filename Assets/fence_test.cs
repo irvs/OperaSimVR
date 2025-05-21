@@ -47,7 +47,7 @@ public class Fence_test : MonoBehaviour
                 Debug.Log("衝突したオブジェクト: " + parentObjectName);
                 //
                 targetObject = GameObject.Find(parentObjectName);
-                VR_cont_2 scriptA = targetObject.GetComponent<VR_cont_2>();
+                VRCrawlerOp scriptA = targetObject.GetComponent<VRCrawlerOp>();
                 if (scriptA != null)
                 {
                     scriptA.emergency = true;
@@ -56,24 +56,13 @@ public class Fence_test : MonoBehaviour
                 Model_name scriptB = targetObject.GetComponent<Model_name>();
                 if (scriptB != null && scriptB.ObjectTypeIsPaperMachine == true) 
                 {
-                    VR_cont_2 scriptC = GameObject.Find(scriptB.ParentMachine).GetComponent<VR_cont_2>();
+                    VRCrawlerOp scriptC = GameObject.Find(scriptB.ParentMachine).GetComponent<VRCrawlerOp>();
                     if (scriptC != null)
                     {
                         scriptC.emergency = true;
                         Debug.Log("emergency");
                     }
                 }
-                /*
-                if (parentObjectName == "ic120")
-                {
-                    // targetObject = GameObject.Find("ic120");
-                    Debug.Log("fence " + targetObject);
-                    VR_cont_2 scriptA = targetObject.GetComponent<VR_cont_2>();
-                    scriptA.emergency = true;
-                    Debug.Log("emergency");
-                }
-                */
-                //
             }
         }
         else

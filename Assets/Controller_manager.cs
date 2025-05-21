@@ -121,7 +121,7 @@ public class Controller_manager : MonoBehaviour
                 if (Sensorpod == true) { SensorCamerasImageSubscriber.isImageReceived = true; }
 
                 GetOnMachine = 0;
-                VR_cont_2 scriptB_c = VehicletargetObject.GetComponent<VR_cont_2>();
+                VRCrawlerOp scriptB_c = VehicletargetObject.GetComponent<VRCrawlerOp>();
                 if (scriptB_c != null)
                 {
                     scriptB_c.sw = 0;
@@ -150,7 +150,7 @@ public class Controller_manager : MonoBehaviour
 
             if (((PlayerPoseMove_SW > 0) && OVRInput.GetDown(OVRInput.RawButton.X) && (num == 1) && OVRInput.Get(OVRInput.RawButton.LIndexTrigger) == true) || ((PlayerPoseMove_SW > 0) && (num == 1)) && Input.GetKeyDown(KeyCode.X))
             {
-                VR_cont_2 scriptB_c = VehicletargetObject.GetComponent<VR_cont_2>();
+                VRCrawlerOp scriptB_c = VehicletargetObject.GetComponent<VRCrawlerOp>();
                 if (scriptB_c != null)
                 {
                     scriptB_c.sw = 1;
@@ -212,7 +212,7 @@ public class Controller_manager : MonoBehaviour
             if ((OVRInput.GetDown(OVRInput.RawButton.Y)) || (Input.GetKeyDown(KeyCode.C)))
             {
                 emergency_sw = true;
-                VR_cont_2 EMG_sw = VehicletargetObject.GetComponent<VR_cont_2>();
+                VRCrawlerOp EMG_sw = VehicletargetObject.GetComponent<VRCrawlerOp>();
                 if (EMG_sw != null)
                 {
                     EMG_sw.emergency = true;
@@ -222,7 +222,7 @@ public class Controller_manager : MonoBehaviour
             if ((OVRInput.GetDown(OVRInput.RawButton.Y) && OVRInput.Get(OVRInput.RawButton.RIndexTrigger) == true) || Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.C))
             {
                 emergency_sw = false;
-                VR_cont_2 EMG_sw = VehicletargetObject.GetComponent<VR_cont_2>();
+                VRCrawlerOp EMG_sw = VehicletargetObject.GetComponent<VRCrawlerOp>();
                 if (EMG_sw != null)
                 {
                     EMG_sw.emergency = false;

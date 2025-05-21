@@ -46,7 +46,7 @@ public class cont_crowlar : MonoBehaviour
     private float timeElapsed;
     private float timeElapsed_for_pub;
     //  vrcmdvelcontroller controller_cmd;
-    VR_cont_2 cont_VR_2_cmd;
+    VRCrawlerOp cont_VR_2_cmd;
     Vector3 crowlarvelocity;
     float crowlarspeed;
     private Rigidbody rb;
@@ -104,12 +104,12 @@ public class cont_crowlar : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        VR_cont_2 VRdirective = GetComponent<VR_cont_2>();
+        VRCrawlerOp VRdirective = GetComponent<VRCrawlerOp>();
         if (VRdirective.RecordPlaySw == false)
         {
             /* Calculate velocity command value based on inverse kinematics */
             //   controller_cmd = FindObjectOfType<vrcmdvelcontroller>();
-            cont_VR_2_cmd = GetComponent<VR_cont_2>();
+            cont_VR_2_cmd = GetComponent<VRCrawlerOp>();
             Recorder CMD_Recorder = GetComponent<Recorder>();
             ///var cmdLinearVel = twist.linear.x;
             var cmdLinearVel = (double)(VRdirective.CMD_linear_list_for_cyber[VRdirective.CMD_linear_list_for_cyber.Count - 1] * linearspeed);
@@ -145,11 +145,11 @@ public class cont_crowlar : MonoBehaviour
         //Debug.Log("Speed: " + crowlarspeed);
 
 
-        VR_cont_2 VRdirective = GetComponent<VR_cont_2>();
+        VRCrawlerOp VRdirective = GetComponent<VRCrawlerOp>();
         if (VRdirective.RecordPlaySw == true)
         {
             /* Calculate velocity command value based on inverse kinematics */
-            cont_VR_2_cmd = GetComponent<VR_cont_2>();
+            cont_VR_2_cmd = GetComponent<VRCrawlerOp>();
             Recorder CMD_Recorder = GetComponent<Recorder>();
             //
             DateTime currentTime = DateTime.Now;

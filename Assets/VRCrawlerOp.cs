@@ -5,7 +5,7 @@ using Unity.Robotics.ROSTCPConnector;
 using RosMessageTypes.Geometry;
 using RosMessageTypes.Std;
 
-public class VR_cont_2 : MonoBehaviour
+public class VRCrawlerOp : MonoBehaviour
 {
     public int sw = 0;
     private int prev_sw = 0;
@@ -62,7 +62,6 @@ public class VR_cont_2 : MonoBehaviour
     public float RotSpeed = 0.50f;
     //
     private float timeElapsed;
-    private float timeElapsed_CMD = 0.0f;
     private float timeElapsed_adopt_starter = 0.0f;
     private float timeElapsed_start = 0.0f;
     private float sw_timeElapsed = 0.0f;
@@ -105,7 +104,7 @@ public class VR_cont_2 : MonoBehaviour
     void Start()
     {
         targetObject = this.gameObject;
-        Debug.Log("check:baselink/pose");
+        Debug.Log("check:VRCrawlerOp");
         ros = ROSConnection.GetOrCreateInstance();
         SimORRealSelecter = FindObjectOfType<FieldMainManager>();
         if (SimORRealSelecter.ForSimOrReal.ToString() == "ForSimPhysX")
@@ -127,7 +126,7 @@ public class VR_cont_2 : MonoBehaviour
         ros.Subscribe<BoolMsg>(controller_sw_return_TopicName, SW_Callback);
         ros.RegisterPublisher<TwistMsg>(SRPublishTopicName);
         //
-        Debug.Log("already:baselink/pose");
+        Debug.Log("already:VRCrawlerOp");
         //
         nextActionTime = DateTime.Now.AddMilliseconds(intervalInMilliseconds);
         //
@@ -222,7 +221,6 @@ public class VR_cont_2 : MonoBehaviour
                     sw_timeElapsed += Time.deltaTime;
                     if (mode.mode == 2)
                     {
-                        timeElapsed_CMD += Time.deltaTime;
                         timeElapsed_adopt_starter += Time.deltaTime;
                         timeElapsed_start += Time.deltaTime;
                         zerotime += Time.deltaTime;
@@ -275,15 +273,6 @@ public class VR_cont_2 : MonoBehaviour
                                 linear_or_rot = 2;
                             }
                         }
-
-                        if (Input.GetKey(KeyCode.Space))
-                        {
-                            frontback = 0.0f;
-                            rotation = 0.0f;
-                            adapter1 = 0.0f;
-                            adapter2 = 0.0f;
-                        }
-                        //
                         if (Input.GetKey(KeyCode.LeftArrow) && linear_or_rot == 2 || Input.GetKey(KeyCode.LeftArrow) && mode.mode == 1 || Input.GetKey(KeyCode.LeftArrow) && control_mode == 0)
                         {
                             rotation = RotSpeed;
@@ -318,99 +307,10 @@ public class VR_cont_2 : MonoBehaviour
                         }
                     }
                     //
-                    /*
-                    if (timeElapsed >= publishMessageInterval);
+                    
+                    if(control_mode == 1 && mode.mode == 2)
                     {
-                        vel_linear_acceleration = (frontback - CMD_linear_list[CMD_linear_list.Count - 1]) / (publishMessageInterval);
-                        if (vel_linear_acceleration > max_lnear_accel_per_pub && frontback >= (CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_accel_per_pub))
-                        {
-                            frontback = CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_accel_per_pub;
-                        }
-                        else if (vel_linear_acceleration < max_lnear_deceleration_per_pub && frontback <= (CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_accel_per_pub))
-                        {
-                            frontback = CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_deceleration_per_pub;
-                        }
-                        vel_angular_acceleration = (rotation - CMD_anglar_list[CMD_anglar_list.Count - 1]) / (publishMessageInterval);
-                        if (vel_angular_acceleration > max_angular_accel_per_pub && rotation >= (CMD_anglar_list[CMD_anglar_list.Count - 1] + max_angular_accel_per_pub))
-                        {
-                            rotation = CMD_anglar_list[CMD_anglar_list.Count - 1] + max_angular_accel_per_pub;
-                        }
-                        else if (vel_angular_acceleration < max_angular_deceleration_per_pub && rotation <= (CMD_anglar_list[CMD_anglar_list.Count - 1] + max_angular_accel_per_pub))
-                        {
-                            rotation = CMD_anglar_list[CMD_anglar_list.Count - 1] + max_angular_deceleration_per_pub;
-                        }
-                        CMD_linear_list.Add(frontback);
-                        CMD_linear_list_for_cyber.Add(frontback);
-                        CMD_anglar_list.Add(rotation);
-                        CMD_anglar_list_for_cyber.Add(rotation);
-                       // CMD_linear_list_for_cyber.Add(frontback * adapter1 + adapter2);
-                      //  CMD_anglar_list_for_cyber.Add(rotation + rotadapter);
-                        if(control_mode == 0)
-                        {
-                            linear.x = frontback;
-                            angular.z = rotation;
-                            TwistMsg Twist = new TwistMsg(linear,angular);
-                            //  Debug.Log("Publish On Time");
-                            ros.Publish(SRPublishTopicName, Twist);
-                            timeElapsed = 0.0f;
-                        }
-                    }
-                    */
-                    if (control_mode == 0)
-                    {
-                        moover_sw = 1;
-                        if (prev_control_mode != control_mode) 
-                        {
-                            emergency = true;
-                            prev_control_mode = 0;
-                        }
-                        //
-                        if (timeElapsed >= publishMessageInterval)
-                        {
-                            vel_linear_acceleration = (frontback - CMD_linear_list[CMD_linear_list.Count - 1]) / (publishMessageInterval);
-                            if (vel_linear_acceleration > max_lnear_accel_per_pub && frontback >= (CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_accel_per_pub))
-                            {
-                                frontback = CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_accel_per_pub;
-                            }
-                            else if (vel_linear_acceleration < max_lnear_deceleration_per_pub && frontback <= (CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_accel_per_pub))
-                            {
-                                frontback = CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_deceleration_per_pub;
-                            }
-                            vel_angular_acceleration = (rotation - CMD_anglar_list[CMD_anglar_list.Count - 1]) / (publishMessageInterval);
-                            if (vel_angular_acceleration > max_angular_accel_per_pub && rotation >= (CMD_anglar_list[CMD_anglar_list.Count - 1] + max_angular_accel_per_pub))
-                            {
-                                rotation = CMD_anglar_list[CMD_anglar_list.Count - 1] + max_angular_accel_per_pub;
-                            }
-                            else if (vel_angular_acceleration < max_angular_deceleration_per_pub && rotation <= (CMD_anglar_list[CMD_anglar_list.Count - 1] + max_angular_accel_per_pub))
-                            {
-                                rotation = CMD_anglar_list[CMD_anglar_list.Count - 1] + max_angular_deceleration_per_pub;
-                            }
-                            CMD_linear_list.Add(frontback);
-                            CMD_linear_list_for_cyber.Add(frontback);
-                            CMD_anglar_list.Add(rotation);
-                            CMD_anglar_list_for_cyber.Add(rotation);
-                            linear.x = frontback;
-                            angular.z = rotation;
-                            TwistMsg Twist = new TwistMsg(linear,angular);
-                            //  Debug.Log("Publish On Time");
-                            ros.Publish(SRPublishTopicName, Twist);
-                            timeElapsed = 0.0f;
-                        }
-                    }
-
-                    if (control_mode == 1 && mode.mode == 2)
-                    {
-                        if (prev_control_mode != control_mode)
-                        {
-                            emergency = true;
-                            prev_control_mode = 1;
-                        }
-
-                        if (linear_or_rot == 1 && frontback != 0 && moover_sw == 1)
-                        {
-                            zerotime = 0.0f;
-                        }
-                        if (linear_or_rot == 2 && rotation != 0 && moover_sw == 1)
+                        if (((linear_or_rot == 2 && rotation != 0)||(linear_or_rot == 1 && frontback != 0)) && moover_sw == 1)
                         {
                             zerotime = 0.0f;
                         }
@@ -439,53 +339,83 @@ public class VR_cont_2 : MonoBehaviour
                             frontback = 0.0f;
                             rotation = 0.0f;
                         }
-                        if (timeElapsed >= publishMessageInterval)
+                    }
+                    if (timeElapsed >= publishMessageInterval);
+                    {
+                        vel_linear_acceleration = (frontback - CMD_linear_list[CMD_linear_list.Count - 1]) / (publishMessageInterval);
+                        if (vel_linear_acceleration > max_lnear_accel_per_pub && frontback >= (CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_accel_per_pub))
                         {
-                            vel_linear_acceleration = (frontback - CMD_linear_list[CMD_linear_list.Count - 1]) / (publishMessageInterval);
+                            frontback = CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_accel_per_pub;
+                        }
+                        else if (vel_linear_acceleration < max_lnear_deceleration_per_pub && frontback <= (CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_accel_per_pub))
+                        {
+                            frontback = CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_deceleration_per_pub;
+                        }
+                        vel_angular_acceleration = (rotation - CMD_anglar_list[CMD_anglar_list.Count - 1]) / (publishMessageInterval);
+                        if (vel_angular_acceleration > max_angular_accel_per_pub && rotation >= (CMD_anglar_list[CMD_anglar_list.Count - 1] + max_angular_accel_per_pub))
+                        {
+                            rotation = CMD_anglar_list[CMD_anglar_list.Count - 1] + max_angular_accel_per_pub;
+                        }
+                        else if (vel_angular_acceleration < max_angular_deceleration_per_pub && rotation <= (CMD_anglar_list[CMD_anglar_list.Count - 1] + max_angular_accel_per_pub))
+                        {
+                            rotation = CMD_anglar_list[CMD_anglar_list.Count - 1] + max_angular_deceleration_per_pub;
+                        }
 
-                            if (vel_linear_acceleration > max_lnear_accel_per_pub && frontback >= (CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_accel_per_pub))
-                            {
-                                frontback = CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_accel_per_pub;
-                            }
-                            else if (vel_linear_acceleration < max_lnear_deceleration_per_pub && frontback <= (CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_accel_per_pub))
-                            {
-                                frontback = CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_deceleration_per_pub;
-                            }
-                            vel_angular_acceleration = (rotation - CMD_anglar_list[CMD_anglar_list.Count - 1]) / (publishMessageInterval);
-                            if (vel_angular_acceleration > max_angular_accel_per_pub && rotation >= (CMD_anglar_list[CMD_anglar_list.Count - 1] + max_angular_accel_per_pub))
-                            {
-                                rotation = CMD_anglar_list[CMD_anglar_list.Count - 1] + max_angular_accel_per_pub;
-                            }
-                            else if (vel_angular_acceleration < max_angular_deceleration_per_pub && rotation <= (CMD_anglar_list[CMD_anglar_list.Count - 1] + max_angular_accel_per_pub))
-                            {
-                                rotation = CMD_anglar_list[CMD_anglar_list.Count - 1] + max_angular_deceleration_per_pub;
-                            }
+                        if(control_mode == 0)
+                        {
+                            linear.x = frontback;
+                            angular.z = rotation;
+                            TwistMsg Twist = new TwistMsg(linear,angular);
+                            //  Debug.Log("Publish On Time");
+                            ros.Publish(SRPublishTopicName, Twist);
+                            timeElapsed = 0.0f;
+                        }
+                        if(control_mode == 1 && mode.mode == 2)
+                        {
                             CMD_linear_list.Add(frontback);
                             CMD_linear_list_for_cyber.Add(frontback * adapter1 + adapter2);
                             CMD_anglar_list.Add(rotation);
                             CMD_anglar_list_for_cyber.Add(rotation + rotadapter);
-                            timeElapsed = 0.0f;
-                        }
+                            
 
-                        if (timeElapsed_start > (Time_Delay + 5.0f) && CMD_linear_list.Count - (Mathf.RoundToInt(Time_Delay / publishMessageInterval)) - 1 >= 0 && CMD_anglar_list.Count - (Mathf.RoundToInt(Time_Delay / publishMessageInterval)) - 1 >= 0)
-                        {
                             int CMD_time = Mathf.RoundToInt(Time_Delay / publishMessageInterval);
-                            linear.x = CMD_linear_list[CMD_linear_list.Count - CMD_time - 1];
-                            angular.z = CMD_anglar_list[CMD_anglar_list.Count - CMD_time - 1];
-                            TwistMsg Twist = new TwistMsg(linear,angular);
-                            if (timeElapsed_CMD >= publishMessageInterval)
+                            if (timeElapsed_start > (Time_Delay + 5.0f) && CMD_linear_list.Count - (CMD_time) - 1 >= 0 && CMD_anglar_list.Count - (CMD_time) - 1 >= 0)
                             {
+                                linear.x = CMD_linear_list[CMD_linear_list.Count - CMD_time - 1];
+                                angular.z = CMD_anglar_list[CMD_anglar_list.Count - CMD_time - 1];
+                                TwistMsg Twist = new TwistMsg(linear, angular);
                                 // Debug.Log("Publish After Delay Time");
                                 ros.Publish(SRPublishTopicName, Twist);
-                                timeElapsed_CMD = 0.0f;
+
                             }
+                            timeElapsed = 0.0f;
+                        } 
+                    }
+                    
+                    if (control_mode == 0)
+                    {
+                        moover_sw = 1;
+                        if (prev_control_mode != control_mode) 
+                        {
+                            emergency = true;
+                            prev_control_mode = 0;
                         }
+                    }
+
+                    if (control_mode == 1 && mode.mode == 2)
+                    {
+                        if (prev_control_mode != control_mode)
+                        {
+                            emergency = true;
+                            prev_control_mode = 1;
+                        }
+
+                        
                         RealPosition = GetComponent<PoseSubscriber>();
                        // Debug.Log(RealPosition);
                       //  Debug.Log(RealPosition.newPosition);
                         newPosition = RealPosition.MapMachinePosition;
                         newRotation = RealPosition.MapMachineRotation;
-                        mode = FindObjectOfType<mode_selector>();
                         dissconnect_timer = 0.0f;
 
                         if (mode.mode == 2 && control_mode == 1 && sw == 1) //Controll mode (Pose modify)
@@ -500,13 +430,12 @@ public class VR_cont_2 : MonoBehaviour
                             }
                         }
                     }
-                }//
-            }//
+                }
+            }
         }
         mode = FindObjectOfType<mode_selector>();
         if (mode.mode == 2 && RecordPlaySw == true)
         {
-            timeElapsed_CMD += Time.deltaTime;
             timeElapsed_adopt_starter += Time.deltaTime;
             timeElapsed_start += Time.deltaTime;
             zerotime += Time.deltaTime;
