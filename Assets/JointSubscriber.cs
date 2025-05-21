@@ -1,11 +1,8 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Robotics.ROSTCPConnector;
 using RosMessageTypes.Sensor;
 using Unity.Robotics.UrdfImporter;
-using Unity.Robotics.Core;
-using System;
 
 public class JointSubscriber : MonoBehaviour
 {

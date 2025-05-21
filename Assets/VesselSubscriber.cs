@@ -1,8 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using Unity.Robotics.ROSTCPConnector;
-using RosMessageTypes.Std;
 using RosMessageTypes.Sensor;
 
 public class VesselSubscriber : MonoBehaviour

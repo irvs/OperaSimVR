@@ -1,13 +1,7 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using Unity.Robotics.ROSTCPConnector;
-using RosMessageTypes.BuiltinInterfaces;
 using RosMessageTypes.Geometry;
 using RosMessageTypes.Nav;
-using Unity.Robotics.Core;
-using System;
-using static UnityEditor.PlayerSettings;
 public class PoseSubscriber : MonoBehaviour
 {
     public bool ViaDB;
