@@ -14,30 +14,23 @@ public class Fence_test : MonoBehaviour
         // LineRendererコンポーネントを取得
         lineRenderer = gameObject.AddComponent<LineRenderer>();
         lineRenderer.positionCount = 2;
-
-        // 初期位置に基づいてラインを描画
         UpdateLine();
     }
 
     void Update()
     {
-        // オブジェクトの位置に基づいてラインを更新
         UpdateLine();
-
-        // 衝突判定を行う
         CheckCollision();
     }
 
     void UpdateLine()
     {
-        // LineRendererの2つの点をオブジェクトAとBの位置に設定
         lineRenderer.SetPosition(0, objectA.position);
         lineRenderer.SetPosition(1, objectB.position);
     }
 
     void CheckCollision()
     {
-        // オブジェクトAとBを結ぶ直線をレイキャストとして扱う
         Vector3 direction = objectB.position - objectA.position;
         RaycastHit hit;
 
@@ -54,7 +47,6 @@ public class Fence_test : MonoBehaviour
                 Debug.Log("衝突したオブジェクト: " + parentObjectName);
                 //
                 targetObject = GameObject.Find(parentObjectName);
-                //targetObject = GameObject.Find("vr_cmd_vel_cont");
                 VR_cont_2 scriptA = targetObject.GetComponent<VR_cont_2>();
                 if (scriptA != null)
                 {
@@ -75,7 +67,6 @@ public class Fence_test : MonoBehaviour
                 if (parentObjectName == "ic120")
                 {
                     // targetObject = GameObject.Find("ic120");
-                    targetObject = GameObject.Find("vr_cmd_vel_cont");
                     Debug.Log("fence " + targetObject);
                     VR_cont_2 scriptA = targetObject.GetComponent<VR_cont_2>();
                     scriptA.emergency = true;
