@@ -166,7 +166,9 @@ public class PoseSubscriber : MonoBehaviour
             }
             targetObject.transform.eulerAngles = chenged_orientation;
         }
-       // Debug.Log("pose changed");
+        MapMachinePosition = new Vector3((NewPosition.x) - OffsetX, (NewPosition.y) - OffsetY, (NewPosition.z - OffsetZ)) + new Vector3(Reference.transform.position.x, 0, Reference.transform.position.z);
+        MapMachineRotation = Quaternion.Euler(chenged_orientation);
+        // Debug.Log("pose changed");
     }
 
     void Update()

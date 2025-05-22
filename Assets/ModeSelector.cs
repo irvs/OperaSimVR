@@ -35,13 +35,14 @@ public class mode_selector : MonoBehaviour
 
             //for simulator
             Dump1.GetComponent<DiffDriveController>().enabled = true;
+            Dump1.GetComponent<DiffDriveController>().ControlMode = 0;
             Dump1.GetComponent<JointStatePublisher>().enabled = true;
 
             Dump1.transform.Find("base_link").gameObject.GetComponent<PoseStampedPublisher>().enabled = true;
             Dump1.transform.Find("base_link/vessel_link").gameObject.GetComponent<VesselController>().enabled = true;
             Dump1.transform.Find("base_link/vessel_link").gameObject.GetComponent<VesselSubscriber>().enabled = false;
             //ic120 controllor
-            Dump1.GetComponent<cont_crowlar>().enabled = false;
+          //  Dump1.GetComponent<cont_crowlar>().enabled = false;
             Dump1.GetComponent<Rigidbody>().isKinematic = false;
             //ic120 visualize
             Dump1.GetComponent<PoseSubscriber>().enabled = false;
@@ -84,7 +85,7 @@ public class mode_selector : MonoBehaviour
             Dump1.transform.Find("base_link/vessel_link").gameObject.GetComponent<VesselController>().enabled = false;
             Dump1.transform.Find("base_link/vessel_link").gameObject.GetComponent<VesselSubscriber>().enabled = true;
             //ic120 controllor
-            Dump1.GetComponent<cont_crowlar>().enabled = false;
+          //  Dump1.GetComponent<cont_crowlar>().enabled = false;
             Dump1.GetComponent<Rigidbody>().isKinematic = true;
 
             Dump1.GetComponent<PoseSubscriber>().enabled = true;
@@ -127,12 +128,13 @@ public class mode_selector : MonoBehaviour
             Dump1 = GameObject.Find("ic120");
             Excavator1 = GameObject.Find("zx200");
             ///for simulator
-            Dump1.GetComponent<DiffDriveController>().enabled = false;
+            Dump1.GetComponent<DiffDriveController>().enabled = true;
+            Dump1.GetComponent<DiffDriveController>().ControlMode = 1;
             Dump1.GetComponent<JointStatePublisher>().enabled = false;
             
             Dump1.transform.Find("base_link").gameObject.GetComponent<PoseStampedPublisher>().enabled = false;
             //ic120 controllor
-            Dump1.GetComponent<cont_crowlar>().enabled = true;
+          //  Dump1.GetComponent<cont_crowlar>().enabled = true;
             Dump1.GetComponent<Rigidbody>().isKinematic = false;
             //ic120 visualize
             //GameObject.Find("ic120").GetComponent<JointSubscriber_ic120>().enabled = false;

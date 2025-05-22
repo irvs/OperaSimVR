@@ -99,6 +99,11 @@ public class VRCrawlerOp : MonoBehaviour
     private float Stop_time = 0.0f;
     private float frontback = 0.0f;
     private float rotation = 0.0f;
+    DiffDriveController diffDriveController = new DiffDriveController();
+    public int RecordCounter = 0;
+    private long PlayDeltaTime;
+    private double cmdLinearVel;//cmd record play
+    private double cmdAngularVel;//cmd record play
 
     // Start is called before the first frame update
     void Start()
@@ -165,7 +170,7 @@ public class VRCrawlerOp : MonoBehaviour
             timeElapsed += Time.deltaTime;
             linear.x = 0.00f;
             angular.z = 0.00f;
-            TwistMsg Twist = new TwistMsg(linear,angular);
+            TwistMsg Twist = new TwistMsg(linear, angular);
             BoolMsg EMGmessage = new BoolMsg(true);
             if (timeElapsed >= publishMessageInterval / 2.0f)
             {
@@ -254,7 +259,7 @@ public class VRCrawlerOp : MonoBehaviour
                     if (linear_or_rot == 2 || mode.mode == 1 || control_mode == 0)
                     {
                         rotation = -stickL.x;
-                    }   
+                    }
                     else if (linear_or_rot == 1)
                     {
                         rotation = 0.0f;
@@ -307,10 +312,10 @@ public class VRCrawlerOp : MonoBehaviour
                         }
                     }
                     //
-                    
-                    if(control_mode == 1 && mode.mode == 2)
+
+                    if (control_mode == 1 && mode.mode == 2)
                     {
-                        if (((linear_or_rot == 2 && rotation != 0)||(linear_or_rot == 1 && frontback != 0)) && moover_sw == 1)
+                        if (((linear_or_rot == 2 && rotation != 0) || (linear_or_rot == 1 && frontback != 0)) && moover_sw == 1)
                         {
                             zerotime = 0.0f;
                         }
@@ -340,7 +345,7 @@ public class VRCrawlerOp : MonoBehaviour
                             rotation = 0.0f;
                         }
                     }
-                    if (timeElapsed >= publishMessageInterval);
+                    if (timeElapsed >= publishMessageInterval)
                     {
                         vel_linear_acceleration = (frontback - CMD_linear_list[CMD_linear_list.Count - 1]) / (publishMessageInterval);
                         if (vel_linear_acceleration > max_lnear_accel_per_pub && frontback >= (CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_accel_per_pub))
@@ -361,23 +366,24 @@ public class VRCrawlerOp : MonoBehaviour
                             rotation = CMD_anglar_list[CMD_anglar_list.Count - 1] + max_angular_deceleration_per_pub;
                         }
 
-                        if(control_mode == 0)
+                        if (control_mode == 0)
                         {
                             linear.x = frontback;
                             angular.z = rotation;
-                            TwistMsg Twist = new TwistMsg(linear,angular);
+                            TwistMsg Twist = new TwistMsg(linear, angular);
                             //  Debug.Log("Publish On Time");
                             ros.Publish(SRPublishTopicName, Twist);
                             timeElapsed = 0.0f;
                         }
-                        if(control_mode == 1 && mode.mode == 2)
+                        if (control_mode == 1 && mode.mode == 2)
                         {
                             CMD_linear_list.Add(frontback);
                             CMD_linear_list_for_cyber.Add(frontback * adapter1 + adapter2);
                             CMD_anglar_list.Add(rotation);
                             CMD_anglar_list_for_cyber.Add(rotation + rotadapter);
-                            
-
+                            diffDriveController = GetComponent<DiffDriveController>();
+                            diffDriveController.LinearCMD = frontback * adapter1 + adapter2;
+                            diffDriveController.AngularCMD = rotation + rotadapter;
                             int CMD_time = Mathf.RoundToInt(Time_Delay / publishMessageInterval);
                             if (timeElapsed_start > (Time_Delay + 5.0f) && CMD_linear_list.Count - (CMD_time) - 1 >= 0 && CMD_anglar_list.Count - (CMD_time) - 1 >= 0)
                             {
@@ -389,13 +395,13 @@ public class VRCrawlerOp : MonoBehaviour
 
                             }
                             timeElapsed = 0.0f;
-                        } 
+                        }
                     }
-                    
+
                     if (control_mode == 0)
                     {
                         moover_sw = 1;
-                        if (prev_control_mode != control_mode) 
+                        if (prev_control_mode != control_mode)
                         {
                             emergency = true;
                             prev_control_mode = 0;
@@ -410,10 +416,10 @@ public class VRCrawlerOp : MonoBehaviour
                             prev_control_mode = 1;
                         }
 
-                        
+
                         RealPosition = GetComponent<PoseSubscriber>();
-                       // Debug.Log(RealPosition);
-                      //  Debug.Log(RealPosition.newPosition);
+                        // Debug.Log(RealPosition);
+                        //  Debug.Log(RealPosition.newPosition);
                         newPosition = RealPosition.MapMachinePosition;
                         newRotation = RealPosition.MapMachineRotation;
                         dissconnect_timer = 0.0f;
@@ -432,18 +438,68 @@ public class VRCrawlerOp : MonoBehaviour
                     }
                 }
             }
-        }
-        mode = FindObjectOfType<mode_selector>();
-        if (mode.mode == 2 && RecordPlaySw == true)
-        {
-            timeElapsed_adopt_starter += Time.deltaTime;
-            timeElapsed_start += Time.deltaTime;
-            zerotime += Time.deltaTime;
-            Stop_time += Time.deltaTime;
-            dissconnect_timer += Time.deltaTime;
+
+            mode = FindObjectOfType<mode_selector>();
+            if (mode.mode == 2 && RecordPlaySw == true)
+            {
+                Recorder CMD_Recorder = GetComponent<Recorder>();
+                //
+                DateTime currentTime = DateTime.Now;
+                long timestamp = ((DateTimeOffset)currentTime).ToUnixTimeSeconds();
+
+                if (RecordCounter == 0)
+                {
+                    PlayDeltaTime = timestamp - CMD_Recorder.TimeStampList[0];
+                }
+                if (timestamp - CMD_Recorder.TimeStampList[RecordCounter] >= PlayDeltaTime && RecordCounter < (CMD_Recorder.RecordList).Count - 1)
+                {
+                    RecordCounter += 1;
+                    cmdLinearVel = (double)(CMD_Recorder.RecordList[RecordCounter][1] * adapter1 + adapter2);
+                    cmdAngularVel = (double)(CMD_Recorder.RecordList[RecordCounter][2] + rotadapter);
+                    if (Math.Abs(CMD_Recorder.RecordList[RecordCounter][1]) <= 0.001)
+                    {
+                        cmdLinearVel = 0.0f;
+                        cmdAngularVel = 0.0f;
+                    }
+                    if (Math.Abs(CMD_Recorder.RecordList[RecordCounter][2]) <= 0.0000000000000000001)
+                    {
+                        //  cmdAngularVelForPlay = 0.0f;
+                    }
+                    diffDriveController = GetComponent<DiffDriveController>();
+                    diffDriveController.LinearCMD = (float)cmdLinearVel;
+                    diffDriveController.AngularCMD = (float)cmdAngularVel;
+                }
+                if (RecordCounter == (CMD_Recorder.RecordList).Count - 1)
+                {
+                    //  RecordCounter = 0;
+                }
+                Debug.Log("PublishingLinear" + cmdLinearVel + " : " + adapter1 + " : " + adapter2 + " : " + rotadapter);
+                Debug.Log("PublishingAngular" + cmdAngularVel);
+
+                RealPosition = GetComponent<PoseSubscriber>();
+                // Debug.Log(RealPosition);
+                //  Debug.Log(RealPosition.newPosition);
+                newPosition = RealPosition.MapMachinePosition;
+                newRotation = RealPosition.MapMachineRotation;
+                dissconnect_timer = 0.0f;
+
+                if (currentTime >= nextActionTime)
+                {
+                    posi_list.Add(targetObject.transform.position);
+                    rotation_for_list = targetObject.transform.rotation;
+                    rotation_list.Add(rotation_for_list.eulerAngles);
+                    CMD_Calculator(newPosition, newRotation, DateTime.Now, timeElapsed_adopt_starter);
+                }
+
+
+                timeElapsed_adopt_starter += Time.deltaTime;
+                timeElapsed_start += Time.deltaTime;
+                zerotime += Time.deltaTime;
+                Stop_time += Time.deltaTime;
+                dissconnect_timer += Time.deltaTime;
+            }
         }
     }
-
     
 
     void CMD_Calculator(Vector3 RealPosition, Quaternion realRotation, DateTime NowTime, float TimeElapsed_adopt_starter_param)
