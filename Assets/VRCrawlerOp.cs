@@ -100,7 +100,7 @@ public class VRCrawlerOp : MonoBehaviour
     private float frontback = 0.0f;
     private float rotation = 0.0f;
     DiffDriveController diffDriveController = new DiffDriveController();
-    public int RecordCounter = 0;
+    int RecordCounter = 0;
     private long PlayDeltaTime;
     private double cmdLinearVel;//cmd record play
     private double cmdAngularVel;//cmd record play

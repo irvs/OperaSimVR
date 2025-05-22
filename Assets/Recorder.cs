@@ -7,7 +7,7 @@ using RosMessageTypes.Geometry;
 public class Recorder : MonoBehaviour
 {
     ROSConnection ros;
-    public string SimPhysXSubscribeTopicName;
+    public string RecordTopicName;
     private string SRSubscribeTopicName;
 
     private float cmdLinearVel;
@@ -15,7 +15,6 @@ public class Recorder : MonoBehaviour
     private Vector3 Current_Record;
     
     public bool WriteSw;
-    public bool RecordPlaySw;
     
     public List<Vector3> RecordList = new List<Vector3>();
     public List<long> TimeStampList = new List<long>();
@@ -24,7 +23,7 @@ public class Recorder : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        SRSubscribeTopicName = SimPhysXSubscribeTopicName;
+        SRSubscribeTopicName = RecordTopicName;
         ros = ROSConnection.GetOrCreateInstance();
         ros.Subscribe<TwistMsg>(SRSubscribeTopicName, Callback);
     }
@@ -55,39 +54,7 @@ public class Recorder : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
-    {
-        
-        if (RecordPlaySw == true)
-        {
-            for (int i = 0; i <= (RecordList.Count - 1); i++)
-            {
 
-                // 現在の時刻
-                DateTime currentTime = DateTime.Now;
-                // Unixエポック時間（1970年1月1日からの経過秒数）
-                long timestamp = ((DateTimeOffset)currentTime).ToUnixTimeSeconds();
-
-                if (i == 0)
-                {
-                    
-                    PlayDeltaTime = timestamp - TimeStampList[0];
-                }
-
-                if (timestamp - TimeStampList[i] >= PlayDeltaTime)
-                {
-                    cmdLinearVel = RecordList[i][1];
-                    cmdAngularVel = RecordList[i][2];
-                }
-                
-
-            }
-
-
-        }
-        
-
-    }
 }
 
 [System.Serializable]
