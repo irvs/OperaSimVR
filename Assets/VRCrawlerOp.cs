@@ -20,10 +20,10 @@ public class VRCrawlerOp : MonoBehaviour
     private string controller_sw_return_TopicName;
     public string EmergencyTopicName;
     public float Time_Delay = 5.0f;
-    public List<float> CMD_linear_list_for_cyber = new List<float>();
-    public List<float> CMD_linear_list = new List<float>();
-    public List<float> CMD_anglar_list_for_cyber = new List<float>();
-    public List<float> CMD_anglar_list = new List<float>();
+    List<float> CMD_linear_list_for_cyber = new List<float>();
+    List<float> CMD_linear_list = new List<float>();
+    List<float> CMD_anglar_list_for_cyber = new List<float>();
+    List<float> CMD_anglar_list = new List<float>();
     List<Vector3> posi_list = new List<Vector3>();
     List<Vector3> rotation_list = new List<Vector3>();
     List<Vector3> real_posi_list = new List<Vector3>();
@@ -52,9 +52,9 @@ public class VRCrawlerOp : MonoBehaviour
     FieldMainManager SimORRealSelecter;
     mode_selector mode;
     PoseSubscriber RealPosition;
-    public float adapter1 = 1.0f;
-    public float adapter2 = 0.0f;
-    public float rotadapter = 0.0f;
+    float adapter1 = 1.0f;
+    float adapter2 = 0.0f;
+    float rotadapter = 0.0f;
     public int linear_or_rot = 0;
     private int moover_sw = 1;
     float movespeed = 5.0f;

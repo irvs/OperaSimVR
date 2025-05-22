@@ -1,9 +1,9 @@
 using UnityEngine;
 
-public class Fence_test : MonoBehaviour
+public class Geofence : MonoBehaviour
 {
-    public Transform objectA; // 1つ目のオブジェクト
-    public Transform objectB; // 2つ目のオブジェクト
+    Transform objectA; // 1つ目のオブジェクト
+    public Transform EndpointObj; // 2つ目のオブジェクト
     private LineRenderer lineRenderer; // LineRendererコンポーネント
     public LayerMask collisionLayer; // 衝突を検出するレイヤー
     string parentObjectName;
@@ -14,6 +14,7 @@ public class Fence_test : MonoBehaviour
         // LineRendererコンポーネントを取得
         lineRenderer = gameObject.AddComponent<LineRenderer>();
         lineRenderer.positionCount = 2;
+        objectA = this.gameObject.transform;
         UpdateLine();
     }
 
@@ -26,12 +27,12 @@ public class Fence_test : MonoBehaviour
     void UpdateLine()
     {
         lineRenderer.SetPosition(0, objectA.position);
-        lineRenderer.SetPosition(1, objectB.position);
+        lineRenderer.SetPosition(1, EndpointObj.position);
     }
 
     void CheckCollision()
     {
-        Vector3 direction = objectB.position - objectA.position;
+        Vector3 direction = EndpointObj.position - objectA.position;
         RaycastHit hit;
 
         // 直線（レイキャスト）を行い、衝突した場合の処理
@@ -68,7 +69,7 @@ public class Fence_test : MonoBehaviour
         else
         {
             // 衝突しなかった場合
-            Debug.DrawLine(objectA.position, objectB.position, Color.green);
+            Debug.DrawLine(objectA.position, EndpointObj.position, Color.green);
         }
 
     }
