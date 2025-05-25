@@ -124,12 +124,12 @@ public class Controller_manager : MonoBehaviour
                 VRCrawlerOp scriptB_c = VehicletargetObject.GetComponent<VRCrawlerOp>();
                 if (scriptB_c != null)
                 {
-                    scriptB_c.sw = 0;
+                    scriptB_c.OnOffSw = VRCrawlerOp.ONOFF.Off;
                 }
                 JointAnglePublisher scriptB_b = VehicletargetObject.GetComponent<JointAnglePublisher>();
                 if (scriptB_b != null)
                 {
-                    scriptB_b.sw = 0;
+                    scriptB_b.OnOffSw = JointAnglePublisher.ONOFF.On;
                 }
 
                 if (outside_sw == false)
@@ -153,13 +153,13 @@ public class Controller_manager : MonoBehaviour
                 VRCrawlerOp scriptB_c = VehicletargetObject.GetComponent<VRCrawlerOp>();
                 if (scriptB_c != null)
                 {
-                    scriptB_c.sw = 1;
+                    scriptB_c.OnOffSw = VRCrawlerOp.ONOFF.On; ;
                     Debug.Log("controller on");
                 }
                 JointAnglePublisher scriptB_b = VehicletargetObject.GetComponent<JointAnglePublisher>();
                 if (scriptB_b != null)
                 {
-                    scriptB_b.sw = 1;
+                    scriptB_b.OnOffSw = JointAnglePublisher.ONOFF.On;
                     Debug.Log("controller on");
                 }
             }

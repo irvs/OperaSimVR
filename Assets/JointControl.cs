@@ -6,23 +6,23 @@ using Unity.Robotics.UrdfImporter;
 
 
 
-public class cont_joint : MonoBehaviour
+public class JointControl : MonoBehaviour
 {
     Controller_manager VRManager;
     mode_selector selected_mode;
     FieldMainManager PoseVeloSelector;
     JointAnglePublisher FromVRJointController;
-    public int sw = 0;
-    public float publishMessageFrequency = 0.5f;
-    private float timeElapsed;
     private List<ArticulationBody> targetjoints;
     private List<string> targetjointNames;
-    private double targetPos;
+    public List<double> JointTargets;
+    double targetPos;
     public enum JointContorollerModeOption { Velocity, Position }
     public JointContorollerModeOption JointContorollerMode;
 
     GameObject targetPlayerObject;
     GameObject targetObject;
+
+    mode_selector mode;
 
     void Start()
     {
@@ -33,9 +33,12 @@ public class cont_joint : MonoBehaviour
     {
         VRManager = FindObjectOfType<Controller_manager>();
         PoseVeloSelector = FindObjectOfType<FieldMainManager>();
-        if (sw == 1)
+        FromVRJointController = GetComponent<JointAnglePublisher>();
+        mode = FindObjectOfType<mode_selector>();
+
+        if ((mode.mode == 0 || mode.mode == 2) && FromVRJointController.OnOffSw.ToString() == "On") 
         {
-            if (VRManager.PlayerPoseMove_SW > 0 || sw == 1)
+            if (VRManager.PlayerPoseMove_SW > 0)
             {
                 selected_mode = FindObjectOfType<mode_selector>();
                 OVRPlayerController scriptA = targetPlayerObject.GetComponent<OVRPlayerController>();
@@ -57,15 +60,7 @@ public class cont_joint : MonoBehaviour
                 {
                     JointContorollerMode = JointContorollerModeOption.Velocity;
                 }
-
-                timeElapsed += Time.deltaTime;
-                if (timeElapsed > publishMessageFrequency)
-                {
-                    timeElapsed = 0;
-                }
-                
-                FromVRJointController = GetComponent<JointAnglePublisher>();
-
+              
                 targetjoints = new List<ArticulationBody>();
                 targetjointNames = new List<string>();
                 //
@@ -83,12 +78,6 @@ public class cont_joint : MonoBehaviour
                             if (FromVRJointController.listOfJointCmdList.Count - 1 >= 0)
                             {
                                 targetPos = FromVRJointController.listOfJointCmdList[FromVRJointController.listOfJointCmdList.Count - 1][j];
-                               // Debug.Log(targetPos);
-                                if (j == 2)
-                                {
-                                  //  targetPos = targetPos * 0.05;
-                                }
-                               // targetPos = targetPos * 500.0f;
                                 var drive = joint.xDrive;//targetjoints[i].xDrive;
 
                                 if (JointContorollerMode.ToString() == "Velocity")

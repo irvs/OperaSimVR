@@ -13,8 +13,9 @@ using Unity.Robotics.UrdfImporter;
 public class Mongo_Joint_Writer : MonoBehaviour
 {
     ROSConnection ros;
-    public int sw;
-    public string topicName = "/zx200_db_writer_joint_states";
+    public enum ONOFF { Off, On }
+    public ONOFF OnOffSw;
+    public string topicName = "/db_writer_joint_states";
     private JointStateMsg message;
     private List<ArticulationBody> joints;
     private List<string> jointNames;
@@ -61,13 +62,13 @@ public class Mongo_Joint_Writer : MonoBehaviour
     {
         SW_From_cont = FindObjectOfType<Controller_manager>();
         WriteTargetObject = SW_From_cont.Machine_name;
-        if (sw == 1 || SW_From_cont.DB_joint_sw == true)
+        if (OnOffSw.ToString() == "On" || SW_From_cont.DB_joint_sw == true)
         {
             timeElapsed += Time.deltaTime;
 
             if (timeElapsed >= publishMessageInterval)
             {
-                message.header.frame_id = "world";
+                message.header.frame_id = WriteTargetObject;
                 message.header.stamp = new TimeStamp(Clock.time);
                 message.position = new double[joints.Count];
                 message.velocity = new double[joints.Count];

@@ -7,19 +7,19 @@ using RosMessageTypes.Std;
 
 public class VRCrawlerOp : MonoBehaviour
 {
-    public int sw = 0;
-    private int prev_sw = 0;
-    public bool RecordPlaySw;//cmd record play
-    public int control_mode = 0;
+    public enum ONOFF {Off, On}
+    public ONOFF OnOffSw;
     public bool emergency;
+    private int prev_sw = 0;
+    public bool key;
+    public bool UseRos2Topic;
     public string SimPhysXPublishTopicName;
     public string SimAGXPublishTopicName;
     public string RealPublishTopicName;
     private string SRPublishTopicName;
-    public string controller_swTopicName = "controller_sw";
+    /*public*/ string controller_swTopicName = "controller_sw_ic120";
     private string controller_sw_return_TopicName;
     public string EmergencyTopicName;
-    public float Time_Delay = 5.0f;
     List<float> CMD_linear_list_for_cyber = new List<float>();
     List<float> CMD_linear_list = new List<float>();
     List<float> CMD_anglar_list_for_cyber = new List<float>();
@@ -40,13 +40,9 @@ public class VRCrawlerOp : MonoBehaviour
     private Quaternion rotation_for_list;
     private float real_anglar_length = 0.0f;
     GameObject targetObject;
-    public bool synchronization_sw;
     private float zerotime;
     //
-    public float intervalInMilliseconds = 1000.0f;
-    private DateTime nextActionTime;
     //
-    public int key = 1;
     //
     Controller_manager VRManager;
     FieldMainManager SimORRealSelecter;
@@ -55,7 +51,6 @@ public class VRCrawlerOp : MonoBehaviour
     float adapter1 = 1.0f;
     float adapter2 = 0.0f;
     float rotadapter = 0.0f;
-    public int linear_or_rot = 0;
     private int moover_sw = 1;
     float movespeed = 5.0f;
     public float LinearSpeed = 1.00f;
@@ -94,6 +89,12 @@ public class VRCrawlerOp : MonoBehaviour
     ROSConnection ros;
     Vector3Msg linear = new Vector3Msg(0f, 0f, 0f);
     Vector3Msg angular = new Vector3Msg(0f, 0f, 0f);
+    public bool RecordPlaySw;//cmd record play
+    public float Time_Delay = 5.0f;
+    public float intervalInMilliseconds = 1000.0f;
+    private DateTime nextActionTime;
+    public bool synchronization_sw;
+    public int LinearOrRot = 0;
     public float Margin = 0.2f;
     public float Angular_Margin = 0.2f;
     private float Stop_time = 0.0f;
@@ -104,6 +105,8 @@ public class VRCrawlerOp : MonoBehaviour
     private long PlayDeltaTime;
     private double cmdLinearVel;//cmd record play
     private double cmdAngularVel;//cmd record play
+    float PrevLinearCMD;
+    float PrevAngularCMD;
 
     // Start is called before the first frame update
     void Start()
@@ -153,10 +156,10 @@ public class VRCrawlerOp : MonoBehaviour
     {
         VRManager = FindObjectOfType<Controller_manager>();
 
-        if (prev_sw == 1 && sw == 0)
+        if (prev_sw == 1 && OnOffSw.ToString() == "Off")
         {
             sw_timeElapsed += Time.deltaTime;
-            if (sw_timeElapsed >= publishMessageInterval * 50.0f)
+            if (sw_timeElapsed >= publishMessageInterval * 1.0f)
             {
                 BoolMsg message = new BoolMsg(false);
                 ros.Publish(controller_swTopicName, message);
@@ -187,7 +190,12 @@ public class VRCrawlerOp : MonoBehaviour
             CMD_anglar_list.Add(0.00f);
             CMD_linear_list = new List<float> { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
             CMD_anglar_list = new List<float> { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
-            linear_or_rot = 0;
+            frontback = 0.0f;
+            rotation = 0.0f;
+            LinearOrRot = 0;
+            diffDriveController = GetComponent<DiffDriveController>();
+            diffDriveController.LinearCMD = frontback;
+            diffDriveController.AngularCMD = rotation;
         }
         else if (emergency == false)
         {
@@ -209,7 +217,7 @@ public class VRCrawlerOp : MonoBehaviour
             {
                 dissconnect_detecter = 0;
             }
-            if (sw == 1 && RecordPlaySw == false)
+            if (OnOffSw.ToString() == "On" && RecordPlaySw == false)
             {
                 prev_sw = 1;
                 if (sw_timeElapsed >= publishMessageInterval * 50.0f && unconfined == true)
@@ -219,7 +227,7 @@ public class VRCrawlerOp : MonoBehaviour
                     sw_timeElapsed = 0.0f;
                 }
 
-                else if (VRManager.PlayerPoseMove_SW > 0 || sw == 1)
+                else if (VRManager.PlayerPoseMove_SW > 0 || OnOffSw.ToString() == "On")
                 {
                     mode = FindObjectOfType<mode_selector>();
                     timeElapsed += Time.deltaTime;
@@ -234,51 +242,51 @@ public class VRCrawlerOp : MonoBehaviour
                     }
 
                     Vector2 stickL = movespeed * OVRInput.Get(OVRInput.RawAxis2D.LThumbstick);
-                    if (linear_or_rot == 0)
+                    if (LinearOrRot == 0)
                     {
                         if (Math.Abs(stickL.y) > 0.2)
                         {
-                            linear_or_rot = 1;
+                            LinearOrRot = 1;
                             Debug.Log("linear");
                         }
                         else if (Math.Abs(stickL.x) > 0.2)
                         {
-                            linear_or_rot = 2;
+                            LinearOrRot = 2;
                             Debug.Log("angular");
                         }
                     }
                     //
-                    if (linear_or_rot == 1 || mode.mode == 1 || control_mode == 0)
+                    if (LinearOrRot == 1 || mode.mode == 1 || mode.mode == 0)
                     {
-                        frontback = stickL.y;
+                        frontback = LinearSpeed * stickL.y;
                     }
-                    else if (linear_or_rot == 2)
+                    else if (LinearOrRot == 2)
                     {
                         frontback = 0.0f;
                     }
-                    if (linear_or_rot == 2 || mode.mode == 1 || control_mode == 0)
+                    if (LinearOrRot == 2 || mode.mode == 1 || mode.mode == 0)
                     {
-                        rotation = -stickL.x;
+                        rotation = -RotSpeed * stickL.x;
                     }
-                    else if (linear_or_rot == 1)
+                    else if (LinearOrRot == 1 || mode.mode == 0)
                     {
                         rotation = 0.0f;
                     }
 
-                    if (key == 1)
+                    if (key == true)
                     {
-                        if (linear_or_rot == 0)
+                        if (LinearOrRot == 0)
                         {
                             if ((Input.GetKey(KeyCode.UpArrow)) || (Input.GetKey(KeyCode.DownArrow)))
                             {
-                                linear_or_rot = 1;
+                                LinearOrRot = 1;
                             }
                             if ((Input.GetKey(KeyCode.LeftArrow)) || (Input.GetKeyUp(KeyCode.RightArrow)))
                             {
-                                linear_or_rot = 2;
+                                LinearOrRot = 2;
                             }
                         }
-                        if (Input.GetKey(KeyCode.LeftArrow) && linear_or_rot == 2 || Input.GetKey(KeyCode.LeftArrow) && mode.mode == 1 || Input.GetKey(KeyCode.LeftArrow) && control_mode == 0)
+                        if ((Input.GetKey(KeyCode.LeftArrow) && LinearOrRot == 2) || (Input.GetKey(KeyCode.LeftArrow) && (mode.mode == 1 || mode.mode == 0)))
                         {
                             rotation = RotSpeed;
                         }
@@ -286,7 +294,7 @@ public class VRCrawlerOp : MonoBehaviour
                         {
                             rotation = 0;
                         }
-                        if (Input.GetKey(KeyCode.RightArrow) && linear_or_rot == 2 || Input.GetKey(KeyCode.RightArrow) && mode.mode == 1 || Input.GetKey(KeyCode.RightArrow) && control_mode == 0)
+                        if ((Input.GetKey(KeyCode.RightArrow) && LinearOrRot == 2) || (Input.GetKey(KeyCode.RightArrow) && (mode.mode == 1 || mode.mode == 0)))
                         {
                             rotation = -RotSpeed;
                         }
@@ -294,7 +302,7 @@ public class VRCrawlerOp : MonoBehaviour
                         {
                             rotation = 0;
                         }
-                        if (Input.GetKey(KeyCode.UpArrow) && linear_or_rot == 1 || Input.GetKey(KeyCode.UpArrow) && mode.mode == 1 || Input.GetKey(KeyCode.UpArrow) && control_mode == 0)
+                        if ((Input.GetKey(KeyCode.UpArrow) && LinearOrRot == 1) || (Input.GetKey(KeyCode.UpArrow) && (mode.mode == 1 || mode.mode == 0)))
                         {
                             frontback = LinearSpeed;
                         }
@@ -302,7 +310,7 @@ public class VRCrawlerOp : MonoBehaviour
                         {
                             frontback = 0;
                         }
-                        if (Input.GetKey(KeyCode.DownArrow) && linear_or_rot == 1 || Input.GetKey(KeyCode.DownArrow) && mode.mode == 1 || Input.GetKey(KeyCode.DownArrow) && control_mode == 0)
+                        if ((Input.GetKey(KeyCode.DownArrow) && LinearOrRot == 1) || (Input.GetKey(KeyCode.DownArrow) && (mode.mode == 1 || mode.mode == 0)))
                         {
                             frontback = -LinearSpeed;
                         }
@@ -313,9 +321,9 @@ public class VRCrawlerOp : MonoBehaviour
                     }
                     //
 
-                    if (control_mode == 1 && mode.mode == 2)
+                    if (mode.mode == 2)
                     {
-                        if (((linear_or_rot == 2 && rotation != 0) || (linear_or_rot == 1 && frontback != 0)) && moover_sw == 1)
+                        if (((LinearOrRot == 2 && rotation != 0) || (LinearOrRot == 1 && frontback != 0)) && moover_sw == 1)
                         {
                             zerotime = 0.0f;
                         }
@@ -333,7 +341,7 @@ public class VRCrawlerOp : MonoBehaviour
                             adapter1 = 1.0f;
                             adapter2 = 0.0f;
                             rotadapter = 0.0f;
-                            linear_or_rot = 0;
+                            LinearOrRot = 0;
                             if (zerotime >= Time_Delay)
                             {
                                 moover_sw = 2;
@@ -347,26 +355,52 @@ public class VRCrawlerOp : MonoBehaviour
                     }
                     if (timeElapsed >= publishMessageInterval)
                     {
-                        vel_linear_acceleration = (frontback - CMD_linear_list[CMD_linear_list.Count - 1]) / (publishMessageInterval);
-                        if (vel_linear_acceleration > max_lnear_accel_per_pub && frontback >= (CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_accel_per_pub))
+                        if (mode.mode == 0 || mode.mode == 1)
                         {
-                            frontback = CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_accel_per_pub;
+                            PrevLinearCMD = frontback;
+                            PrevAngularCMD = rotation;
                         }
-                        else if (vel_linear_acceleration < max_lnear_deceleration_per_pub && frontback <= (CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_accel_per_pub))
+                        else if (mode.mode == 2)
                         {
-                            frontback = CMD_linear_list[CMD_linear_list.Count - 1] + max_lnear_deceleration_per_pub;
+                            PrevLinearCMD = CMD_linear_list[CMD_linear_list.Count - 1];
+                            PrevAngularCMD = CMD_anglar_list[CMD_anglar_list.Count - 1];
                         }
-                        vel_angular_acceleration = (rotation - CMD_anglar_list[CMD_anglar_list.Count - 1]) / (publishMessageInterval);
-                        if (vel_angular_acceleration > max_angular_accel_per_pub && rotation >= (CMD_anglar_list[CMD_anglar_list.Count - 1] + max_angular_accel_per_pub))
+                        vel_linear_acceleration = (frontback - PrevLinearCMD) / (publishMessageInterval);
+                        if (vel_linear_acceleration > max_lnear_accel_per_pub && frontback >= (PrevLinearCMD + max_lnear_accel_per_pub))
                         {
-                            rotation = CMD_anglar_list[CMD_anglar_list.Count - 1] + max_angular_accel_per_pub;
+                            frontback = PrevLinearCMD + max_lnear_accel_per_pub;
                         }
-                        else if (vel_angular_acceleration < max_angular_deceleration_per_pub && rotation <= (CMD_anglar_list[CMD_anglar_list.Count - 1] + max_angular_accel_per_pub))
+                        else if (vel_linear_acceleration < max_lnear_deceleration_per_pub && frontback <= (PrevLinearCMD + max_lnear_accel_per_pub))
                         {
-                            rotation = CMD_anglar_list[CMD_anglar_list.Count - 1] + max_angular_deceleration_per_pub;
+                            frontback = PrevLinearCMD + max_lnear_deceleration_per_pub;
+                        }
+                        vel_angular_acceleration = (rotation - PrevAngularCMD) / (publishMessageInterval);
+                        if (vel_angular_acceleration > max_angular_accel_per_pub && rotation >= (PrevAngularCMD + max_angular_accel_per_pub))
+                        {
+                            rotation = PrevAngularCMD + max_angular_accel_per_pub;
+                        }
+                        else if (vel_angular_acceleration < max_angular_deceleration_per_pub && rotation <= (PrevAngularCMD + max_angular_accel_per_pub))
+                        {
+                            rotation = PrevAngularCMD + max_angular_deceleration_per_pub;
+                        }
+                        if (mode.mode == 0)
+                        {
+                            if (UseRos2Topic == true)
+                            {
+                                diffDriveController = GetComponent<DiffDriveController>();
+                                diffDriveController.ControlMode = 0;
+                            }
+                            else if (UseRos2Topic == false) 
+                            {
+                                diffDriveController = GetComponent<DiffDriveController>();
+                                diffDriveController.ControlMode = 1;
+                                diffDriveController.LinearCMD = frontback;
+                                diffDriveController.AngularCMD = rotation;
+                            }
+                            timeElapsed = 0.0f;
                         }
 
-                        if (control_mode == 0)
+                        if (mode.mode == 1)
                         {
                             linear.x = frontback;
                             angular.z = rotation;
@@ -375,7 +409,7 @@ public class VRCrawlerOp : MonoBehaviour
                             ros.Publish(SRPublishTopicName, Twist);
                             timeElapsed = 0.0f;
                         }
-                        if (control_mode == 1 && mode.mode == 2)
+                        if (mode.mode == 2)
                         {
                             CMD_linear_list.Add(frontback);
                             CMD_linear_list_for_cyber.Add(frontback * adapter1 + adapter2);
@@ -398,22 +432,22 @@ public class VRCrawlerOp : MonoBehaviour
                         }
                     }
 
-                    if (control_mode == 0)
+                    if (mode.mode == 1)
                     {
                         moover_sw = 1;
-                        if (prev_control_mode != control_mode)
-                        {
-                            emergency = true;
-                            prev_control_mode = 0;
-                        }
-                    }
-
-                    if (control_mode == 1 && mode.mode == 2)
-                    {
-                        if (prev_control_mode != control_mode)
+                        if (prev_control_mode != 1)
                         {
                             emergency = true;
                             prev_control_mode = 1;
+                        }
+                    }
+
+                    if (mode.mode == 2)
+                    {
+                        if (prev_control_mode != 2)
+                        {
+                            emergency = true;
+                            prev_control_mode = 2;
                         }
 
 
@@ -424,7 +458,7 @@ public class VRCrawlerOp : MonoBehaviour
                         newRotation = RealPosition.MapMachineRotation;
                         dissconnect_timer = 0.0f;
 
-                        if (mode.mode == 2 && control_mode == 1 && sw == 1) //Controll mode (Pose modify)
+                        if (mode.mode == 2 && OnOffSw.ToString() == "On") //Controll mode (Pose modify)
                         {
                             DateTime currentTime = DateTime.Now;
                             if (currentTime >= nextActionTime)
@@ -473,8 +507,8 @@ public class VRCrawlerOp : MonoBehaviour
                 {
                     //  RecordCounter = 0;
                 }
-                Debug.Log("PublishingLinear" + cmdLinearVel + " : " + adapter1 + " : " + adapter2 + " : " + rotadapter);
-                Debug.Log("PublishingAngular" + cmdAngularVel);
+            //    Debug.Log("PublishingLinear" + cmdLinearVel + " : " + adapter1 + " : " + adapter2 + " : " + rotadapter);
+            //    Debug.Log("PublishingAngular" + cmdAngularVel);
 
                 RealPosition = GetComponent<PoseSubscriber>();
                 // Debug.Log(RealPosition);
@@ -513,12 +547,12 @@ public class VRCrawlerOp : MonoBehaviour
         real_posi_length_list_x.Add((real_posi_list[real_posi_list.Count - 1][0]) - (real_posi_list[real_posi_list.Count - 2][0]));//world座標のx方向に進んだ距離
         real_posi_length_list_z.Add((real_posi_list[real_posi_list.Count - 1][2]) - (real_posi_list[real_posi_list.Count - 2][2]));//world座標のz方向に進んだ距離
 
-        Debug.Log("Real : "+ RealPosition+" : " + targetObject.transform.position);
+       // Debug.Log("Real : "+ RealPosition+" : " + targetObject.transform.position);
 
         if (TimeElapsed_adopt_starter_param >= Time_Delay)
         {
             last_time = Mathf.RoundToInt(Time_Delay / (intervalInMilliseconds / 1000));//ラグ時間前のリストの数
-            if (((linear_or_rot == 1) && ((real_posi_length_list[real_posi_length_list.Count - 1]) / (real_posi_length_list[real_posi_length_list.Count - 2])) < 1.3 && ((real_posi_length_list[real_posi_length_list.Count - 1]) / (real_posi_length_list[real_posi_length_list.Count - 2])) > 0.7))//|| (RecordPlaySw == true))
+            if (((LinearOrRot == 1) && ((real_posi_length_list[real_posi_length_list.Count - 1]) / (real_posi_length_list[real_posi_length_list.Count - 2])) < 1.3 && ((real_posi_length_list[real_posi_length_list.Count - 1]) / (real_posi_length_list[real_posi_length_list.Count - 2])) > 0.7))//|| (RecordPlaySw == true))
             {
                 real_pose_length = 0.0f;
                 real_pose_length_x = 0.0f;
@@ -580,8 +614,8 @@ public class VRCrawlerOp : MonoBehaviour
                     Vector3 Cyber_front_vec = new Vector3((float)(targetObject.transform.rotation * Vector3.forward)[0], 0.0f, (float)(targetObject.transform.rotation * Vector3.forward)[2]);//モデルの前方                 
                     float Cyber_angle = Vector3.SignedAngle(Cyber_front_vec, -targetdirection, Vector3.up);
 
-                    Debug.Log("------実機前方---^---^--- " + (realRotation * Vector3.forward) + " 目標ベクトル " + -targetdirection+"横ずれ"+ side_diff);
-                    Debug.Log("モデル前方 : " + Cyber_front_vec + " 目標ベクトル " + -targetdirection);
+                 //   Debug.Log("実機前方" + (realRotation * Vector3.forward) + " 目標ベクトル " + -targetdirection+"横ずれ"+ side_diff);
+                 //   Debug.Log("モデル前方 : " + Cyber_front_vec + " 目標ベクトル " + -targetdirection);
                     if (Math.Abs(side_diff) > Margin && Math.Abs(Cyber_angle) > Angular_Margin)
                     {
                         if (direction >= 0)//yellow
@@ -589,12 +623,12 @@ public class VRCrawlerOp : MonoBehaviour
                             if (-Cyber_angle < 0)
                             {
                                 rotadapter = -Cyber_angle * (float)((Math.PI) / 180.0f);
-                                Debug.Log("1:rotadapter -= 0.1f " + rotadapter + "角度の差は " + Cyber_angle);
+                            //    Debug.Log("1:rotadapter -= 0.1f " + rotadapter + "角度の差は " + Cyber_angle);
                             }
                             else if (-Cyber_angle >= 0)
                             {
                                 rotadapter = -Cyber_angle * (float)((Math.PI) / 180.0f);
-                                Debug.Log("2:rotadapter += 0.1f " + rotadapter + "角度の差は " + Cyber_angle);
+                            //    Debug.Log("2:rotadapter += 0.1f " + rotadapter + "角度の差は " + Cyber_angle);
                             }
                         }
                         else if (direction < 0)//blue
@@ -602,12 +636,12 @@ public class VRCrawlerOp : MonoBehaviour
                             if (-Cyber_angle < 0)
                             {
                                 rotadapter = -Cyber_angle * (float)((Math.PI) / 180.0f);
-                                Debug.Log("3:rotadapter += 0.1f " + rotadapter + "角度の差は " + Cyber_angle);
+                            //    Debug.Log("3:rotadapter += 0.1f " + rotadapter + "角度の差は " + Cyber_angle);
                             }
                             else if (-Cyber_angle >= 0)
                             {
                                 rotadapter = -Cyber_angle * (float)((Math.PI) / 180.0f);
-                                Debug.Log("4:rotadapter -= 0.1f " + rotadapter + "角度の差は " + Cyber_angle);
+                            //    Debug.Log("4:rotadapter -= 0.1f " + rotadapter + "角度の差は " + Cyber_angle);
                             }
                         }
                     }
@@ -615,7 +649,7 @@ public class VRCrawlerOp : MonoBehaviour
             }
             last_rotation = rotation_list[rotation_list.Count - last_time];
             diff_rot = last_rotation - RealRotation;
-            if ((linear_or_rot == 2))
+            if ((LinearOrRot == 2))
             {
                 real_anglar_length = 0.0f;
                 counter = 0;
@@ -641,13 +675,13 @@ public class VRCrawlerOp : MonoBehaviour
                 {
                     rotadapter -= 0.01f;
                 }
-                Debug.Log("角度の差は " + (real_anglar_length + angle));
-                Debug.Log("diffrot" + Real_Cyber_future_anglar_diff);// diff_rot[1]);
-                Debug.Log("rotadapter" + rotadapter);
+               // Debug.Log("角度の差は " + (real_anglar_length + angle));
+               // Debug.Log("diffrot" + Real_Cyber_future_anglar_diff);// diff_rot[1]);
+               // Debug.Log("rotadapter" + rotadapter);
             }
             if (moover_sw == 2)
             {
-                Debug.Log("vrcont_zerostop");
+              //  Debug.Log("vrcont_zerostop");
                 if ((Vector3.Distance(real_posi_list[real_posi_list.Count - 1], targetObject.transform.position)) >= Margin)
                 {
                     targetObject.GetComponent<Rigidbody>().isKinematic = true;
@@ -678,11 +712,11 @@ public class VRCrawlerOp : MonoBehaviour
 
     void SW_Callback(BoolMsg msg)
     {
-        if (msg.data == true && sw == 1)
+        if (msg.data == true && OnOffSw.ToString() == "On")
         {
             unconfined = false;
         }
-        else if (msg.data == false && sw == 0)
+        else if (msg.data == false && OnOffSw.ToString() == "Off")
         {
             unconfined = true;
             prev_sw = 0;

@@ -11,10 +11,12 @@ public class JointAnglePublisher : MonoBehaviour
 {
     Controller_manager VRManager;
     mode_selector selected_mode;
-    public int sw = 0;
+    public enum ONOFF { Off, On }
+    public ONOFF OnOffSw;
+   // public int sw = 0;
     public bool emergency;
     public bool SimORReal = false;
-    public int key = 0;
+    public bool key;
     public float linearspeed = 1.00f;
     public float rotspeed = 0.50f;
     float movespeed = 0.01f;
@@ -62,10 +64,10 @@ public class JointAnglePublisher : MonoBehaviour
     private List<double> JointPositions;
     private List<ArticulationBody> joints;
     private double[] Jointposition;
+    JointControl JointController;
     //
     GameObject PlayertargetObject;
     //
-    public int control_mode = 0;
     public float Time_Delay = 5.0f;
     private float timeElapsed_start = 0.0f;
     //
@@ -78,11 +80,11 @@ public class JointAnglePublisher : MonoBehaviour
         //
         SimORRealSelecter = FindObjectOfType<FieldMainManager>();
         //
-        if (SimORReal == true)
+        if ((SimORRealSelecter.ForSimOrReal.ToString() == "ForSimAGX")|| (SimORRealSelecter.ForSimOrReal.ToString() == "ForReal"))
         {
             ros.RegisterPublisher<JointStateMsg>(Real_topicName_joint_velocity);
         }
-        else if (SimORReal == false)
+        else if (SimORRealSelecter.ForSimOrReal.ToString() == "ForSimPhysX")
         {
             ros.RegisterPublisher<Float64Msg>(topicName_swing);
             ros.RegisterPublisher<Float64Msg>(topicName_boom);
@@ -93,7 +95,6 @@ public class JointAnglePublisher : MonoBehaviour
         ros.RegisterPublisher<TwistMsg>(topicName_cmd_vel);
         ros.RegisterPublisher<BoolMsg>(EmergencyTopicName);
         //
-        // �W���C���g���A�ʒu�A���x�A�͂̏�����
         jointNames = new List<string> { "swing_joint", "boom_joint", "arm_joint", "bucket_joint", "bucket_end_joint" };
         positions = new List<double> { 0.0, 0.0, 0.0, 0.0, 0.0 };
         velocities = new List<double> { 0.0, 0.0, 0.0, 0.0, 0.0 };
@@ -144,12 +145,11 @@ public class JointAnglePublisher : MonoBehaviour
                 velocity_of_bucket = 0.0f;
                 velocities = new List<double> { 0.0, 0.0, 0.0, 0.0 };
                 listOfJointCmdList.Add(velocities);
-                // List<double> �� double[] �ɕϊ�
                 string[] jointNamesArray = jointNames.ToArray();
                 double[] positionsArray = positions.ToArray();
                 double[] velocitiesArray = velocities.ToArray();
                 double[] effortsArray = efforts.ToArray();
-                // �ϊ������z����֐��ɓn��
+                
                 HeaderMsg header = new HeaderMsg(
                         new TimeStamp(Clock.time),
                         " "
@@ -189,7 +189,7 @@ public class JointAnglePublisher : MonoBehaviour
                 dissconnect_detecter = 0;
             }
             VRManager = FindObjectOfType<Controller_manager>();
-            if (sw == 1)
+            if (OnOffSw.ToString() == "On")
             {
                 if (sw_timeElapsed >= publishMessageInterval * 50.0f)
                 {
@@ -198,7 +198,7 @@ public class JointAnglePublisher : MonoBehaviour
                     sw_timeElapsed = 0.0f;
                 }
 
-                else if (VRManager.PlayerPoseMove_SW > 0 || sw == 1)
+                else if (VRManager.PlayerPoseMove_SW > 0 || OnOffSw.ToString() == "On")
                 {
                     selected_mode = FindObjectOfType<mode_selector>();
                     dissconnect_timer += Time.deltaTime;
@@ -222,16 +222,9 @@ public class JointAnglePublisher : MonoBehaviour
                         if (Input.GetKey(KeyCode.K) && goalpose_arm >= 0.785){goalpose_arm -= 0.005f;}
                         if (Input.GetKey(KeyCode.O) && goalpose_bucket <= 1.39555){goalpose_bucket += 0.01f;}
                         if (Input.GetKey(KeyCode.L) && goalpose_bucket >= -1.2211){goalpose_bucket -= 0.01f;}
-
                         //key
-                        if (key == 1)
+                        if (key == true)
                         {
-                            if (Input.GetKey(KeyCode.Space))
-                            {
-                                frontback = 0.0f;
-                                rotation = 0.0f;
-                            }
-                            //
                             if (Input.GetKey(KeyCode.LeftArrow)){rotation = rotspeed;}
                             if (Input.GetKey(KeyCode.RightArrow)){rotation = -rotspeed;}
                             if (Input.GetKeyUp(KeyCode.LeftArrow) || Input.GetKeyUp(KeyCode.RightArrow)){rotation = 0;}
@@ -251,48 +244,21 @@ public class JointAnglePublisher : MonoBehaviour
                         }
                         if ((Mathf.Abs((OVRInput.Get(OVRInput.RawAxis2D.LThumbstick)).y) > 0.3))
                         {
-                            if (goalpose_arm >= 0.785 && goalpose_arm <= 2.35)
-                            {
-                                goalpose_arm += -stickL.y;
-                            }
-                            else if (goalpose_arm <= 0.785 && -stickL.y > 0)
-                            {
-                                goalpose_arm += -stickL.y;
-                            }
-                            else if (goalpose_arm >= 2.35 && -stickL.y < 0)
-                            {
-                                goalpose_arm += -stickL.y;
-                            }
+                            if (goalpose_arm >= 0.785 && goalpose_arm <= 2.35){goalpose_arm += -stickL.y;}
+                            else if (goalpose_arm <= 0.785 && -stickL.y > 0){goalpose_arm += -stickL.y;}
+                            else if (goalpose_arm >= 2.35 && -stickL.y < 0){goalpose_arm += -stickL.y;}
                         }
                         if ((Mathf.Abs((OVRInput.Get(OVRInput.RawAxis2D.RThumbstick)).y) > 0.3))
                         {
-                            if (goalpose_boom >= -1.221 && goalpose_boom <= 0.9594)
-                            {
-                                goalpose_boom += 0.3f * stickR.y;
-                            }
-                            else if (goalpose_boom <= -1.221 && stickR.y > 0)
-                            {
-                                goalpose_boom += stickR.y;
-                            }
-                            else if (goalpose_boom >= 0.9594 && stickR.y < 0)
-                            {
-                                goalpose_boom += stickR.y;
-                            }
+                            if (goalpose_boom >= -1.221 && goalpose_boom <= 0.9594){goalpose_boom += 0.3f * stickR.y;}
+                            else if (goalpose_boom <= -1.221 && stickR.y > 0){goalpose_boom += stickR.y;}
+                            else if (goalpose_boom >= 0.9594 && stickR.y < 0){goalpose_boom += stickR.y;}
                         }
                         if ((Mathf.Abs((OVRInput.Get(OVRInput.RawAxis2D.RThumbstick)).x) > 0.3))
                         {
-                            if (goalpose_bucket >= -1.221 && goalpose_bucket <= 1.3955)
-                            {
-                                goalpose_bucket += -1.5f * stickR.x;
-                            }
-                            else if (goalpose_bucket <= -1.221 && -stickR.x > 0)
-                            {
-                                goalpose_bucket += -stickR.x;
-                            }
-                            else if (goalpose_bucket >= 1.3955 && -stickR.x < 0)
-                            {
-                                goalpose_bucket += -stickR.x;
-                            }
+                            if (goalpose_bucket >= -1.221 && goalpose_bucket <= 1.3955){goalpose_bucket += -1.5f * stickR.x;}
+                            else if (goalpose_bucket <= -1.221 && -stickR.x > 0){goalpose_bucket += -stickR.x;}
+                            else if (goalpose_bucket >= 1.3955 && -stickR.x < 0){goalpose_bucket += -stickR.x;}
                         }
                     }
                     ////////////////////////////////////////////////////////////
@@ -487,73 +453,56 @@ public class JointAnglePublisher : MonoBehaviour
                     LBack = OVRInput.Get(OVRInput.RawAxis1D.LHandTrigger);
                     LFront = OVRInput.Get(OVRInput.RawAxis1D.LIndexTrigger);
 
-                    if (RFront >= 0.5 && LFront >= 0.5)
-                    {
-                        linear.x = (RFront + LFront) / 2;
-                    }
+                    if (RFront >= 0.5 && LFront >= 0.5){linear.x = (RFront + LFront) / 2;}
                     else if (RFront < 0.5 && LFront >= 0.5)
                     {
                         //(LFront - RFront)/2
                         angular.z = 0.3;
                     }
-                    else if (RFront >= 0.5 && LFront < 0.5)
-                    {
-                        angular.z = -0.3;
-                    }
+                    else if (RFront >= 0.5 && LFront < 0.5){angular.z = -0.3;}
                     else
                     {
                         linear.x = 0;
                         angular.x = 0;
                     }
                     //key
-                    if (key == 1)
+                    if (key == true)
                     {
-                        if (Input.GetKey(KeyCode.Space))
-                        {
-                            frontback = 0.0f;
-                            rotation = 0.0f;
-                        }
-                        if (Input.GetKey(KeyCode.LeftArrow))
-                        {
-                            rotation = rotspeed;
-                        }
-                        if (Input.GetKeyUp(KeyCode.LeftArrow))
-                        {
-                            rotation = 0;
-                        }
-                        if (Input.GetKey(KeyCode.RightArrow))
-                        {
-                            rotation = -rotspeed;
-                        }
-                        if (Input.GetKeyUp(KeyCode.RightArrow))
-                        {
-                            rotation = 0;
-                        }
-                        if (Input.GetKey(KeyCode.UpArrow))
-                        {
-                            frontback = linearspeed;
-                        }
-                        if (Input.GetKeyUp(KeyCode.UpArrow))
-                        {
-                            frontback = 0;
-                        }
-                        if (Input.GetKey(KeyCode.DownArrow))
-                        {
-                            frontback = -linearspeed;
-                        }
-                        if (Input.GetKeyUp(KeyCode.DownArrow))
-                        {
-                            frontback = 0;
-                        }
+                        if (Input.GetKey(KeyCode.LeftArrow)){rotation = rotspeed;}
+                        if (Input.GetKeyUp(KeyCode.LeftArrow)){rotation = 0;}
+                        if (Input.GetKey(KeyCode.RightArrow)){rotation = -rotspeed;}
+                        if (Input.GetKeyUp(KeyCode.RightArrow)){rotation = 0;}
+                        if (Input.GetKey(KeyCode.UpArrow)){frontback = linearspeed;}
+                        if (Input.GetKeyUp(KeyCode.UpArrow)){frontback = 0;}
+                        if (Input.GetKey(KeyCode.DownArrow)){frontback = -linearspeed;}
+                        if (Input.GetKeyUp(KeyCode.DownArrow)){frontback = 0;}
                         linear.x = frontback;
                         angular.x = rotation;
                     }
 
                     timeElapsed += Time.deltaTime;
                     sw_timeElapsed += Time.deltaTime;
-
+                    JointController = GetComponent<JointControl>();
+                    
                     if (timeElapsed > publishMessageInterval * 20.0f)
                     {
+                        if (selected_mode.mode == 2)
+                        {
+                            if (SimORReal == false)
+                            {
+                                JointController.JointTargets[0] = goalpose_swing;
+                                JointController.JointTargets[1] = goalpose_boom;
+                                JointController.JointTargets[2] = goalpose_arm;
+                                JointController.JointTargets[3] = goalpose_bucket;
+                            }
+                            if (SimORReal == true)
+                            {
+                                JointController.JointTargets[0] = velocity_of_swing;
+                                JointController.JointTargets[1] = velocity_of_boom;
+                                JointController.JointTargets[2] = velocity_of_arm;
+                                JointController.JointTargets[3] = velocity_of_bucket;
+                            }
+                        }
                         if (SimORReal == false)
                         {
                             Debug.Log("goal_pose : " + goalpose_swing + "  :  " + goalpose_boom + "  :  " + goalpose_arm + "  :  " + goalpose_bucket);
@@ -562,7 +511,7 @@ public class JointAnglePublisher : MonoBehaviour
                             positions[2] = goalpose_arm;
                             positions[3] = goalpose_bucket;
                             listOfJointCmdList.Add(positions);
-                            if (control_mode == 1 && selected_mode.mode == 2 && timeElapsed_start > (Time_Delay + 5.0f) && listOfJointCmdList.Count - (Mathf.RoundToInt(Time_Delay / publishMessageInterval)) >= 0)
+                            if (selected_mode.mode == 2 && timeElapsed_start > (Time_Delay + 5.0f) && listOfJointCmdList.Count - (Mathf.RoundToInt(Time_Delay / publishMessageInterval)) >= 0)
                             {
                                 int CMD_time = Mathf.RoundToInt(Time_Delay / publishMessageInterval);
                                 goalpose_swing = (float)listOfJointCmdList[listOfJointCmdList.Count - 1 - CMD_time][0];
@@ -608,7 +557,7 @@ public class JointAnglePublisher : MonoBehaviour
                                 JointPositions[i] = joints[i].jointPosition[0];
                             }
                             listOfJointPositionList.Add(JointPositions);
-                            if (control_mode == 1 && selected_mode.mode == 2 && timeElapsed_start > (Time_Delay + 5.0f) && listOfJointCmdList.Count - (Mathf.RoundToInt(Time_Delay / publishMessageInterval)) >= 0)
+                            if (selected_mode.mode == 2 && timeElapsed_start > (Time_Delay + 5.0f) && listOfJointCmdList.Count - (Mathf.RoundToInt(Time_Delay / publishMessageInterval)) >= 0)
                             {
                                 int CMD_time = Mathf.RoundToInt(Time_Delay / publishMessageInterval);
                                 velocities[0] = listOfJointCmdList[listOfJointCmdList.Count - 1 - CMD_time][0];
@@ -616,12 +565,10 @@ public class JointAnglePublisher : MonoBehaviour
                                 velocities[2] = listOfJointCmdList[listOfJointCmdList.Count - 1 - CMD_time][2];
                                 velocities[3] = listOfJointCmdList[listOfJointCmdList.Count - 1 - CMD_time][3];
                             }
-                            // List<double> �� double[] �ɕϊ�
                             string[] jointNamesArray = jointNames.ToArray();
                             double[] positionsArray = positions.ToArray();
                             double[] velocitiesArray = velocities.ToArray();
                             double[] effortsArray = efforts.ToArray();
-                            // �ϊ������z����֐��ɓn��
                             HeaderMsg header = new HeaderMsg(
                                     new TimeStamp(Clock.time),
                                     " "

@@ -170,13 +170,4 @@ public class PoseSubscriber : MonoBehaviour
         MapMachineRotation = Quaternion.Euler(chenged_orientation);
         // Debug.Log("pose changed");
     }
-
-    void Update()
-    {
-        //   Debug.Log(newPosition);
-        //   Debug.Log( newRotation);
-        //Debug.Log(targetObject);
-       // Debug.Log(Reference.transform.position);
-    }
-
 }
