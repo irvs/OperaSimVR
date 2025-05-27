@@ -46,7 +46,6 @@ public class ControllerLay : MonoBehaviour
             {
                 GetOnVehicle = parentObjectName;
                 OneBeforeRootObjectName = current.gameObject.name;
-                Debug.Log(OneBeforeRootObjectName);
                 // Debug.Log("Hit Object Name: " + hitObjectName);
                 // Debug.Log("Parent Object Name: " + parentObjectName);
             }

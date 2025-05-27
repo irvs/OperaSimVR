@@ -6,7 +6,7 @@ using Unity.Robotics.UrdfImporter;
 
 
 
-public class JointControl : MonoBehaviour
+public class JointControler : MonoBehaviour
 {
     Controller_manager VRManager;
     mode_selector selected_mode;

@@ -64,7 +64,7 @@ public class JointAnglePublisher : MonoBehaviour
     private List<double> JointPositions;
     private List<ArticulationBody> joints;
     private double[] Jointposition;
-    JointControl JointController;
+    JointControler JointController;
     //
     GameObject PlayertargetObject;
     //
@@ -482,7 +482,7 @@ public class JointAnglePublisher : MonoBehaviour
 
                     timeElapsed += Time.deltaTime;
                     sw_timeElapsed += Time.deltaTime;
-                    JointController = GetComponent<JointControl>();
+                    JointController = GetComponent<JointControler>();
                     
                     if (timeElapsed > publishMessageInterval * 20.0f)
                     {

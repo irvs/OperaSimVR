@@ -57,7 +57,7 @@ public class mode_selector : MonoBehaviour
             Excavator1.transform.Find("base_link/body_link/boom_link/arm_link").gameObject.GetComponent<JointPosController>().enabled = true;
             Excavator1.transform.Find("base_link/body_link/boom_link/arm_link/bucket_link").gameObject.GetComponent<JointPosController>().enabled = true;
             //zx200 controllor
-            Excavator1.GetComponent<JointControl>().enabled = true;
+            Excavator1.GetComponent<JointControler>().enabled = true;
             Excavator1.GetComponent<Rigidbody>().isKinematic = false;
             //zx200 visualize
             Excavator1.GetComponent<JointSubscriber>().enabled = false;
@@ -100,7 +100,7 @@ public class mode_selector : MonoBehaviour
             Excavator1.transform.Find("base_link/body_link/boom_link/arm_link/bucket_link").gameObject.GetComponent<JointPosController>().enabled = false;
 
             //zx200 controllor
-            Excavator1.GetComponent<JointControl>().enabled = false;
+            Excavator1.GetComponent<JointControler>().enabled = false;
             Excavator1.GetComponent<Rigidbody>().isKinematic = true;
 
             //zx200 visualize
@@ -148,7 +148,7 @@ public class mode_selector : MonoBehaviour
             Excavator1.transform.Find("base_link/body_link/boom_link/arm_link").gameObject.GetComponent<JointPosController>().enabled = false;
             Excavator1.transform.Find("base_link/body_link/boom_link/arm_link/bucket_link").gameObject.GetComponent<JointPosController>().enabled = false;
             //zx200 controllor
-            Excavator1.GetComponent<JointControl>().enabled = true;
+            Excavator1.GetComponent<JointControler>().enabled = true;
             Excavator1.GetComponent<Rigidbody>().isKinematic = false;
             //zx200 visualize
             Excavator1.GetComponent<JointSubscriber>().enabled = false;
