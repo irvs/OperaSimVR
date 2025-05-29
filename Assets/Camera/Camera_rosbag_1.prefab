@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 5684546406044610649}
   - component: {fileID: 5684546406044610655}
   m_Layer: 0
-  m_Name: SensorPod_2023_rosbag_1
+  m_Name: Camera_rosbag_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
