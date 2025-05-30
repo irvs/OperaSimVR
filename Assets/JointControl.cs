@@ -50,15 +50,15 @@ public class JointControler : MonoBehaviour
 
                 if(PoseVeloSelector.ForSimOrReal.ToString() == "ForSimPhysX")
                 {
-                    JointContorollerMode = JointContorollerModeOption.Position;
+            //       JointContorollerMode = JointContorollerModeOption.Position;
                 }
                 else if (PoseVeloSelector.ForSimOrReal.ToString() == "ForSimAGX")
                 {
-                    JointContorollerMode = JointContorollerModeOption.Velocity;
+              //      JointContorollerMode = JointContorollerModeOption.Velocity;
                 }
                 else if (PoseVeloSelector.ForSimOrReal.ToString() == "ForReal")
                 {
-                    JointContorollerMode = JointContorollerModeOption.Velocity;
+             //       JointContorollerMode = JointContorollerModeOption.Velocity;
                 }
               
                 targetjoints = new List<ArticulationBody>();
