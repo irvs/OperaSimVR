@@ -7,6 +7,7 @@ public class Model_name : MonoBehaviour
     public GameObject targetObject;
     public bool ObjectTypeIsPaperMachine;
     public string ParentMachine;
+    public GameObject PaperMachine;
     public string Modelname;
     //public string KindsOfHeavyMachinery;
     public enum HeavyMachineryOption { ZX120, ZX200, IC120, C30R}
@@ -18,6 +19,7 @@ public class Model_name : MonoBehaviour
     public float OffsetRotation_y = 0;
     public float OffsetRotation_z = 0;
     public List<float> OffsetList = new List<float>();
+
     // Start is called before the first frame update
     void Start()
     {

@@ -31,7 +31,7 @@ Note: From this point on, operating the VR controller or the keyboard will send 
 5. To end the operation, press the B button to dismount. (The controller (VRCrawlerOp) will be turned off.)
 
 
-<img src=docs/OperaSimVR/VRCrawlerOp.png width="500px">
+<img src=images/OperaSimVR/VRCrawlerOp.png width="500px">
 
 **explanation of parameter**
 | parameter name | Units and message types | description |

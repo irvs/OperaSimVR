@@ -11,8 +11,8 @@ public class mode_selector : MonoBehaviour
     private int mode_return;
     GameObject Dump1;
     GameObject Excavator1;
-
-    //void Start()
+    GameObject Dump1Papermachine;
+    GameObject Excavator1Papermachine;
     void Update()
     {
         if (WhichMode.ToString() != WhichModePrev)
@@ -34,6 +34,8 @@ public class mode_selector : MonoBehaviour
             Dump1 = GameObject.Find("ic120");
             Excavator1 = GameObject.Find("zx200");
 
+            Dump1Papermachine =Dump1.GetComponent<Model_name>().PaperMachine;
+            Dump1Papermachine.SetActive(false);
             //for simulator
             Dump1.GetComponent<DiffDriveController>().enabled = true;
             
@@ -46,7 +48,10 @@ public class mode_selector : MonoBehaviour
             Dump1.GetComponent<Rigidbody>().isKinematic = false;
             //ic120 visualize
             Dump1.GetComponent<PoseSubscriber>().enabled = false;
-            
+
+
+          //  Excavator1Papermachine = Excavator1.GetComponent<Model_name>().PaperMachine;
+          //  Excavator1Papermachine.SetActive(false);
             //for simulator
             Excavator1.GetComponent<DiffDriveController>().enabled = true;
             Excavator1.GetComponent<JointStatePublisher>().enabled = true;
@@ -76,6 +81,10 @@ public class mode_selector : MonoBehaviour
             }
             Dump1 = GameObject.Find("ic120");
             Excavator1 = GameObject.Find("zx200");
+
+            Dump1Papermachine = Dump1.GetComponent<Model_name>().PaperMachine;
+            Dump1Papermachine.SetActive(false);
+
             ///for simulator
             Dump1.GetComponent<DiffDriveController>().enabled = false;
             
@@ -88,6 +97,10 @@ public class mode_selector : MonoBehaviour
             Dump1.GetComponent<Rigidbody>().isKinematic = true;
 
             Dump1.GetComponent<PoseSubscriber>().enabled = true;
+
+
+          //  Excavator1Papermachine = Excavator1.GetComponent<Model_name>().PaperMachine;
+          //  Excavator1Papermachine.SetActive(false);
 
             ///for simulator
             Excavator1.GetComponent<DiffDriveController>().enabled = false;
@@ -126,6 +139,10 @@ public class mode_selector : MonoBehaviour
             }
             Dump1 = GameObject.Find("ic120");
             Excavator1 = GameObject.Find("zx200");
+
+            Dump1Papermachine = Dump1.GetComponent<Model_name>().PaperMachine;
+            Dump1Papermachine.SetActive(true);
+
             ///for simulator
             Dump1.GetComponent<DiffDriveController>().enabled = true;
             Dump1.GetComponent<DiffDriveController>().ControlMode = 1;
@@ -137,6 +154,10 @@ public class mode_selector : MonoBehaviour
             //ic120 visualize
             //GameObject.Find("ic120").GetComponent<JointSubscriber_ic120>().enabled = false;
             Dump1.GetComponent<PoseSubscriber>().enabled = true;
+
+
+          //  Excavator1Papermachine = Excavator1.GetComponent<Model_name>().PaperMachine;
+          //  Excavator1Papermachine.SetActive(true);
 
             ///for simulator
             Excavator1.GetComponent<DiffDriveController>().enabled = false;

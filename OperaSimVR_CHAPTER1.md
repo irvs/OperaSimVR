@@ -189,8 +189,8 @@ This system allows for terrain reconstruction using real-world field terrain dat
 #### §1.5.1
 About Method 1: Reading Point Cloud Data in LAS Format
 In this method, terrain is created by importing point cloud data stored in the LAS format, which is commonly used for representing 3D spatial information obtained from sources like LiDAR. The workflow generally involves the following steps:
-1. Convert the LAS data and store it in the TMS_DB. For details, refer to ～～.
-2. Start the ROS 2 service for reading terrain data stored in the TMS_DB (for details, refer to ～～～). 
+1. Convert the LAS data and store it in the TMS_DB. For details, refer to (https://github.com/irvs/ros2_tms_for_construction/blob/develop/operasimvr/CHAPTER1.md).
+2. Start the ROS 2 service for reading terrain data stored in the TMS_DB (for details, refer to (https://github.com/irvs/ros2_tms_for_construction/blob/develop/operasimvr/CHAPTER1.md)). 
 3. When the TerrainImporter attached to the terrain object is activated, it sends a request to the server that provides the terrain data. The stored terrain data is then retrieved and transmitted back.
 
 **explanation of parameter**

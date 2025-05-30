@@ -8,8 +8,3 @@ Simulator on Unity + PhysX communicating with ROS
 
 
 
-![Videotogif](https://user-images.githubusercontent.com/24404939/159425467-c244de28-354e-4d2a-a615-5ccafc7b9709.gif)
-
-## インストール方法
-
- #### ROSと連携時の送受信データ
