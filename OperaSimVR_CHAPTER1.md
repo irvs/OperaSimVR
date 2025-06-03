@@ -154,16 +154,16 @@ If you want to change the mode, modify the parameter "WhichMode" of script "Mode
 Move the object's "MapReferencePoint" to the same position in the cyberspace field as the origin of the map coordinate system of the actual field.
 
 ***
-### §1.3 SensorPod Images
+### §1.3 Camera Images
 This system can display images from cameras by linking with sensor pods (sensor cameras) installed in the field.
 
 **sensor pod(sensor camera)**
 | Type of information | Message type                       | Description                                                 |
 | ------------------------------------- | ----------------------------------- | ----------------------------------------------------------- |
-| movie | `sensor_msgs::CompressedImage`  | Movie from sensor pods(sensor cameras). |
+| movie | `sensor_msgs::CompressedImage`  | Movie from cameras. |
 
 #### Setting the topic names in ROS 2.
-For each child object ("SensorPod") under "SensorPods", specify the topic name for subscribing to sensor pod (sensor camera) images in the parameter "ImageTopicName" of the attached script "SensorCameraNamespace".
+For each child object ("Camera") under "Cameras", specify the topic name for subscribing to sensor pod (sensor camera) images in the parameter "ImageTopicName" of the attached script "SensorCameraNamespace".
 ![](images/OperaSimVR/SensorpodTopicname.png)
 
 ***
