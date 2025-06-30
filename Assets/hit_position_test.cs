@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.VFX;
 public class TerrainCollisionPoint : MonoBehaviour
 {
     public Transform handAnchor;       // 手の位置（HandAnchor）
@@ -7,15 +8,19 @@ public class TerrainCollisionPoint : MonoBehaviour
     public float rayLength = 10f;      // Rayの長さ（デフォルト10ユニット）
     private Vector3 collisionPoint;
     Controller_manager Geton_controller_manager;
-    List<Vector3> PathForDB = new List<Vector3>();
     public LineRenderer lineRenderer;  // LineRendererの参照
     public GameObject spherePrefab;  // 衝突位置に生成する球のPrefab
+    public bool ConbineTwePoints;
+    public List<Vector3> PathForDB = new List<Vector3>();
+    FieldMainManager FieldManager;
+    Vector3 PrevPosition;
 
     // 生成された球を管理するリスト
     private List<GameObject> sphereObjects = new List<GameObject>();
     void Start()
     {
-        // LineRendererが設定されていない場合、エラーを防ぐ
+        FieldManager = FindObjectOfType<FieldMainManager>();
+        terrain = FieldManager.terrain;
         if (lineRenderer == null)
         {
             lineRenderer = gameObject.AddComponent<LineRenderer>();
@@ -45,15 +50,16 @@ public class TerrainCollisionPoint : MonoBehaviour
             {
                 // 衝突位置の座標を表示
                 collisionPoint = hit.point;
-                Debug.Log("衝突位置: " + collisionPoint);
+              //  Debug.Log("衝突位置: " + collisionPoint);
                 // 衝突位置に球を生成
                 CreateSphereAtCollisionPoint(collisionPoint);
             }
         }
         Geton_controller_manager = FindObjectOfType<Controller_manager>();
-        if ((Geton_controller_manager.GetOnMachine == 0 && OVRInput.Get(OVRInput.RawButton.LIndexTrigger)) || (Geton_controller_manager.GetOnMachine == 0 && Input.GetKey(KeyCode.B)))
+        if (((Geton_controller_manager.GetOnMachine == 0 && OVRInput.Get(OVRInput.RawButton.LIndexTrigger)) || (Geton_controller_manager.GetOnMachine == 0 && Input.GetKey(KeyCode.B))) && ApproximatelyEqual(PrevPosition, collisionPoint))
         {
             PathForDB.Add(collisionPoint);
+            PrevPosition = collisionPoint;
             lineRenderer.positionCount += 1;
             Debug.Log("add points: " + collisionPoint);
             if (PathForDB.Count >= 2)
@@ -77,12 +83,21 @@ public class TerrainCollisionPoint : MonoBehaviour
                 // 衝突した場合、衝突点を表示
              //   Debug.Log("衝突した位置: " + hits.point);
             }
+            if (ConbineTwePoints == true && PathForDB.Count >= 3)
+            {
+                PathForDB.Clear();
+                lineRenderer.positionCount = 0;
+                PathForDB.Add(PrevPosition);
+                Debug.Log("Reset");
+            }
         }
     }
+
     void ConnectRender(Vector3 startPosition, Vector3 endPosition)
     {
         // LineRendererを更新して、Rayを描画
         // 各点の位置をLineRendererに設定
+        lineRenderer.positionCount = PathForDB.Count;
         for (int i = 0; i < PathForDB.Count; i++)
         {
             lineRenderer.SetPosition(i, PathForDB[i]);
@@ -97,7 +112,6 @@ public class TerrainCollisionPoint : MonoBehaviour
         {
             // 球を生成
             GameObject sphere = Instantiate(spherePrefab, position, Quaternion.identity);
-
             // 生成した球をリストに追加
             sphereObjects.Add(sphere);
 
@@ -110,6 +124,11 @@ public class TerrainCollisionPoint : MonoBehaviour
                 sphereObjects.RemoveAt(0);
             }
         }
+    }
+
+    bool ApproximatelyEqual(Vector3 a, Vector3 b, float tolerance = 0.1f)
+    {
+        return Vector3.Distance(a, b) > tolerance;
     }
 
 }
