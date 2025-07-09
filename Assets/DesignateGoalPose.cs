@@ -22,6 +22,7 @@ public class DesignateGoalPose : MonoBehaviour
     Vector3 yAxis = Vector3.up;      // (0, 1, 0)
     Vector3 zAxis = Vector3.forward; // (0, 0, 1)
     Quaternion GoalAngle;
+    public GameObject ArrayPrefab;  // 衝突位置に生成するArrayのPrefab
 
     // Start is called before the first frame update
     void Start()
@@ -39,6 +40,7 @@ public class DesignateGoalPose : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        //if (ConbinePoints.Count>0) { CreateSphereAtCollisionPoint(ConbinePoints[0]); }
         if (SendSw && ConbinePoints[1] != null)
         {
             HitPoint.ConbineTwePoints = true;
@@ -52,7 +54,9 @@ public class DesignateGoalPose : MonoBehaviour
             float angleWithX = Mathf.Acos(Vector3.Dot(direction, xAxis)) * Mathf.Rad2Deg;
             float angleWithY = Mathf.Acos(Vector3.Dot(direction, yAxis)) * Mathf.Rad2Deg;
             float angleWithZ = Mathf.Acos(Vector3.Dot(direction, zAxis)) * Mathf.Rad2Deg;
-            GoalAngle = Quaternion.Euler(angleWithX, angleWithY, angleWithZ);
+            //GoalAngle = Quaternion.Euler(angleWithX, angleWithY, angleWithZ);
+            Debug.Log("Angle : "+angleWithX+","+ angleWithY+","+ angleWithZ);
+            GoalAngle = Quaternion.Euler(0.0f, angleWithX, 0.0f);
             GoalAngle = new Quaternion(-GoalAngle.z, GoalAngle.x, -GoalAngle.y, GoalAngle.w);
 
             if (FieldManager.ForSimOrReal.ToString() == "ForSimPhysX")
@@ -63,6 +67,8 @@ public class DesignateGoalPose : MonoBehaviour
             {
 
             }
+            CreateSphereAtCollisionPoint(ConbinePoints[0], GoalAngle);
+
             message.header.frame_id = "map";
             message.header.stamp = new TimeStamp(Clock.time);
 
@@ -78,6 +84,29 @@ public class DesignateGoalPose : MonoBehaviour
 
             ros.Publish(SendTopicName, message);
             SendSw = false;
+        }
+    }
+
+    void CreateSphereAtCollisionPoint(Vector3 position ,Quaternion rotation)
+    {
+        // 球のPrefabが設定されている場合にインスタンス化
+        if (ArrayPrefab != null)
+        {
+            // 球を生成
+            GameObject sphere = Instantiate(ArrayPrefab, position, rotation);
+            /*
+            // 生成した球をリストに追加
+            ArrayPrefab.Add(sphere);
+            /*
+            // もしリストに3つ以上のオブジェクトがある場合、古いものを削除
+            if (ArrayPrefab.Count > 1)
+            {
+                // 最も古いオブジェクトを削除
+                Destroy(ArrayPrefab[0]);
+                // リストから削除
+                ArrayPrefab.RemoveAt(0);
+            }
+            */
         }
     }
 }

@@ -14,6 +14,7 @@ public class TerrainCollisionPoint : MonoBehaviour
     public List<Vector3> PathForDB = new List<Vector3>();
     FieldMainManager FieldManager;
     Vector3 PrevPosition;
+    public GameObject ArrayPrefab;  // 衝突位置に生成する球のPrefab
 
     // 生成された球を管理するリスト
     private List<GameObject> sphereObjects = new List<GameObject>();
@@ -125,7 +126,17 @@ public class TerrainCollisionPoint : MonoBehaviour
             }
         }
     }
-
+    /*
+    void CreateArrayAtCollisionPoint(Vector3 position)
+    {
+        // 球のPrefabが設定されている場合にインスタンス化
+        if (ArrayPrefab != null)
+        {
+            // 球を生成
+            GameObject Array = Instantiate(ArrayPrefab, position, Quaternion.identity);
+        }
+    }
+    */
     bool ApproximatelyEqual(Vector3 a, Vector3 b, float tolerance = 0.1f)
     {
         return Vector3.Distance(a, b) > tolerance;
