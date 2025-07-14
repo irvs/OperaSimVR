@@ -58,6 +58,8 @@ public class DesignateGoalPose : MonoBehaviour
             Debug.Log("Angle : "+angleWithX+","+ angleWithY+","+ angleWithZ);
             GoalAngle = Quaternion.Euler(0.0f, angleWithX, 0.0f);
             GoalAngle = new Quaternion(-GoalAngle.z, GoalAngle.x, -GoalAngle.y, GoalAngle.w);
+            Quaternion ArrayGoalAngle = Quaternion.Euler(-90.0f, angleWithX,  -90.0f);
+            ArrayGoalAngle = new Quaternion(-GoalAngle.z, GoalAngle.x, -GoalAngle.y, GoalAngle.w);
 
             if (FieldManager.ForSimOrReal.ToString() == "ForSimPhysX")
             {
@@ -67,7 +69,7 @@ public class DesignateGoalPose : MonoBehaviour
             {
 
             }
-            CreateSphereAtCollisionPoint(ConbinePoints[0], GoalAngle);
+            CreateSphereAtCollisionPoint(ConbinePoints[0], ArrayGoalAngle);
 
             message.header.frame_id = "map";
             message.header.stamp = new TimeStamp(Clock.time);
