@@ -53,13 +53,15 @@ public class DesignateGoalPose : MonoBehaviour
             Vector3 direction = (ConbinePoints[1] - ConbinePoints[0]).normalized;
             float angleWithX = Mathf.Acos(Vector3.Dot(direction, xAxis)) * Mathf.Rad2Deg;
             float angleWithY = Mathf.Acos(Vector3.Dot(direction, yAxis)) * Mathf.Rad2Deg;
-            float angleWithZ = Mathf.Acos(Vector3.Dot(direction, zAxis)) * Mathf.Rad2Deg;
+          //  float angleWithZ = Mathf.Acos(Vector3.Dot(direction, zAxis)) * Mathf.Rad2Deg;
+            float angleWithZ = -Vector3.SignedAngle(zAxis, direction, Vector3.up);
             //GoalAngle = Quaternion.Euler(angleWithX, angleWithY, angleWithZ);
             Debug.Log("Angle : "+angleWithX+","+ angleWithY+","+ angleWithZ);
-            GoalAngle = Quaternion.Euler(0.0f, angleWithX, 0.0f);
+            GoalAngle = Quaternion.Euler(0.0f, -angleWithZ, 0.0f);
             GoalAngle = new Quaternion(-GoalAngle.z, GoalAngle.x, -GoalAngle.y, GoalAngle.w);
-            Quaternion ArrayGoalAngle = Quaternion.Euler(-90.0f, angleWithX,  -90.0f);
-            ArrayGoalAngle = new Quaternion(-GoalAngle.z, GoalAngle.x, -GoalAngle.y, GoalAngle.w);
+            //Quaternion ArrayGoalAngle = Quaternion.Euler(-90.0f - angleWithX, 0.0f,  90.0f);
+            Quaternion ArrayGoalAngle = Quaternion.Euler(0.0f, -angleWithZ + 0.0f, 0.0f);
+           // ArrayGoalAngle = new Quaternion(-ArrayGoalAngle.z, ArrayGoalAngle.x, -ArrayGoalAngle.y, ArrayGoalAngle.w);
 
             if (FieldManager.ForSimOrReal.ToString() == "ForSimPhysX")
             {
@@ -76,12 +78,12 @@ public class DesignateGoalPose : MonoBehaviour
 
             message.pose.position.x = GoalPosition.x;
             message.pose.position.y = GoalPosition.y;
-            message.pose.position.y = GoalPosition.y;
+            message.pose.position.z = 0.0f;//GoalPosition.z;
 
-            message.pose.orientation.x = this.transform.rotation.x;
-            message.pose.orientation.y = this.transform.rotation.y;
-            message.pose.orientation.z = this.transform.rotation.z;
-            message.pose.orientation.w = this.transform.rotation.w;
+            message.pose.orientation.x = GoalAngle.x;
+            message.pose.orientation.y = GoalAngle.y;
+            message.pose.orientation.z = GoalAngle.z;
+            message.pose.orientation.w = GoalAngle.w;
             Debug.Log(GoalPosition + " : " + GoalAngle);
 
             ros.Publish(SendTopicName, message);

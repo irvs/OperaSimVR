@@ -74,16 +74,16 @@ public class PoseStampedPublisher : MonoBehaviour
             else if (KindsOfMap.ToString() == "RealWorld")
             {
                 MapPosition = this.transform.position - ReferencePointPose;
-                WorldPosition = MapPosition + new Vector3(MapRefetenceX, MapRefetenceY, MapRefetenceZ);
-                TargetPosition = new Vector3(WorldPosition.x, WorldPosition.y, WorldPosition.z);
+                WorldPosition = MapPosition + new Vector3(MapRefetenceY, MapRefetenceZ, MapRefetenceX);
+                TargetPosition = new Vector3(WorldPosition.x, -WorldPosition.y, WorldPosition.z);
                 TargetRotation = this.transform.rotation;
-                Debug.Log("RealWorld");
+             //   Debug.Log("RealWorld");
             }
             else if (KindsOfMap.ToString() == "RealMap")
             {
                 TargetPosition = this.transform.position - ReferencePointPose;
                 TargetRotation = this.transform.rotation;
-                Debug.Log("RealMap");
+              //  Debug.Log("RealMap");
             }
 
             // Unity -> ROS transformation
