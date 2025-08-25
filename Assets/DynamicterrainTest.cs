@@ -3,11 +3,16 @@ using UnityEngine;
 public class ApplyPartialHeightmap : MonoBehaviour
 {
     public bool ApplyHeightmap;
+
+    public bool ResetTerrain;
     [Header("Terrain to modify")]
     public Terrain terrain;
 
     [Header("Heightmap image")]
     public Texture2D image;
+
+    [Header("Reference object")]
+    public GameObject ReferenceObject;
 
     [Header("Apply area (in world meters)")]
     public Vector3 worldStartPosition = new Vector3(50, 0, 50); // ← Unity座標系(x, y, z)
@@ -24,6 +29,9 @@ public class ApplyPartialHeightmap : MonoBehaviour
     // Terrain 側の最低高さ（例：50m）
     public float targetBaseHeightMeters = 10f;
 
+    public Vector3 Offsets = new Vector3(0, 0, 0);
+
+
     void Start()
     {
         if (terrain == null || image == null)
@@ -33,10 +41,31 @@ public class ApplyPartialHeightmap : MonoBehaviour
         }
     }
 
+    /*  void Update()
+      {
+          if (ApplyHeightmap) { ApplyNewTerrain(); }
+          ApplyHeightmap = false;
+          worldStartPosition = ReferenceObject.transform.position - Offsets;
+      }*/
+
     void Update()
     {
-        if (ApplyHeightmap) { ApplyNewTerrain(); }
-        ApplyHeightmap = false;
+        if (ApplyHeightmap)
+        {
+            ApplyNewTerrain();
+            ApplyHeightmap = false;
+        }
+
+        if (ResetTerrain)
+        {
+            RestoreOriginalHeights();
+            ResetTerrain = false;
+        }
+
+        if (ReferenceObject != null)
+        {
+            worldStartPosition = ReferenceObject.transform.position - Offsets;
+        }
     }
 
     void ApplyNewTerrain()
@@ -123,6 +152,32 @@ public class ApplyPartialHeightmap : MonoBehaviour
             Debug.Log("Terrain restored.");
         }
     }
+
+    void RestoreOriginalHeights()
+    {
+        if (terrain && originalHeights != null)
+        {
+            TerrainData terrainData = terrain.terrainData;
+
+            Vector3 terrainOrigin = terrain.GetPosition();
+            Vector3 terrainSize = terrainData.size;
+            int heightmapResolution = terrainData.heightmapResolution;
+
+            int startX = Mathf.RoundToInt((worldStartPosition.x - terrainOrigin.x) / terrainSize.x * (heightmapResolution - 1));
+            int startY = Mathf.RoundToInt((worldStartPosition.z - terrainOrigin.z) / terrainSize.z * (heightmapResolution - 1));
+
+            int areaWidth = originalHeights.GetLength(1);
+            int areaHeight = originalHeights.GetLength(0);
+
+            terrainData.SetHeights(startX, startY, originalHeights);
+            Debug.Log("Terrain restored manually.");
+        }
+        else
+        {
+            Debug.LogWarning("Original heights not available. Cannot restore terrain.");
+        }
+    }
+
 
     Texture2D ResizeTexture(Texture2D source, int width, int height)
     {
