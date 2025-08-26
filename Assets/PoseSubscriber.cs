@@ -40,6 +40,9 @@ public class PoseSubscriber : MonoBehaviour
     Terrain terrain;
     FieldMainManager FieldManager;
     public bool UseHeightFromTopic;
+    public bool DumpUpperCorrection;
+    public float DumpUpperDiff;
+    DumpVesselSub MachineUpperJoints;
 
     void Start()
     {
@@ -170,6 +173,13 @@ public class PoseSubscriber : MonoBehaviour
             {
                 ModifyPosition = new Vector3((NewPosition.z) - OffsetX, (NewPosition.y) - OffsetY, (NewPosition.x) - OffsetZ);
             }
+        }
+        if (DumpUpperCorrection == true)
+        {
+            MachineUpperJoints = GetComponent<DumpVesselSub>();
+            DumpUpperDiff = MachineUpperJoints.AngleOfSwing;
+            Quaternion CorrectRotation = Quaternion.Euler(NewRotation.eulerAngles - new Vector3(0.0f, DumpUpperDiff, 0.0f));
+            NewRotation = CorrectRotation;
         }
         rot_offset = new Vector3(RotOffsetX, RotOffsetY, RotOffsetZ);
         chenged_orientation = NewRotation.eulerAngles - rot_offset;

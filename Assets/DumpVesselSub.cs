@@ -9,10 +9,17 @@ public class DumpVesselSub : MonoBehaviour
     public string VesselSubscriberTopicName = "dump/cmd";
     public string ViaDBVesselSubscriberTopicName;
     private string SubscriberTopicName;
-    public ArticulationBody dump_joint;
+  //  public ArticulationBody dump_joint;
+    public float AngleOfSwing;
     public float AngleOfVessel;
+    public int SwingNumber;
+    public int VesselNumber;
 
+    public GameObject RootObject;
+    public GameObject SwingObject;
     public GameObject VesselObject;
+
+    public bool AddOrRemove;
 
     // Start is called before the first frame update
     void Start()
@@ -50,17 +57,31 @@ public class DumpVesselSub : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-       // VesselObject.transform.rotation.x = AngleOfVessel;
-        VesselObject.transform.rotation = Quaternion.Euler(AngleOfVessel, transform.rotation.eulerAngles.y, transform.rotation.eulerAngles.z);
+        // VesselObject.transform.rotation.x = AngleOfVessel;
+       // SwingObject.transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles.x, AngleOfSwing, transform.rotation.eulerAngles.z);
+      //  VesselObject.transform.rotation = Quaternion.Euler(AngleOfVessel, AngleOfSwing, transform.rotation.eulerAngles.z);
     }
 
     void ExecuteVesselControl(JointStateMsg msg)
     {
         if (msg.position.Length > 1)
         {
-            AngleOfVessel = (float)msg.position[1];
+            AngleOfSwing = (float)(msg.position[SwingNumber] * 180 / 3.14);
+            AngleOfVessel = -(float)(msg.position[VesselNumber] * 180 / 3.14);
+
             // Debug.Log("Dump Target Position:" + AngleOfVessel);
-            VesselObject.transform.rotation = Quaternion.Euler(AngleOfVessel, transform.rotation.eulerAngles.y, transform.rotation.eulerAngles.z);
+            Quaternion RootTransform = RootObject.transform.rotation;
+            if (AddOrRemove == true)
+            {
+                SwingObject.transform.rotation = RootTransform * Quaternion.Euler(transform.rotation.eulerAngles.x, AngleOfSwing, transform.rotation.eulerAngles.z);
+                VesselObject.transform.rotation = RootTransform * Quaternion.Euler(AngleOfVessel, AngleOfSwing, transform.rotation.eulerAngles.z);
+            }
+            else if (AddOrRemove == false)
+            {
+              //  Quaternion delta = Quaternion.Inverse(rotationA) * rotationB;
+                SwingObject.transform.rotation = Quaternion.Inverse(RootTransform) * Quaternion.Euler(transform.rotation.eulerAngles.x, AngleOfSwing, transform.rotation.eulerAngles.z);
+                VesselObject.transform.rotation = Quaternion.Inverse(RootTransform) * Quaternion.Euler(AngleOfVessel, AngleOfSwing, transform.rotation.eulerAngles.z);
+            }
             /*
             var drive = dump_joint.xDrive;
             drive.target = (float)(AngleOfVessel * Mathf.Rad2Deg);
