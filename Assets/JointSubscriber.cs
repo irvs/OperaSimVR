@@ -54,6 +54,7 @@ public class JointSubscriber : MonoBehaviour
         ros.Subscribe<JointStateMsg>(SubscribeJointTopicName, Callback);
         Debug.Log("already:joint_states_pub");
         ///
+        JointPositions = new List<double> { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
     }
     void Update()
     {
