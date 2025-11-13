@@ -1,6 +1,4 @@
-using System.Collections;
 using System.Collections.Generic;
-using System.Drawing;
 using UnityEngine;
 
 public class PrevForPlay : MonoBehaviour
@@ -8,18 +6,25 @@ public class PrevForPlay : MonoBehaviour
     Vector3 RealPosition;
     Quaternion RealRotation;
     GameObject targetObject;
+    Model_name ModelIdentifier;
+    FieldMainManager FieldManager;
     PoseSubscriber MachinePoseSubscriber;
-    private List<(Vector3 position, double time)> positionHistory = new List<(Vector3, double)>();
-    private double timeWindow = 5.0; // 直近5秒間
-    public int PreviewTime;
-    public int SamplingTime;
-    private float processInterval = 0.5f;
 
-    // Start is called before the first frame update
+    private List<(Vector3 position, double time)> positionHistory = new List<(Vector3, double)>();
+    private double timeWindow = 5.0; // 直近5秒間の履歴を保持
+    public float PreviewTime = 2.0f; // 何秒後を予測するか
+    public float SamplingTime = 0.5f; // 処理間隔
+    private float processInterval = 0.5f;
+    GameObject SelectorObject;
+    public bool Reset;
+
     void Start()
     {
+        SelectorObject = GameObject.Find("FieldManager");
         targetObject = this.gameObject;
         MachinePoseSubscriber = GetComponent<PoseSubscriber>();
+        ModelIdentifier = GetComponent<Model_name>();
+        FieldManager = SelectorObject.GetComponent<FieldMainManager>();
         InvokeRepeating(nameof(ProcessPositions), processInterval, processInterval);
     }
 
@@ -27,54 +32,47 @@ public class PrevForPlay : MonoBehaviour
     {
         RealPosition = MachinePoseSubscriber.MapMachinePosition;
         RealRotation = MachinePoseSubscriber.MapMachineRotation;
-        // 現在時刻を取得（秒単位）
         double currentTime = Time.timeAsDouble;
 
         positionHistory.Add((RealPosition, currentTime));
-
-        // 古いデータを削除
         positionHistory.RemoveAll(item => (currentTime - item.time) > timeWindow);
 
-        Debug.Log(RealPosition);
-        // 一定間隔で呼ばれる処理
-        Vector3[] recentPositions = GetRecentPositions();
-
-
-        // ここで可視化・解析・平均計算などを行う
-        if (recentPositions.Length == 0)
+        if (positionHistory.Count < 2)
         {
-            Debug.Log("No positions to process.");
+            Debug.Log("Not enough data to predict.");
             return;
         }
 
-        Vector3 sum = Vector3.zero;
-        foreach (var pos in recentPositions)
-        {
-            sum += pos;
-        }
+        // --- 速度ベクトルを推定 ---
+        var oldest = positionHistory[0];
+        var newest = positionHistory[positionHistory.Count - 1];
+        double deltaTime = newest.time - oldest.time;
 
-        Vector3 averagePosition = sum / recentPositions.Length;
+        if (deltaTime <= 0.0001)
+            return;
 
-        Debug.Log($"[{Time.time:F1}s] Average position: {averagePosition}");
+        Vector3 velocity = (newest.position - oldest.position) / (float)deltaTime;
 
-        targetObject.transform.position = RealPosition + averagePosition;
+        // --- 指定秒数後の位置を予測 ---
+        Vector3 predictedPosition = newest.position + velocity * PreviewTime;
 
+        // --- 高さを地形から取得 ---
+        float Y_Height = FieldManager.terrain.SampleHeight(predictedPosition)
+                        + FieldManager.terrain.transform.position.y
+                        + ModelIdentifier.Offset_y;
+
+        // --- オブジェクトを移動 ---
+        targetObject.transform.position = new Vector3(predictedPosition.x, Y_Height, predictedPosition.z);
+
+      //  Debug.Log($"[{Time.time:F1}s] Predicted {PreviewTime}s later: {predictedPosition}");
     }
 
-
-    // Update is called once per frame
     void Update()
     {
-       
-    }
-
-    public Vector3[] GetRecentPositions()
-    {
-        Vector3[] array = new Vector3[positionHistory.Count];
-        for (int i = 0; i < positionHistory.Count; i++)
+        if (Reset)
         {
-            array[i] = positionHistory[i].position;
+            Reset = false;
+            positionHistory.Clear();
         }
-        return array;
     }
 }
