@@ -84,7 +84,7 @@ public class PrevForPlayBackhoe : MonoBehaviour
             ApplyJointAngles(predictedJoints);
         }
 
-        Debug.Log($"[{Time.time:F1}s] Predicted {PreviewTime}s later joint angles applied.");
+     //   Debug.Log($"[{Time.time:F1}s] Predicted {PreviewTime}s later joint angles applied.");
     }
 
     void ApplyJointAngles(List<double> joints)

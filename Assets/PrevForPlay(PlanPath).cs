@@ -36,7 +36,8 @@ public class PrevForPlayPlanPath : MonoBehaviour
         Vector3 robotPos = MachinePoseSubscriber.MapMachinePosition;
 
         // --- 経路上でロボットに最も近い点を探す ---
-        int closestIndex = GetClosestPointIndex(robotPos, PathSub.PathPoints);
+        int closestIndex = GetClosestPointIndex(robotPos - Reference.transform.position, PathSub.PathPoints);
+        Debug.Log((PathSub.PathPoints[closestIndex] + Reference.transform.position) - robotPos);
 
         // --- PreviewDistance だけ先の点を探す ---
         int previewIndex = GetPreviewIndex(closestIndex, PathSub.PathPoints, PreviewDistance);
