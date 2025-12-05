@@ -1,20 +1,38 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class PrevForPlayPlanPath : MonoBehaviour
 {
-    public float PreviewDistance = 2.0f;  // 何メートル先の経路を表示するか
+    [Header("予測設定")]
+    public float PredictTime = 2.0f; // t秒後の位置を表示
+    public float historyDuration = 2.0f; // 過去2秒で速度計算
+    public float historyInterval = 0.5f;  // 0.5秒ごとに位置を記録
     public bool Reset;
 
+    // ---------------------------
+    // 内部オブジェクト
+    // ---------------------------
     GameObject targetObject;
+    GameObject SelectorObject;
+    GameObject Reference;
+
     Model_name ModelIdentifier;
     FieldMainManager FieldManager;
     PoseSubscriber MachinePoseSubscriber;
-    PathSubscriber PathSub; // ★ Nav2 Path を受け取るスクリプト
+    PathSubscriber PathSub;
 
-    GameObject SelectorObject;
-    GameObject Reference;
+    // ---------------------------
+    // 過去位置記録用
+    // ---------------------------
+    private class TimedPos
+    {
+        public Vector3 pos;
+        public float time;
+    }
+    List<TimedPos> history = new List<TimedPos>();
+    private float timer = 0f;
 
     void Start()
     {
@@ -25,46 +43,89 @@ public class PrevForPlayPlanPath : MonoBehaviour
         MachinePoseSubscriber = GetComponent<PoseSubscriber>();
         ModelIdentifier = GetComponent<Model_name>();
         FieldManager = SelectorObject.GetComponent<FieldMainManager>();
-        PathSub = GetComponent<PathSubscriber>(); // ★ 同じオブジェクトにアタッチしておく
+        PathSub = GetComponent<PathSubscriber>();
     }
 
     void Update()
     {
-        if (PathSub == null || PathSub.PathPoints.Count < 2)
-            return;
+        if (PathSub == null || PathSub.PathPoints.Count < 2) return;
 
-        Vector3 robotPos = MachinePoseSubscriber.MapMachinePosition;
+        Vector3 currentPos = MachinePoseSubscriber.MapMachinePosition;
 
-        // --- 経路上でロボットに最も近い点を探す ---
-        int closestIndex = GetClosestPointIndex(robotPos - Reference.transform.position, PathSub.PathPoints);
-        Debug.Log((PathSub.PathPoints[closestIndex] + Reference.transform.position) - robotPos);
+        // ---------------------------
+        // 0.5秒ごとに過去位置を記録
+        // ---------------------------
+        timer += Time.deltaTime;
+        if (timer >= historyInterval)
+        {
+            timer -= historyInterval;
+            history.Add(new TimedPos { pos = currentPos, time = Time.time });
+            history.RemoveAll(h => Time.time - h.time > historyDuration);
+        }
 
-        // --- PreviewDistance だけ先の点を探す ---
-        int previewIndex = GetPreviewIndex(closestIndex, PathSub.PathPoints, PreviewDistance);
+        // ---------------------------
+        // 過去2秒間の平均速度を計算
+        // ---------------------------
+        float speed = CalcSmoothedSpeed();
+        float predictedDistance = speed * PredictTime;
 
+        // ---------------------------
+        // 経路上で現在位置に最も近い点を探す
+        // ---------------------------
+        int closestIndex = GetClosestPointIndex(currentPos - Reference.transform.position, PathSub.PathPoints);
+
+        // ---------------------------
+        // t秒後の未来位置（経路上）インデックスを計算
+        // ---------------------------
+        int previewIndex = GetPreviewIndex(closestIndex, PathSub.PathPoints, predictedDistance);
+
+        // ---------------------------
+        // Unity座標系に変換
+        // ---------------------------
         Vector3 previewPos = PathSub.PathPoints[previewIndex] + Reference.transform.position;
 
-        // --- Terrain 高さ調整 ---
+        // ---------------------------
+        // Terrain 高さを反映
+        // ---------------------------
         float yHeight = FieldManager.terrain.SampleHeight(previewPos)
-                        + FieldManager.terrain.transform.position.y
-                        + ModelIdentifier.Offset_y;
-
+                       + FieldManager.terrain.transform.position.y
+                       + ModelIdentifier.Offset_y;
         previewPos.y = yHeight;
 
-        // --- モデルを未来位置へ移動 ---
+        // ---------------------------
+        // モデルを未来位置に移動
+        // ---------------------------
         targetObject.transform.position = previewPos;
 
+        // ---------------------------
+        // Reset 処理
+        // ---------------------------
         if (Reset)
         {
             Reset = false;
-            // Nav2 経路をクリアする必要がある場合のみ
             PathSub.PathPoints.Clear();
         }
     }
 
-    // ==========================
-    //    経路で最も近い点を探す
-    // ==========================
+    // ---------------------------
+    // 過去2秒間の平均速度を計算
+    // ---------------------------
+    float CalcSmoothedSpeed()
+    {
+        if (history.Count < 2) return 0f;
+
+        Vector3 oldest = history[0].pos;
+        Vector3 newest = history[history.Count - 1].pos;
+        float dt = history[history.Count - 1].time - history[0].time;
+        if (dt <= 0f) return 0f;
+
+        float dist = Vector3.Distance(newest, oldest);
+        return dist / dt; // m/s
+    }
+
+    // ---------------------------
+    // 経路で最も近い点を探す
+    // ---------------------------
     int GetClosestPointIndex(Vector3 currentPos, List<Vector3> path)
     {
         float minDist = float.MaxValue;
@@ -82,9 +143,9 @@ public class PrevForPlayPlanPath : MonoBehaviour
         return index;
     }
 
-    // ==========================
-    //   指定距離だけ未来の点を探す
-    // ==========================
+    // ---------------------------
+    // 指定距離だけ経路上を進んだ点のインデックスを返す
+    // ---------------------------
     int GetPreviewIndex(int startIndex, List<Vector3> path, float distance)
     {
         float accumulated = 0f;
@@ -92,7 +153,6 @@ public class PrevForPlayPlanPath : MonoBehaviour
         for (int i = startIndex; i < path.Count - 1; i++)
         {
             accumulated += Vector3.Distance(path[i], path[i + 1]);
-
             if (accumulated >= distance)
                 return i + 1;
         }
