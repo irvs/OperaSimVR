@@ -7,14 +7,17 @@ public class PrevForPlayBackhoe : MonoBehaviour
     Model_name ModelIdentifier;
     FieldMainManager FieldManager;
     JointSubscriber MachineJointSubscriber;
+    PathJointSubscriber JointPathPlanSubscriber;
+    private List<(List<double> joints, double time)> PlanPosition = new List<(List<double>, double)>();
 
     // 関節角の履歴
     private List<(List<double> joints, double time)> jointHistory = new List<(List<double>, double)>();
     private double timeWindow = 5.0;       // 直近5秒間を保持
     public float PreviewTime = 2.0f;       // 何秒後を予測するか
-    private float processInterval = 0.5f;  // 処理間隔
+    private float processInterval = 0.1f;  // 処理間隔
     public bool Reset;
     public bool JointChengeSw;
+    int Counter;
 
     // 各関節のオブジェクト
     public GameObject SwingObject;
@@ -31,61 +34,88 @@ public class PrevForPlayBackhoe : MonoBehaviour
     // 最新の関節角
     public List<double> JointPositions;
 
+    private double playbackStartTime = -1;
+    public int currentPointIndex = 0;
+
+    public float nowtime; 
+
+
     void Start()
     {
         var selector = GameObject.Find("FieldManager");
         targetObject = this.gameObject;
         MachineJointSubscriber = GetComponent<JointSubscriber>();
+        JointPathPlanSubscriber = GetComponent<PathJointSubscriber>();
         ModelIdentifier = GetComponent<Model_name>();
         FieldManager = selector.GetComponent<FieldMainManager>();
 
         JointPositions = new List<double> { 0, 0, 0, 0, 0, 0, 0, 0 };
 
-        InvokeRepeating(nameof(ProcessJointPrediction), processInterval, processInterval);
+      //  InvokeRepeating(nameof(ProcessJointPrediction), processInterval, processInterval);
     }
 
-    void ProcessJointPrediction()
+    void Update()//ProcessJointPrediction()
     {
-        // 最新の関節角取得
-        JointPositions = MachineJointSubscriber.JointPositions;
-        double currentTime = Time.timeAsDouble;
+        PlanPosition = JointPathPlanSubscriber.JointPositions;
 
-        // 履歴に追加
-        jointHistory.Add((new List<double>(JointPositions), currentTime));
-
-        // 古いデータを削除
-        jointHistory.RemoveAll(item => (currentTime - item.time) > timeWindow);
-
-        if (jointHistory.Count < 2)
+        if (JointPathPlanSubscriber.Obtained == true)
         {
-            Debug.Log("Not enough joint data to predict.");
+            JointPathPlanSubscriber.Obtained = false;
+            currentPointIndex = 0;
+        }
+
+        if (PlanPosition == null || PlanPosition.Count == 0)
+        {
+          //  Debug.Log("PlanPosition is null.");
             return;
         }
 
-        // 最新と最古を使って角速度を計算
-        var oldest = jointHistory[0];
-        var newest = jointHistory[jointHistory.Count - 1];
-        double deltaTime = newest.time - oldest.time;
-        if (deltaTime <= 0.0001) return;
-
-        int jointCount = Mathf.Min(oldest.joints.Count, newest.joints.Count);
-        List<double> predictedJoints = new List<double>(jointCount);
-
-        for (int i = 0; i < jointCount; i++)
+        // currentPointIndex が範囲外になっていないかチェック
+        if (currentPointIndex >= PlanPosition.Count)
         {
-            double jointVelocity = (newest.joints[i] - oldest.joints[i]) / deltaTime; // [rad/s]
-            double predicted = newest.joints[i] + jointVelocity * PreviewTime;       // 外挿
-            predictedJoints.Add(predicted);
+            return; // もう再生終了
         }
 
-        // 角度更新（実際にモデルを動かす）
-        if (JointChengeSw)
+        var pt = PlanPosition[currentPointIndex];
+
+        nowtime = (float)pt.time;
+
+        // pt.time = 0 の場合は再生開始
+        if (pt.time <= 0.02)
         {
-            ApplyJointAngles(predictedJoints);
+            playbackStartTime = Time.timeAsDouble;
+            currentPointIndex = 0;
+            pt = PlanPosition[currentPointIndex]; // 念のため再取得
+            Debug.Log("Trajectory start detected → playbackStartTime reset");
         }
 
-     //   Debug.Log($"[{Time.time:F1}s] Predicted {PreviewTime}s later joint angles applied.");
+        // playbackStartTime が未設定なら設定
+        if (playbackStartTime < 0)
+            playbackStartTime = Time.timeAsDouble;
+
+        double elapsed = Time.timeAsDouble - playbackStartTime;
+
+        JointPositions = pt.joints;
+
+        // 再生のタイミングチェック
+        if (elapsed >= pt.time)
+        {
+            ApplyJointAngles(pt.joints);
+            currentPointIndex++;
+
+            // currentPointIndex が範囲外にならないようにチェック
+            if (currentPointIndex >= PlanPosition.Count)
+            {
+                Debug.Log("Trajectory playback finished");
+                //currentPointIndex = 0;
+                return;
+            }
+
+            Debug.Log($"Applied step {currentPointIndex}/{PlanPosition.Count} at {elapsed:F2} sec");
+        }
     }
+
+
 
     void ApplyJointAngles(List<double> joints)
     {
@@ -95,16 +125,17 @@ public class PrevForPlayBackhoe : MonoBehaviour
         float armDeg = (float)(joints[2] * Mathf.Rad2Deg - OffsetArm);
         float bucketDeg = (float)(joints[3] * Mathf.Rad2Deg - OffsetBucket);
 
-      //  SwingObject.transform.localRotation = Quaternion.Euler(0, swingDeg, 0);
-     //   BoomObject.transform.localRotation = Quaternion.Euler(boomDeg, 0, 0);
-     //   ArmObject.transform.localRotation = Quaternion.Euler(armDeg, 0, 0);
-      //  BucketObject.transform.localRotation = Quaternion.Euler(bucketDeg, 0, 0);
-        SwingObject.transform.rotation = Quaternion.Euler(targetObject.transform.rotation.eulerAngles.x, -((float)(JointPositions[0] * 180 / 3.14) - OffsetSwing), targetObject.transform.rotation.eulerAngles.z);
-        BoomObject.transform.rotation = Quaternion.Euler((float)(JointPositions[1] * 180 / 3.14) - OffsetBoom, SwingObject.transform.rotation.eulerAngles.y, SwingObject.transform.rotation.eulerAngles.z);
-        ArmObject.transform.rotation = Quaternion.Euler((float)(JointPositions[2] * 180 / 3.14) + (BoomObject.transform.rotation.eulerAngles.x) - OffsetArm, BoomObject.transform.rotation.eulerAngles.y, BoomObject.transform.rotation.eulerAngles.z);
-        BucketObject.transform.rotation = Quaternion.Euler((float)(JointPositions[3] * 180 / 3.14) + (ArmObject.transform.rotation.eulerAngles.x) - OffsetBucket, ArmObject.transform.rotation.eulerAngles.y, ArmObject.transform.rotation.eulerAngles.z);
+        SwingObject.transform.localRotation = Quaternion.Euler(0, swingDeg, 0);
+        BoomObject.transform.localRotation = Quaternion.Euler(boomDeg, 0, 0);
+        ArmObject.transform.localRotation = Quaternion.Euler(armDeg, 0, 0);
+        BucketObject.transform.localRotation = Quaternion.Euler(bucketDeg, 0, 0);
+    //    SwingObject.transform.rotation = Quaternion.Euler(targetObject.transform.rotation.eulerAngles.x, -((float)(JointPositions[0] * 180 / 3.14) - OffsetSwing), targetObject.transform.rotation.eulerAngles.z);
+    //    BoomObject.transform.rotation = Quaternion.Euler((float)(JointPositions[1] * 180 / 3.14) - OffsetBoom, SwingObject.transform.rotation.eulerAngles.y, SwingObject.transform.rotation.eulerAngles.z);
+    //    ArmObject.transform.rotation = Quaternion.Euler((float)(JointPositions[2] * 180 / 3.14) + (BoomObject.transform.rotation.eulerAngles.x) - OffsetArm, BoomObject.transform.rotation.eulerAngles.y, BoomObject.transform.rotation.eulerAngles.z);
+    //    BucketObject.transform.rotation = Quaternion.Euler((float)(JointPositions[3] * 180 / 3.14) + (ArmObject.transform.rotation.eulerAngles.x) - OffsetBucket, ArmObject.transform.rotation.eulerAngles.y, ArmObject.transform.rotation.eulerAngles.z);
     }
 
+    /*
     void Update()
     {
         if (Reset)
@@ -112,5 +143,7 @@ public class PrevForPlayBackhoe : MonoBehaviour
             Reset = false;
             jointHistory.Clear();
         }
+        
     }
+    */
 }
