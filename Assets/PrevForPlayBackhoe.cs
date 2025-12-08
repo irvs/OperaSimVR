@@ -11,7 +11,6 @@ public class PrevForPlayBackhoe : MonoBehaviour
 
     // 関節角の履歴
     public float PreviewTime = 2.0f;       // 何秒後を予測するか
-    private float processInterval = 0.1f;  // 処理間隔
     public bool JointChengeSw;
     int Counter;
 
@@ -27,13 +26,8 @@ public class PrevForPlayBackhoe : MonoBehaviour
     public float OffsetArm;
     public float OffsetBucket;
 
-    // 最新の関節角
-    public List<double> JointPositions;
-
     private double playbackStartTime = -1;
-    public int currentPointIndex = 0;
 
-    public float nowtime; 
 
 
     void Start()
@@ -43,71 +37,40 @@ public class PrevForPlayBackhoe : MonoBehaviour
         JointPathPlanSubscriber = GetComponent<PathJointSubscriber>();
         ModelIdentifier = GetComponent<Model_name>();
         FieldManager = selector.GetComponent<FieldMainManager>();
-
-        JointPositions = new List<double> { 0, 0, 0, 0, 0, 0, 0, 0 };
-
-      //  InvokeRepeating(nameof(ProcessJointPrediction), processInterval, processInterval);
     }
 
-    void Update()//ProcessJointPrediction()
+    void Update()
     {
         PlanPosition = JointPathPlanSubscriber.JointPositions;
 
+        if (PlanPosition == null || PlanPosition.Count == 0)
+            return;
+
+        // 受信開始: time=0 で軌道リセット
         if (JointPathPlanSubscriber.Obtained == true)
         {
             JointPathPlanSubscriber.Obtained = false;
-            currentPointIndex = 0;
-        }
-
-        if (PlanPosition == null || PlanPosition.Count == 0)
-        {
-          //  Debug.Log("PlanPosition is null.");
-            return;
-        }
-
-        // currentPointIndex が範囲外になっていないかチェック
-        if (currentPointIndex >= PlanPosition.Count)
-        {
-            return; // もう再生終了
-        }
-
-        var pt = PlanPosition[currentPointIndex];
-
-        nowtime = (float)pt.time;
-
-        // pt.time = 0 の場合は再生開始
-        if (pt.time <= 0.02)
-        {
             playbackStartTime = Time.timeAsDouble;
-            currentPointIndex = 0;
-            pt = PlanPosition[currentPointIndex]; // 念のため再取得
-            Debug.Log("Trajectory start detected → playbackStartTime reset");
         }
 
-        // playbackStartTime が未設定なら設定
         if (playbackStartTime < 0)
             playbackStartTime = Time.timeAsDouble;
 
+        // 現在の経過時間
         double elapsed = Time.timeAsDouble - playbackStartTime;
 
-        JointPositions = pt.joints;
+        // ここが重要！
+        double previewTime = elapsed + PreviewTime - 1;
 
-        // 再生のタイミングチェック
-        if (elapsed >= pt.time)
-        {
-            ApplyJointAngles(pt.joints);
-            currentPointIndex++;
+        // previewTime に最も近いステップを探す
+        int previewIndex = FindPreviewIndex(previewTime);
 
-            // currentPointIndex が範囲外にならないようにチェック
-            if (currentPointIndex >= PlanPosition.Count)
-            {
-                Debug.Log("Trajectory playback finished");
-                //currentPointIndex = 0;
-                return;
-            }
+        if (previewIndex < 0 || previewIndex >= PlanPosition.Count)
+            return;
 
-            Debug.Log($"Applied step {currentPointIndex}/{PlanPosition.Count} at {elapsed:F2} sec");
-        }
+        var pt = PlanPosition[previewIndex];
+
+        ApplyJointAngles(pt.joints);
     }
 
 
@@ -125,6 +88,18 @@ public class PrevForPlayBackhoe : MonoBehaviour
         ArmObject.transform.localRotation = Quaternion.Euler(armDeg, 0, 0);
         BucketObject.transform.localRotation = Quaternion.Euler(bucketDeg, 0, 0);
     }
+
+    int FindPreviewIndex(double previewTime)
+    {
+        for (int i = 0; i < PlanPosition.Count; i++)
+        {
+            if (PlanPosition[i].time >= previewTime)
+                return i;
+        }
+
+        return PlanPosition.Count - 1;  // 最後のフレーム
+    }
+
 
 
 }
