@@ -36,6 +36,8 @@ public class JointSubscriberNoArc : MonoBehaviour
     public float OffsetArm;
     public float OffsetBucket;
 
+    public float TestBucketAngle;
+
     void Start()
     {
         targetObject = this.gameObject;
@@ -97,39 +99,30 @@ public class JointSubscriberNoArc : MonoBehaviour
             if (JointChengeSw == true)
             {
                 int j = 0;
-                SwingObject.transform.rotation = Quaternion.Euler(targetObject.transform.rotation.eulerAngles.x, -((float)(JointPositions[0] * 180 / 3.14) - OffsetSwing), targetObject.transform.rotation.eulerAngles.z);
-                BoomObject.transform.rotation = Quaternion.Euler((float)(JointPositions[1] * 180 / 3.14) - OffsetBoom, SwingObject.transform.rotation.eulerAngles.y, SwingObject.transform.rotation.eulerAngles.z);
-                ArmObject.transform.rotation = Quaternion.Euler((float)(JointPositions[2] * 180 / 3.14) + (BoomObject.transform.rotation.eulerAngles.x) - OffsetArm, BoomObject.transform.rotation.eulerAngles.y, BoomObject.transform.rotation.eulerAngles.z);
-                BucketObject.transform.rotation = Quaternion.Euler((float)(JointPositions[3] * 180 / 3.14) + (ArmObject.transform.rotation.eulerAngles.x) - OffsetBucket, ArmObject.transform.rotation.eulerAngles.y, ArmObject.transform.rotation.eulerAngles.z);
-                /*
-            foreach (var joint in targetObject.GetComponentsInChildren<ArticulationBody>())
-            {
-                if ((joint.isActiveAndEnabled) && (j <= 3))
-                {
-                    var targetujoint = joint.GetComponent<UrdfJoint>();
-                    if (targetujoint && !(targetujoint is UrdfJointFixed))
-                    {
-                        targetjoints.Add(joint);
-                        targetjointNames.Add(targetujoint.jointName);
-                        //
-                        targetPos = msg.position[j];
-                        var drive = joint.xDrive;//targetjoints[i].xDrive;
-                                                 //
-                                                 //if (drive.stiffness == 0)
-                        drive.stiffness = 20000000;
-                        //if (drive.damping == 0)
-                        drive.damping = 10000000;
-                        //if (drive.forceLimit == 0)
-                        drive.forceLimit = 10000000;
-                        //
-                        drive.target = (float)(targetPos * Mathf.Rad2Deg);
-                        joint.xDrive = drive;//targetjoints[i].xDrive = drive;
-                        j += 1;
-                    }
-                }
-            }
-                */
+         //       SwingObject.transform.rotation = Quaternion.Euler(targetObject.transform.rotation.eulerAngles.x, -((float)(JointPositions[0] * 180 / 3.14) - OffsetSwing), targetObject.transform.rotation.eulerAngles.z);
+         //       BoomObject.transform.rotation = Quaternion.Euler((float)(JointPositions[1] * 180 / 3.14) - OffsetBoom, SwingObject.transform.rotation.eulerAngles.y, SwingObject.transform.rotation.eulerAngles.z);
+         //       ArmObject.transform.rotation = Quaternion.Euler((float)(JointPositions[2] * 180 / 3.14) + (BoomObject.transform.rotation.eulerAngles.x) - OffsetArm, BoomObject.transform.rotation.eulerAngles.y, BoomObject.transform.rotation.eulerAngles.z);
+                // BucketObject.transform.rotation = Quaternion.Euler((float)(JointPositions[3] * 180 / 3.14) + (ArmObject.transform.rotation.eulerAngles.x) - OffsetBucket, ArmObject.transform.rotation.eulerAngles.y, ArmObject.transform.rotation.eulerAngles.z);
+
+
+                SwingObject.transform.localRotation = Quaternion.Euler(0, -(float)(JointPositions[0] * Mathf.Rad2Deg - OffsetSwing), 0);
+                BoomObject.transform.localRotation = Quaternion.Euler((float)(JointPositions[1] * Mathf.Rad2Deg - OffsetBoom), 0, 0);
+                ArmObject.transform.localRotation = Quaternion.Euler((float)(JointPositions[2] * Mathf.Rad2Deg - OffsetArm), 0, 0);
+                BucketObject.transform.localRotation = Quaternion.Euler((float)(JointPositions[3] * Mathf.Rad2Deg) + OffsetBucket, 0, 0);
+
             }
         }
     }
 }
+
+/*
+float swingDeg = -(float)(joints[0] * Mathf.Rad2Deg - OffsetSwing);
+float boomDeg = (float)(joints[1] * Mathf.Rad2Deg - OffsetBoom);
+float armDeg = (float)(joints[2] * Mathf.Rad2Deg - OffsetArm);
+float bucketDeg = (float)(joints[3] * Mathf.Rad2Deg - OffsetBucket);
+
+SwingObject.transform.localRotation = Quaternion.Euler(0, -(float)(joints[0] * Mathf.Rad2Deg - OffsetSwing), 0);
+BoomObject.transform.localRotation = Quaternion.Euler((float)(joints[1] * Mathf.Rad2Deg - OffsetBoom), 0, 0);
+ArmObject.transform.localRotation = Quaternion.Euler((float)(joints[2] * Mathf.Rad2Deg - OffsetArm), 0, 0);
+BucketObject.transform.localRotation = Quaternion.Euler((float)(joints[3] * Mathf.Rad2Deg - OffsetBucket), 0, 0);
+*/

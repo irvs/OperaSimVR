@@ -6,16 +6,12 @@ public class PrevForPlayBackhoe : MonoBehaviour
     GameObject targetObject;
     Model_name ModelIdentifier;
     FieldMainManager FieldManager;
-    JointSubscriber MachineJointSubscriber;
     PathJointSubscriber JointPathPlanSubscriber;
     private List<(List<double> joints, double time)> PlanPosition = new List<(List<double>, double)>();
 
     // ä÷êﬂäpÇÃóöó
-    private List<(List<double> joints, double time)> jointHistory = new List<(List<double>, double)>();
-    private double timeWindow = 5.0;       // íºãﬂ5ïbä‘Çï€éù
     public float PreviewTime = 2.0f;       // âΩïbå„Çó\ë™Ç∑ÇÈÇ©
     private float processInterval = 0.1f;  // èàóùä‘äu
-    public bool Reset;
     public bool JointChengeSw;
     int Counter;
 
@@ -44,7 +40,6 @@ public class PrevForPlayBackhoe : MonoBehaviour
     {
         var selector = GameObject.Find("FieldManager");
         targetObject = this.gameObject;
-        MachineJointSubscriber = GetComponent<JointSubscriber>();
         JointPathPlanSubscriber = GetComponent<PathJointSubscriber>();
         ModelIdentifier = GetComponent<Model_name>();
         FieldManager = selector.GetComponent<FieldMainManager>();
@@ -129,21 +124,7 @@ public class PrevForPlayBackhoe : MonoBehaviour
         BoomObject.transform.localRotation = Quaternion.Euler(boomDeg, 0, 0);
         ArmObject.transform.localRotation = Quaternion.Euler(armDeg, 0, 0);
         BucketObject.transform.localRotation = Quaternion.Euler(bucketDeg, 0, 0);
-    //    SwingObject.transform.rotation = Quaternion.Euler(targetObject.transform.rotation.eulerAngles.x, -((float)(JointPositions[0] * 180 / 3.14) - OffsetSwing), targetObject.transform.rotation.eulerAngles.z);
-    //    BoomObject.transform.rotation = Quaternion.Euler((float)(JointPositions[1] * 180 / 3.14) - OffsetBoom, SwingObject.transform.rotation.eulerAngles.y, SwingObject.transform.rotation.eulerAngles.z);
-    //    ArmObject.transform.rotation = Quaternion.Euler((float)(JointPositions[2] * 180 / 3.14) + (BoomObject.transform.rotation.eulerAngles.x) - OffsetArm, BoomObject.transform.rotation.eulerAngles.y, BoomObject.transform.rotation.eulerAngles.z);
-    //    BucketObject.transform.rotation = Quaternion.Euler((float)(JointPositions[3] * 180 / 3.14) + (ArmObject.transform.rotation.eulerAngles.x) - OffsetBucket, ArmObject.transform.rotation.eulerAngles.y, ArmObject.transform.rotation.eulerAngles.z);
     }
 
-    /*
-    void Update()
-    {
-        if (Reset)
-        {
-            Reset = false;
-            jointHistory.Clear();
-        }
-        
-    }
-    */
+
 }
