@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using System;///for evaluate///
 
 public class PrevForPlayBackhoe : MonoBehaviour
 {
@@ -8,6 +9,8 @@ public class PrevForPlayBackhoe : MonoBehaviour
     FieldMainManager FieldManager;
     PathJointSubscriber JointPathPlanSubscriber;
     private List<(List<double> joints, double time)> PlanPosition = new List<(List<double>, double)>();
+    public List<(DateTime time, float[] angles)> PlanJointAngle;///for evaluate///
+
 
     // ä÷êﬂäpÇÃóöó
     public float PreviewTime = 2.0f;       // âΩïbå„Çó\ë™Ç∑ÇÈÇ©
@@ -37,6 +40,7 @@ public class PrevForPlayBackhoe : MonoBehaviour
         JointPathPlanSubscriber = GetComponent<PathJointSubscriber>();
         ModelIdentifier = GetComponent<Model_name>();
         FieldManager = selector.GetComponent<FieldMainManager>();
+        PlanJointAngle = new List<(DateTime, float[])>();
     }
 
     void Update()
@@ -87,6 +91,11 @@ public class PrevForPlayBackhoe : MonoBehaviour
         BoomObject.transform.localRotation = Quaternion.Euler(boomDeg, 0, 0);
         ArmObject.transform.localRotation = Quaternion.Euler(armDeg, 0, 0);
         BucketObject.transform.localRotation = Quaternion.Euler(bucketDeg, 0, 0);
+
+        // PlanJointAngle = new List<(DateTime, float[])>();
+        PlanJointAngle.Add(
+           (DateTime.UtcNow, new float[] { (float)joints[0], (float)joints[1] - OffsetSwing * (Mathf.PI / 180), (float)joints[2], (float)joints[3] })
+       );
     }
 
     int FindPreviewIndex(double previewTime)
