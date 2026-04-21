@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using System;///for evaluate///
 
 public class PreviewForCruise : MonoBehaviour
 {
@@ -10,6 +11,8 @@ public class PreviewForCruise : MonoBehaviour
     public float historyDuration = 2.0f; // 過去2秒で速度計算
     public float historyInterval = 0.5f;  // 0.5秒ごとに位置を記録
     public bool Reset;
+  //  public Vector3 PlanPositon;///for plan evaluate///
+    public List<(DateTime time, Vector3 position)> PlanPositon;///for evaluate///
 
     // ---------------------------
     // 内部オブジェクト
@@ -47,6 +50,7 @@ public class PreviewForCruise : MonoBehaviour
         PathSub = SubscriberObject.GetComponent<PathSubscriber>();
 
         FieldManager = SelectorObject.GetComponent<FieldMainManager>();
+        PlanPositon = new List<(DateTime, Vector3)>();///for evaluate///
     }
 
     void Update()
@@ -101,6 +105,9 @@ public class PreviewForCruise : MonoBehaviour
         // モデルを未来位置に移動
         // ---------------------------
         targetObject.transform.position = previewPos;
+        PlanPositon.Add(
+           (DateTime.UtcNow, new Vector3 (previewPos.x, previewPos.y, previewPos.z))
+       );///for evaluate///
 
         // ---------------------------
         // Reset 処理
