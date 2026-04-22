@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Robotics.ROSTCPConnector;
@@ -7,22 +7,35 @@ using RosMessageTypes.Std;
 using RosMessageTypes.Sensor;
 using Unity.Robotics.UrdfImporter;
 using Unity.Robotics.Core;
+using Unity.Profiling;
 
+/// <summary>
+/// 各関節角度の現在値をjoint_statesトピックとして出力する
+/// </summary>
 public class JointStatePublisher : MonoBehaviour
 {
     ROSConnection ros;
+
+    [Tooltip("joint_statesを出力するROSトピック名")]
     public string topicName = "joint_states";
+    private string preprocessedTopicName;
+
     private JointStateMsg message;
     private List<ArticulationBody> joints;
     private List<string> jointNames;
 
+    [Tooltip("トルクを出力する場合はtrueにしてください。")]
     public bool enableJointEffortSensor = false;
 
     // Publish the cube's position and rotation every N seconds
+    [Tooltip("メッセージの出力間隔(秒)")]
     public float publishMessageInterval = 0.5f;
 
     // Used to determine how much time has elapsed since the last message was published
     private float timeElapsed;
+
+    // static readonly ProfilerCounterValue<double> k_RealtimeFactor = new(ProfilerCategory.Scripts, "Joint State (Arm)",
+    //     ProfilerMarkerDataUnit.Count, ProfilerCounterOptions.FlushOnEndOfFrame);
 
     // Start is called before the first frame update
     void Start()
@@ -46,7 +59,10 @@ public class JointStatePublisher : MonoBehaviour
         message.header.stamp = new TimeMsg();
         message.name = jointNames.ToArray();
         ros = ROSConnection.GetOrCreateInstance();
-        ros.RegisterPublisher<JointStateMsg>(topicName);
+
+        preprocessedTopicName = Utils.PreprocessNamespace(this.gameObject, topicName);
+
+        ros.RegisterPublisher<JointStateMsg>(preprocessedTopicName);
     }
 
     // Update is called once per constant rate
@@ -67,9 +83,8 @@ public class JointStatePublisher : MonoBehaviour
                 message.velocity[i] = joints[i].jointVelocity[0];
                 message.effort[i] = enableJointEffortSensor ? joints[i].driveForce[0] : 0.0;
             }
-            ros.Publish(topicName, message);
+            ros.Publish(preprocessedTopicName, message);
             timeElapsed = 0.0f;
-            //Debug.Log("Joint Publish");
         }
     }
 }

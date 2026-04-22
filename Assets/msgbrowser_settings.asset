@@ -14,3 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   inputPath: C:/Users/kedam/Downloads/My_ros2-tms-for-construction-SyPhUR/My_ros2-tms-for-construction-SyPhUR/tms_msg/tms_msg_ur/msg
   relativeOutPath: RosMessages\TmsMsgDb\TmsMsgUr
+  inputPath: Other 3rd Party Series/msgs
+  relativeOutPath: Other 3rd Party Series/RosMessages

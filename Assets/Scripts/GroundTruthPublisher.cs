@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Robotics.ROSTCPConnector;
@@ -7,14 +7,25 @@ using RosMessageTypes.Std;
 using RosMessageTypes.Nav;
 using Unity.Robotics.Core;
 
+/// <summary>
+/// シミュレータから得られる真の位置をROSメッセージとして送信する
+/// </summary>
 public class GroundTruthPublisher : MonoBehaviour
 {
     ROSConnection ros;
-    public string topicName = "robot_name/groundtruth";
-    public string childFrameName = "robot_name/base_link";
+
+    [Tooltip("真の位置を出力するROSトピック名")]
+    public string topicName = "[robot_name]/groundtruth";
+    private string preprocessedTopicName;
+
+    [Tooltip("基準座標のフレーム名")]
+    public string childFrameName = "[robot_name]/base_link";
+    private string preprocessedChildFrameName;
+
     private OdometryMsg message;
 
     // Publish the cube's position and rotation every N seconds
+    [Tooltip("ROSメッセージの出力間隔(秒)")]
     public float publishMessageInterval = 0.5f;//2Hz
 
     // Used to determine how much time has elapsed since the last message was published
@@ -27,8 +38,11 @@ public class GroundTruthPublisher : MonoBehaviour
         message.header = new HeaderMsg();
         message.header.stamp = new TimeMsg();
 
+        preprocessedTopicName = Utils.PreprocessNamespace(this.gameObject, topicName);
+        preprocessedChildFrameName = Utils.PreprocessNamespace(this.gameObject, childFrameName);
+
         ros = ROSConnection.GetOrCreateInstance();
-        ros.RegisterPublisher<OdometryMsg>(topicName);
+        ros.RegisterPublisher<OdometryMsg>(preprocessedTopicName);
     }
 
     // Update is called once per constant rate
@@ -39,7 +53,7 @@ public class GroundTruthPublisher : MonoBehaviour
         if (timeElapsed >= publishMessageInterval){
             message.header.frame_id = "map";
             message.header.stamp = new TimeStamp(Clock.time);
-            message.child_frame_id = childFrameName;
+            message.child_frame_id = preprocessedChildFrameName;
 
             // Unity -> ROSへの変換方法
             //Position: Unity(x,y,z) -> ROS(z,-x,y)
@@ -56,7 +70,7 @@ public class GroundTruthPublisher : MonoBehaviour
 
             message.pose.covariance = new double[] {0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1};
 
-            ros.Publish(topicName, message);
+            ros.Publish(preprocessedTopicName, message);
             timeElapsed = 0.0f;
         }
     }

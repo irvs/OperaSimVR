@@ -14,12 +14,12 @@
   <link name="track_link">
     <visual>
       <geometry>
-        <mesh filename="package://meshes/mst110cr-crawler.dae"/>
+        <mesh filename="package://mst110cr_description/meshes/mst110cr-crawler.dae"/>
       </geometry>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://meshes/mst110cr-crawler.dae"/>
+        <mesh filename="package://mst110cr_description/meshes/mst110cr-crawler.dae"/>
       </geometry>
     </collision>
     <inertial>
@@ -40,13 +40,13 @@
     <visual>
       <origin xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://meshes/mst110cr-body.dae"/>
+        <mesh filename="package://mst110cr_description/meshes/mst110cr-body.dae"/>
       </geometry>
     </visual>
     <collision>
       <origin xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://meshes/mst110cr-body.dae"/>
+        <mesh filename="package://mst110cr_description/meshes/mst110cr-body.dae"/>
       </geometry>
     </collision>
     <inertial>
@@ -68,13 +68,13 @@
     <visual>
       <origin xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://meshes/mst110cr-vessel.dae"/>
+        <mesh filename="package://mst110cr_description/meshes/mst110cr-vessel.dae"/>
       </geometry>
     </visual>
     <collision>
       <origin xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://meshes/mst110cr-vessel.dae"/>
+        <mesh filename="package://mst110cr_description/meshes/mst110cr-vessel.dae"/>
       </geometry>
     </collision>
     <inertial>
@@ -86,7 +86,7 @@
   <!-- }}} Vessel ends here -->
   <!-- Vessel Cylinder {{{ -->
   <joint name="vessel_cylinder_joint" type="continuous">
-    <origin xyz="-1.891 0 0.293"/>
+    <origin xyz="-1.891 0 0.293" rpy="0 -0.2650299922 0"/>
     <axis xyz="0 1 0"/>
     <parent link="body_link"/>
     <child link="vessel_cylinder_link"/>
@@ -96,13 +96,13 @@
     <visual>
       <origin xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://meshes/mst110cr-vessel_cylinder.dae"/>
+        <mesh filename="package://mst110cr_description/meshes/mst110cr-vessel_cylinder.dae"/>
       </geometry>
     </visual>
     <collision>
       <origin xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://meshes/mst110cr-vessel_cylinder.dae"/>
+        <mesh filename="package://mst110cr_description/meshes/mst110cr-vessel_cylinder.dae"/>
       </geometry>
     </collision>
     <inertial>
@@ -125,13 +125,13 @@
     <visual>
       <origin xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://meshes/mst110cr-vessel_rod.dae"/>
+        <mesh filename="package://mst110cr_description/meshes/mst110cr-vessel_rod.dae"/>
       </geometry>
     </visual>
     <collision>
       <origin xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://meshes/mst110cr-vessel_rod.dae"/>
+        <mesh filename="package://mst110cr_description/meshes/mst110cr-vessel_rod.dae"/>
       </geometry>
     </collision>
     <inertial>

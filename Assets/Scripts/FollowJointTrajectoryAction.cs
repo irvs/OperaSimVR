@@ -5,6 +5,9 @@ using Unity.Robotics.ROSTCPConnector;
 using RosMessageTypes.Sensor;
 using Unity.Robotics.UrdfImporter;
 
+/// <summary>
+/// MoveIt!が生成した軌跡をfake_controller_joint_statesトピック経由で実行する
+/// </summary>
 public class FollowJointTrajectoryAction : MonoBehaviour
 {
     private ROSConnection ros;
@@ -12,15 +15,23 @@ public class FollowJointTrajectoryAction : MonoBehaviour
     private Dictionary<string, ArticulationBody> jointArticulationBodies;
     private JointStateMsg currentPose;
 
+    [Tooltip("fake_controllerのROSトピック名")]
     public string fakeControllerTopicName = "move_group/fake_controller_joint_states";
+
+    [Tooltip("初期姿勢を設定するgameObjectのリスト")]
     public List<GameObject> initialPoseObjects;
+
+    [Tooltip("初期姿勢")]
     public List<float> initialPoseValues;
+
+    private EmergencyStop emergencyStop;
 
     // Start is called before the first frame update
     void Start()
     {
         currentPose = new JointStateMsg();
         ros = ROSConnection.GetOrCreateInstance();
+        emergencyStop = EmergencyStop.GetEmergencyStop(this.gameObject);
         jointArticulationBodies = new Dictionary<string, ArticulationBody>();
         foreach (var joint in this.GetComponentsInChildren<ArticulationBody>())
         {
@@ -28,14 +39,16 @@ public class FollowJointTrajectoryAction : MonoBehaviour
             if (ujoint)
             {
                 jointArticulationBodies.Add(ujoint.jointName, joint);
-                ArticulationDrive drive = joint.xDrive;
-                if (drive.stiffness == 0)
-                    drive.stiffness = 200000;
-                if (drive.damping == 0)
-                    drive.damping = 100000;
-                if (drive.forceLimit == 0)
-                    drive.forceLimit = 100000;
-                joint.xDrive = drive;
+                    if (joint.GetComponent<Com3.ControlTypeAnnotation>() == null) {
+                    ArticulationDrive drive = joint.xDrive;
+                    if (drive.stiffness == 0)
+                        drive.stiffness = 200000;
+                    if (drive.damping == 0)
+                        drive.damping = 100000;
+                    if (drive.forceLimit == 0)
+                        drive.forceLimit = 100000;
+                    joint.xDrive = drive;
+                }
             }
         }
         if (initialPoseObjects.Count == initialPoseValues.Count)
@@ -52,11 +65,13 @@ public class FollowJointTrajectoryAction : MonoBehaviour
         {
             Debug.Log("size of InitialPoseObject and InitialPoseValues does not match");
         }
-        ros.Subscribe<JointStateMsg>(fakeControllerTopicName, ExecuteTrajectory);
+        ros.Subscribe<JointStateMsg>(Utils.PreprocessNamespace(this.gameObject, fakeControllerTopicName), ExecuteTrajectory);
     }
 
     void ExecuteTrajectory(JointStateMsg trajectory)
     {
+        if (emergencyStop && emergencyStop.isEmergencyStop)
+            return;
         currentPose = trajectory;
         for (int i = 0; i < currentPose.name.Length; i++)
         {
