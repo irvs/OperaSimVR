@@ -7,13 +7,6 @@
       "dependencies": {},
       "url": "https://packages.unity.com"
     },
-    "com.meta.xr.sdk.core": {
-      "version": "72.0.0",
-      "depth": 0,
-      "source": "registry",
-      "dependencies": {},
-      "url": "https://packages.unity.com"
-    },
     "com.frj.unity-sensors": {
       "version": "https://github.com/Field-Robotics-Japan/UnitySensors.git?path=/Assets/UnitySensors#master",
       "depth": 0,
@@ -32,6 +25,13 @@
         "com.unity.robotics.ros-tcp-connector": "0.7.0-preview"
       },
       "hash": "b1a50503bb38017f902cb232b489de2de334d62b"
+    },
+    "com.meta.xr.sdk.core": {
+      "version": "72.0.0",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {},
+      "url": "https://packages.unity.com"
     },
     "com.unity.ai.navigation": {
       "version": "1.1.5",
@@ -116,15 +116,6 @@
       "depth": 0,
       "source": "registry",
       "dependencies": {},
-      "url": "https://packages.unity.com"
-    },
-    "com.unity.inputsystem": {
-      "version": "1.6.3",
-      "depth": 0,
-      "source": "registry",
-      "dependencies": {
-        "com.unity.modules.uielements": "1.0.0"
-      },
       "url": "https://packages.unity.com"
     },
     "com.unity.mathematics": {
