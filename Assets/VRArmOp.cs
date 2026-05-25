@@ -18,15 +18,14 @@ public class JointAnglePublisher : MonoBehaviour
     public JointContorollerModeOption JointContorollerMode;
     // public int sw = 0;
     public bool emergency;
-    public bool SimORReal = false;
     public bool key;
     public float linearspeed = 1.00f;
     public float rotspeed = 0.50f;
     float movespeed = 0.01f;
     ROSConnection ros;
     JointSubscriber RealJointAngular;
+    OVRPlayerController PlayerController;
     public string topicName_cmd_vel = "zx200/tracks/cmd_vel";
-    public string topicname_joint = "/zx200/front_cmd";
     public string JointControlTopic = "/zx200/front_cmd/for_ROS";
     public string EmergencyTopicName;
     public float publishMessageInterval = 0.02f;//50Hz
@@ -36,7 +35,6 @@ public class JointAnglePublisher : MonoBehaviour
     private float rotation;
     private float dissconnect_timer;
     private int dissconnect_detecter = 0;
-    List<float> JointCmdList = new List<float>();
     public List<List<double>> listOfJointPositionCmdList = new List<List<double>>();
     public List<List<double>> listOfJointVelocityCmdList = new List<List<double>>();
     List<List<double>> listOfJointPositionList = new List<List<double>>();
@@ -77,25 +75,15 @@ public class JointAnglePublisher : MonoBehaviour
     {KeyCode.H, KeyCode.J, KeyCode.K, KeyCode.L};
 
 
-    [System.Serializable]
-    public class JointState
-    {
-        public float swing_position;
-        public float boom_position;
-        public float arm_position;
-        public float bucket_position;
-        public float swing_velocity;
-        public float boom_velocity;
-        public float arm_velocity;
-        public float bucket_velocity;
-    }
-
     void Start()
     {
         VRManager = FindObjectOfType<Controller_manager>();
         selected_mode = FindObjectOfType<mode_selector>();
+        RealJointAngular = GetComponent<JointSubscriber>();
+        JointController = GetComponent<JointControler>();
         ros = ROSConnection.GetOrCreateInstance();
         PlayertargetObject = GameObject.Find("OVRPlayerController");
+        PlayerController = PlayertargetObject.GetComponent<OVRPlayerController>();
 
         ros.RegisterPublisher<JointCmdMsg>(JointControlTopic);
         ros.RegisterPublisher<TwistMsg>(topicName_cmd_vel);
@@ -106,7 +94,6 @@ public class JointAnglePublisher : MonoBehaviour
         velocities = new List<double> { 0.0, 0.0, 0.0, 0.0, 0.0 };
         efforts = new List<double> { 0.0, 0.0, 0.0, 0.0, 0.0 };
         JointPositions = new List<double> { 0.0, 0.0, 0.0, 0.0, 0.0 };
-        //List<double> jointCmd = new List<double> { 0.0, 0.0, 0.0, 0.0 };
         listOfJointVelocityCmdList.Add(efforts);
         listOfJointPositionList.Add(efforts);
 
@@ -131,18 +118,13 @@ public class JointAnglePublisher : MonoBehaviour
         if (emergency == true)
         {
             timeElapsed += Time.deltaTime;
-            linear.x = 0.00f;
-            angular.z = 0.00f;
-            TwistMsg Twist = new TwistMsg(
-              linear,
-              angular
-              );
-            BoolMsg EMGmessage = new BoolMsg(
-              true
-              );
-            //
             if (timeElapsed >= publishMessageInterval * 20.0f)
             {
+                linear.x = 0.00f;
+                angular.z = 0.00f;
+                TwistMsg Twist = new TwistMsg(linear, angular);
+                ros.Publish(topicName_cmd_vel, Twist);
+                BoolMsg EMGmessage = new BoolMsg(true);
                 ros.Publish(EmergencyTopicName, EMGmessage);
                 //
                 velocity[0] = 0.0f;
@@ -164,257 +146,161 @@ public class JointAnglePublisher : MonoBehaviour
                     effortsArray
                 );
                 ros.Publish(JointControlTopic, JointCMD);
-                //
-                ros.Publish(topicName_cmd_vel, Twist);
+                //  
                 timeElapsed = 0.0f;
             }
         }
 
         else if (emergency == false)
         {
-            if (dissconnect_timer >= 3.0f)
+            if (VRManager.PlayerPoseMove_SW > 0 || OnOffSw == ONOFF.On)
             {
-                dissconnect_detecter = 1;
-                if (emergency == true)
+                if (sw_timeElapsed >= publishMessageInterval * 50.0f) { return; }
+
+                dissconnect_timer += Time.deltaTime;
+                timeElapsed_start += Time.deltaTime;
+
+
+                if (PlayerController != null)
                 {
-                    dissconnect_detecter = 2;
-                }
-                //emergency = true;
-            }
-            if (dissconnect_detecter == 1 && dissconnect_timer <= 1.0f)
-            {
-                dissconnect_detecter = 0;
-                //emergency = false;
-            }
-            else if (dissconnect_detecter == 2 && dissconnect_timer <= 1.0f)
-            {
-                dissconnect_detecter = 0;
-            }
-            if (OnOffSw == ONOFF.On)
-            {
-                if (sw_timeElapsed >= publishMessageInterval * 50.0f)
-                {
+                    PlayerController.RotationRatchet = 0;
+                    PlayerController.RotationAmount = 0;
                 }
 
-                else if (VRManager.PlayerPoseMove_SW > 0 || OnOffSw == ONOFF.On)
+                Jointposition = new double[joints.Count];
+                for (int i = 0; i < joints.Count; i++)
                 {
-                    dissconnect_timer += Time.deltaTime;
-                    timeElapsed_start += Time.deltaTime;
+                    Jointposition[i] = joints[i].jointPosition[0];
+                }
+                //
+                //for joint
+                Vector2 stickL = movespeed * OVRInput.Get(OVRInput.RawAxis2D.LThumbstick);
+                Vector2 stickR = movespeed * OVRInput.Get(OVRInput.RawAxis2D.RThumbstick);
 
-                    OVRPlayerController scriptA = PlayertargetObject.GetComponent<OVRPlayerController>();
-                    if (scriptA != null)
+                float[] axes = { stickL.x, stickR.y, stickL.y, stickR.x };
+                /////////////////////////////////////////////position
+                /////////////////////////////////////////////
+                if (JointContorollerMode == JointContorollerModeOption.Position)
+                {
+                    UpdateJointArray(goalPose, posSpeed, axes);
+                }
+
+                if (JointContorollerMode == JointContorollerModeOption.Velocity)
+                {
+                    UpdateJointArray(velocity, velSpeed, axes);
+                }
+                //////////////////////////////////////////////////
+                //////////////////////////////////////////////////twist
+                RBack = OVRInput.Get(OVRInput.RawAxis1D.RHandTrigger);
+                RFront = OVRInput.Get(OVRInput.RawAxis1D.RIndexTrigger);
+                LBack = OVRInput.Get(OVRInput.RawAxis1D.LHandTrigger);
+                LFront = OVRInput.Get(OVRInput.RawAxis1D.LIndexTrigger);
+
+                if (RFront >= 0.5 && LFront >= 0.5) { linear.x = (RFront + LFront) / 2; }
+                else if (RFront < 0.5 && LFront >= 0.5)
+                {
+                    //(LFront - RFront)/2
+                    angular.z = 0.3;
+                }
+                else if (RFront >= 0.5 && LFront < 0.5) { angular.z = -0.3; }
+                else
+                {
+                    linear.x = 0;
+                    angular.x = 0;
+                }
+                //key
+                if (key == true)
+                {
+                    rotation = 0.0f;
+                    rotation = GetAxis(KeyCode.LeftArrow, KeyCode.RightArrow);
+                    frontback = 0.0f;
+                    frontback = GetAxis(KeyCode.UpArrow, KeyCode.DownArrow);
+                    linear.x = frontback;
+                    angular.x = rotation;
+                }
+
+                timeElapsed += Time.deltaTime;
+                sw_timeElapsed += Time.deltaTime;
+
+
+                if (timeElapsed > publishMessageInterval * 20.0f)
+                {
+                    if (selected_mode.mode == 2)
                     {
-                        scriptA.RotationRatchet = 0;
-                        scriptA.RotationAmount = 0;
-                    }
-                    /////////////////////////////////////////////position
-                    /////////////////////////////////////////////
-                    if (JointContorollerMode == JointContorollerModeOption.Position)
-                    {   
-                        if (key == true)
+                        if (JointContorollerMode == JointContorollerModeOption.Position)
                         {
-                            for (int i = 0; i < 4; i++)
-                            {
-                                float input = GetAxis(plusKeys[i], minusKeys[i]);
-
-                                goalPose[i] += ClampVelocityByLimit((float)Jointposition[i], input, minLimit[i], maxLimit[i], posSpeed[i]);
-                            }
+                            JointController.JointTargets[0] = goalPose[0];
+                            JointController.JointTargets[1] = goalPose[1];
+                            JointController.JointTargets[2] = goalPose[2];
+                            JointController.JointTargets[3] = goalPose[3];
                         }
-                        
-                        //key
-                        if (key == true)
+                        if (JointContorollerMode == JointContorollerModeOption.Velocity)
                         {
-                            rotation = 0.0f;
-                            rotation = GetAxis(KeyCode.LeftArrow, KeyCode.RightArrow);
-                            frontback = 0.0f;
-                            frontback = GetAxis(KeyCode.UpArrow, KeyCode.DownArrow);
-                            linear.x = frontback;
-                            angular.x = rotation;
+                            JointController.JointTargets[0] = velocity[0];
+                            JointController.JointTargets[1] = velocity[1];
+                            JointController.JointTargets[2] = velocity[2];
+                            JointController.JointTargets[3] = velocity[3];
                         }
-                        //
-                        //for joint
-                        Vector2 stickL = movespeed * OVRInput.Get(OVRInput.RawAxis2D.LThumbstick);
-                        Vector2 stickR = movespeed * OVRInput.Get(OVRInput.RawAxis2D.RThumbstick);
-
-                        //swing
-                        goalPose[0] += ClampVelocityByLimit((float)Jointposition[0], stickL.x, -999f, 999f, -0.3f);
-                        //boom
-                        goalPose[1] += ClampVelocityByLimit((float)Jointposition[1], stickR.y, -0.872f, 0.1749594f, 0.30f);
-                        //arm
-                        goalPose[2] += ClampVelocityByLimit((float)Jointposition[2], stickL.y, 0.959f, 2.35f, 1.00f);
-                        //bucket
-                        goalPose[3] += ClampVelocityByLimit((float)Jointposition[3], stickR.x, -1.2211f, 1.39555f, -1.5f);
                     }
-                    ////////////////////////////////////////////////////////////
-                    ////////////////////////////////////////////////////////////velosity
-                    if (JointContorollerMode == JointContorollerModeOption.Velocity)
+
+                    Debug.Log("goal_pose : " + goalPose[0] + "  :  " + goalPose[1] + "  :  " + goalPose[2] + "  :  " + goalPose[3]);
+                    positions[0] = goalPose[0];
+                    positions[1] = goalPose[1];
+                    positions[2] = goalPose[2];
+                    positions[3] = goalPose[3];
+                    listOfJointPositionCmdList.Add(positions);
+                    if (selected_mode.mode == 2 && timeElapsed_start > (Time_Delay + 5.0f) && listOfJointPositionCmdList.Count - Mathf.RoundToInt(Time_Delay / publishMessageInterval) >= 0)
                     {
-                        Jointposition = new double[joints.Count];
-                        for (int i = 0; i < joints.Count; i++)
-                        {
-                            Jointposition[i] = joints[i].jointPosition[0];
-                        }
-                        //
-                        //for joint
-                        Vector2 stickL = movespeed * OVRInput.Get(OVRInput.RawAxis2D.LThumbstick);
-                        Vector2 stickR = movespeed * OVRInput.Get(OVRInput.RawAxis2D.RThumbstick);
-
-                        //swing
-                        velocity[0] = ClampVelocityByLimit((float)Jointposition[1], stickL.x, -999f, 999f, -0.5f);
-                        //boom
-                        velocity[1] = ClampVelocityByLimit((float)Jointposition[1], stickR.y, -0.872f, 0.1749594f, 0.30f);
-                        //arm
-                        velocity[2] = ClampVelocityByLimit((float)Jointposition[2], stickL.y, 0.959f, 2.35f, -0.5f);
-                        //bucket
-                        velocity[3] = ClampVelocityByLimit((float)Jointposition[3], stickR.x, -1.2211f, 1.39555f, -0.5f);
-
-                        if (key == true)
-                        {
-                            for (int i = 0; i < 4; i++)
-                            {
-                                float input = GetAxis(plusKeys[i], minusKeys[i]);
-
-                                velocity[i] = ClampVelocityByLimit((float)Jointposition[i], input,minLimit[i], maxLimit[i], velSpeed[i]);
-                            }
-                        }
-
-
-
-                        //////////////////////////////////////////////////
-                        //////////////////////////////////////////////////twist
-                        RBack = OVRInput.Get(OVRInput.RawAxis1D.RHandTrigger);
-                        RFront = OVRInput.Get(OVRInput.RawAxis1D.RIndexTrigger);
-                        LBack = OVRInput.Get(OVRInput.RawAxis1D.LHandTrigger);
-                        LFront = OVRInput.Get(OVRInput.RawAxis1D.LIndexTrigger);
-
-                        if (RFront >= 0.5 && LFront >= 0.5) { linear.x = (RFront + LFront) / 2; }
-                        else if (RFront < 0.5 && LFront >= 0.5)
-                        {
-                            //(LFront - RFront)/2
-                            angular.z = 0.3;
-                        }
-                        else if (RFront >= 0.5 && LFront < 0.5) { angular.z = -0.3; }
-                        else
-                        {
-                            linear.x = 0;
-                            angular.x = 0;
-                        }
-                        //key
-                        if (key == true)
-                        {
-                            if (Input.GetKey(KeyCode.LeftArrow)) { rotation = rotspeed; }
-                            if (Input.GetKeyUp(KeyCode.LeftArrow)) { rotation = 0; }
-                            if (Input.GetKey(KeyCode.RightArrow)) { rotation = -rotspeed; }
-                            if (Input.GetKeyUp(KeyCode.RightArrow)) { rotation = 0; }
-                            if (Input.GetKey(KeyCode.UpArrow)) { frontback = linearspeed; }
-                            if (Input.GetKeyUp(KeyCode.UpArrow)) { frontback = 0; }
-                            if (Input.GetKey(KeyCode.DownArrow)) { frontback = -linearspeed; }
-                            if (Input.GetKeyUp(KeyCode.DownArrow)) { frontback = 0; }
-                            linear.x = frontback;
-                            angular.x = rotation;
-                        }
-
-                        timeElapsed += Time.deltaTime;
-                        sw_timeElapsed += Time.deltaTime;
-                        JointController = GetComponent<JointControler>();
-
-                        if (timeElapsed > publishMessageInterval * 20.0f)
-                        {
-                            if (selected_mode.mode == 2)
-                            {
-                                if (JointContorollerMode == JointContorollerModeOption.Position)
-                                {
-                                    JointController.JointTargets[0] = goalPose[0];
-                                    JointController.JointTargets[1] = goalPose[1];
-                                    JointController.JointTargets[2] = goalPose[2];
-                                    JointController.JointTargets[3] = goalPose[3];
-                                }
-                                if (JointContorollerMode == JointContorollerModeOption.Velocity)
-                                {
-                                    JointController.JointTargets[0] = velocity[0];
-                                    JointController.JointTargets[1] = velocity[1];
-                                    JointController.JointTargets[2] = velocity[2];
-                                    JointController.JointTargets[3] = velocity[3];
-                                }
-                            }
-
-                            Debug.Log("goal_pose : " + goalPose[0] + "  :  " + goalPose[1] + "  :  " + goalPose[2] + "  :  " + goalPose[3]);
-                            positions[0] = goalPose[0];
-                            positions[1] = goalPose[1];
-                            positions[2] = goalPose[2];
-                            positions[3] = goalPose[3];
-                            listOfJointPositionCmdList.Add(positions);
-                            if (selected_mode.mode == 2 && timeElapsed_start > (Time_Delay + 5.0f) && listOfJointPositionCmdList.Count - (Mathf.RoundToInt(Time_Delay / publishMessageInterval)) >= 0)
-                            {
-                                int CMD_time = Mathf.RoundToInt(Time_Delay / publishMessageInterval);
-                                goalPose[0] = (float)listOfJointPositionCmdList[listOfJointPositionCmdList.Count - 1 - CMD_time][0];
-                                goalPose[1] = (float)listOfJointPositionCmdList[listOfJointPositionCmdList.Count - 1 - CMD_time][1];
-                                goalPose[2] = (float)listOfJointPositionCmdList[listOfJointPositionCmdList.Count - 1 - CMD_time][2];
-                                goalPose[3] = (float)listOfJointPositionCmdList[listOfJointPositionCmdList.Count - 1 - CMD_time][3];
-                            }
-
-                            Debug.Log("velocity : " + velocity[0] + "  :  " + velocity[1] + "  :  " + velocity[2] + "  :  " + velocity[3]);
-                            velocities[0] = velocity[0];
-                            velocities[1] = velocity[1];
-                            velocities[2] = velocity[2];
-                            velocities[3] = velocity[3];
-                            listOfJointVelocityCmdList.Add(velocities);
-                            for (int i = 0; i < joints.Count; i++)
-                            {
-                                JointPositions[i] = joints[i].jointPosition[0];
-                            }
-                            listOfJointPositionList.Add(JointPositions);
-                            if (selected_mode.mode == 2 && timeElapsed_start > (Time_Delay + 5.0f) && listOfJointVelocityCmdList.Count - (Mathf.RoundToInt(Time_Delay / publishMessageInterval)) >= 0)
-                            {
-                                int CMD_time = Mathf.RoundToInt(Time_Delay / publishMessageInterval);
-                                velocities[0] = listOfJointVelocityCmdList[listOfJointVelocityCmdList.Count - 1 - CMD_time][0];
-                                velocities[1] = listOfJointVelocityCmdList[listOfJointVelocityCmdList.Count - 1 - CMD_time][1];
-                                velocities[2] = listOfJointVelocityCmdList[listOfJointVelocityCmdList.Count - 1 - CMD_time][2];
-                                velocities[3] = listOfJointVelocityCmdList[listOfJointVelocityCmdList.Count - 1 - CMD_time][3];
-                            }
-                            string[] jointNamesArray = jointNames.ToArray();
-                            double[] positionsArray = positions.ToArray();
-                            double[] velocitiesArray = velocities.ToArray();
-                            double[] effortsArray = efforts.ToArray();
-
-                            JointCmdMsg JointCMD = new JointCmdMsg(
-                                jointNamesArray,
-                                //     controltype,
-                                positionsArray,
-                                velocitiesArray,
-                                effortsArray
-                            );
-                            ros.Publish(JointControlTopic, JointCMD);
-                            timeElapsed = 0;
-
-
-                            //twist
-                            TwistMsg Twist = new TwistMsg(
-                               linear,
-                               angular
-                            );
-                            //
-                            //Publish
-                            ros.Publish(topicName_cmd_vel, Twist);
-                            timeElapsed = 0;
-                        }
-                        ///for prev
-                        dissconnect_timer = 0.0f;
-                        if (selected_mode.mode == 2)//Visual tool
-                        {
-                            RealJointAngular = GetComponent<JointSubscriber>();
-                            float pos_of_swing = (float)RealJointAngular.JointPositions[0];
-                            float pos_of_boom = (float)RealJointAngular.JointPositions[1];
-                            float pos_of_arm = (float)RealJointAngular.JointPositions[2];
-                            float pos_of_bucket = (float)RealJointAngular.JointPositions[3];
-                            float velo_of_swing = (float)RealJointAngular.JointPositions[4];
-                            float velo_of_boom = (float)RealJointAngular.JointPositions[5];
-                            float velo_of_arm = (float)RealJointAngular.JointPositions[6];
-                            float velo_of_bucket = (float)RealJointAngular.JointPositions[7];
-
-                            int CMD_time = Mathf.RoundToInt(Time_Delay / publishMessageInterval);
-                        }
+                        int CMD_time = Mathf.RoundToInt(Time_Delay / publishMessageInterval);
+                        goalPose[0] = (float)listOfJointPositionCmdList[listOfJointPositionCmdList.Count - 1 - CMD_time][0];
+                        goalPose[1] = (float)listOfJointPositionCmdList[listOfJointPositionCmdList.Count - 1 - CMD_time][1];
+                        goalPose[2] = (float)listOfJointPositionCmdList[listOfJointPositionCmdList.Count - 1 - CMD_time][2];
+                        goalPose[3] = (float)listOfJointPositionCmdList[listOfJointPositionCmdList.Count - 1 - CMD_time][3];
                     }
+
+                    Debug.Log("velocity : " + velocity[0] + "  :  " + velocity[1] + "  :  " + velocity[2] + "  :  " + velocity[3]);
+                    velocities[0] = velocity[0];
+                    velocities[1] = velocity[1];
+                    velocities[2] = velocity[2];
+                    velocities[3] = velocity[3];
+                    listOfJointVelocityCmdList.Add(velocities);
+                    for (int i = 0; i < joints.Count; i++)
+                    {
+                        JointPositions[i] = joints[i].jointPosition[0];
+                    }
+                    listOfJointPositionList.Add(JointPositions);
+                    if (selected_mode.mode == 2 && timeElapsed_start > (Time_Delay + 5.0f) && listOfJointVelocityCmdList.Count - Mathf.RoundToInt(Time_Delay / publishMessageInterval) >= 0)
+                    {
+                        int CMD_time = Mathf.RoundToInt(Time_Delay / publishMessageInterval);
+                        velocities[0] = listOfJointVelocityCmdList[listOfJointVelocityCmdList.Count - 1 - CMD_time][0];
+                        velocities[1] = listOfJointVelocityCmdList[listOfJointVelocityCmdList.Count - 1 - CMD_time][1];
+                        velocities[2] = listOfJointVelocityCmdList[listOfJointVelocityCmdList.Count - 1 - CMD_time][2];
+                        velocities[3] = listOfJointVelocityCmdList[listOfJointVelocityCmdList.Count - 1 - CMD_time][3];
+                    }
+                    string[] jointNamesArray = jointNames.ToArray();
+                    double[] positionsArray = positions.ToArray();
+                    double[] velocitiesArray = velocities.ToArray();
+                    double[] effortsArray = efforts.ToArray();
+
+                    JointCmdMsg JointCMD = new JointCmdMsg(
+                        jointNamesArray,
+                        //     controltype,
+                        positionsArray,
+                        velocitiesArray,
+                        effortsArray
+                    );
+                    ros.Publish(JointControlTopic, JointCMD);
+                    timeElapsed = 0;
+
+                    //twist
+                    TwistMsg Twist = new TwistMsg(
+                       linear,
+                       angular
+                    );
+                    //
+                    //Publish
+                    ros.Publish(topicName_cmd_vel, Twist);
+                    timeElapsed = 0;
                 }
             }
         }
@@ -442,4 +328,30 @@ public class JointAnglePublisher : MonoBehaviour
         return 0f;
     }
 
+    private void UpdateJointArray(float[] target, float[] speed, float[] axes)
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            target[i] = ClampVelocityByLimit(
+                (float)Jointposition[i],
+                axes[i],
+                minLimit[i],
+                maxLimit[i],
+                speed[i]);
+        }
+
+        if (!key) return;
+
+        for (int i = 0; i < 4; i++)
+        {
+            float input = GetAxis(plusKeys[i], minusKeys[i]);
+
+            target[i] += ClampVelocityByLimit(
+                (float)Jointposition[i],
+                input,
+                minLimit[i],
+                maxLimit[i],
+                speed[i]);
+        }
+    }
 }
