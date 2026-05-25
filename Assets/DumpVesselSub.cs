@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using Unity.Robotics.ROSTCPConnector;
 using RosMessageTypes.Sensor;
 
@@ -26,22 +26,6 @@ public class DumpVesselSub : MonoBehaviour
     {
         ros = ROSConnection.GetOrCreateInstance();
 
-        /*
-        dump_joint = this.GetComponent<ArticulationBody>();
-
-        if (dump_joint)
-        {
-            var drive = dump_joint.xDrive;
-            drive.stiffness = 100000;
-            drive.damping = 100000;
-            drive.forceLimit = 100000;
-            dump_joint.xDrive = drive;
-        }
-        else
-        {
-            Debug.Log("No ArticulationBody are found");
-        }
-        */
 
         if (ViaDB == true)
         {
@@ -57,9 +41,7 @@ public class DumpVesselSub : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // VesselObject.transform.rotation.x = AngleOfVessel;
-       // SwingObject.transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles.x, AngleOfSwing, transform.rotation.eulerAngles.z);
-      //  VesselObject.transform.rotation = Quaternion.Euler(AngleOfVessel, AngleOfSwing, transform.rotation.eulerAngles.z);
+
     }
 
     void ExecuteVesselControl(JointStateMsg msg)
@@ -82,11 +64,6 @@ public class DumpVesselSub : MonoBehaviour
                 SwingObject.transform.rotation = Quaternion.Inverse(RootTransform) * Quaternion.Euler(transform.rotation.eulerAngles.x, AngleOfSwing, transform.rotation.eulerAngles.z);
                 VesselObject.transform.rotation = Quaternion.Inverse(RootTransform) * Quaternion.Euler(AngleOfVessel, AngleOfSwing, transform.rotation.eulerAngles.z);
             }
-            /*
-            var drive = dump_joint.xDrive;
-            drive.target = (float)(AngleOfVessel * Mathf.Rad2Deg);
-            dump_joint.xDrive = drive;
-            */
         }
         else
         {

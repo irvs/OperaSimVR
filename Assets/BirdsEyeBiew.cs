@@ -1,6 +1,6 @@
-using UnityEngine;
+Ôªøusing UnityEngine;
 using UnityEngine.XR;
-public class JoyStickMove : MonoBehaviour
+public class BirdsEyeBiew : MonoBehaviour
 {
     int birdseyeview = 0;
     public float updownspeed = 5.0f;
@@ -34,9 +34,9 @@ public class JoyStickMove : MonoBehaviour
         //position
         if (birdseyeview == 1)
         {
-            //ç∂ÉWÉáÉCÉXÉeÉBÉbÉNÇÃèÓïÒéÊìæ
+            //get input from left joystick
             Vector2 stickL = movespeed * OVRInput.Get(OVRInput.RawAxis2D.LThumbstick);
-            PlayerObject.transform.position += PlayerObject.transform.rotation * (new Vector3((stickL.x), 0, (stickL.y)));
+            PlayerObject.transform.position += PlayerObject.transform.rotation * new Vector3(stickL.x, 0, stickL.y);
         }
         //rotation
         if (birdseyeview == 1)
@@ -55,12 +55,16 @@ public class JoyStickMove : MonoBehaviour
         {
             if (OVRInput.Get(OVRInput.RawButton.RThumbstickUp))
             {
-                float rotationAmountX = 1f; // x ï˚å¸Ç…âÒì]Ç∑ÇÈäpìx
+                float rotationAmountX = 1f; // Rotation angle in the x direction
+
+
                 PlayerObject.transform.RotateAround(PlayerObject.transform.position, PlayerObject.transform.TransformDirection(Vector3.right), rotationAmountX);
             }
             if (OVRInput.Get(OVRInput.RawButton.RThumbstickDown))
             {
-                float rotationAmountX = 1f; // x ï˚å¸Ç…âÒì]Ç∑ÇÈäpìx
+                float rotationAmountX = 1f; // Rotation angle in the x direction
+
+
                 PlayerObject.transform.RotateAround(PlayerObject.transform.position, PlayerObject.transform.TransformDirection(Vector3.right), -rotationAmountX);
             }
         }
