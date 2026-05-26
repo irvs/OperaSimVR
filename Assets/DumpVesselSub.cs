@@ -6,6 +6,7 @@ public class DumpVesselSub : MonoBehaviour
 {
     public bool ViaDB;
     private ROSConnection ros;
+    [Header("Topic names")]
     public string VesselSubscriberTopicName = "dump/cmd";
     public string ViaDBVesselSubscriberTopicName;
     private string SubscriberTopicName;
@@ -14,12 +15,13 @@ public class DumpVesselSub : MonoBehaviour
     public float AngleOfVessel;
     public int SwingNumber;
     public int VesselNumber;
-
+    [Header("Objects")]
     public GameObject RootObject;
     public GameObject SwingObject;
     public GameObject VesselObject;
 
     public bool AddOrRemove;
+    private ModeSelector mode;
 
     // Start is called before the first frame update
     void Start()
@@ -36,6 +38,7 @@ public class DumpVesselSub : MonoBehaviour
             SubscriberTopicName = VesselSubscriberTopicName;
         }
         ros.Subscribe<JointStateMsg>(SubscriberTopicName, ExecuteVesselControl);
+        mode = FindObjectOfType<ModeSelector>();
     }
 
     // Update is called once per frame
@@ -46,7 +49,7 @@ public class DumpVesselSub : MonoBehaviour
 
     void ExecuteVesselControl(JointStateMsg msg)
     {
-        if (msg.position.Length > 1)
+        if (mode.WhichMode == ModeSelector.ModeOption.PlayMode && msg.position.Length > 1)
         {
             AngleOfSwing = (float)(msg.position[SwingNumber] * 180 / 3.14);
             AngleOfVessel = -(float)(msg.position[VesselNumber] * 180 / 3.14);

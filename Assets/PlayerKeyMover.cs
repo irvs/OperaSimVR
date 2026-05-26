@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class Player_Key_mover : MonoBehaviour
 {
@@ -9,17 +9,16 @@ public class Player_Key_mover : MonoBehaviour
     public float LinearSpeed = 0.01f;
     public float AngularSpeed = 0.2f;
     public float UpperSpeed = 0.01f;
-    Controller_manager VRManager;
+    ControllerManager VRManager;
     // Start is called before the first frame update
     void Start()
     {
-        
+        VRManager = FindObjectOfType<ControllerManager>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        VRManager = FindObjectOfType<Controller_manager>();
         if (VRManager.PlayerPoseMove_SW == 0)//VRcontroller.sw != 1)
         {
             GameObject.Find("OVRPlayerController").GetComponent<Collider>().enabled = false;
@@ -67,7 +66,7 @@ public class Player_Key_mover : MonoBehaviour
             }
             
             //transform.Rotate(Vector3.right * 0.1f * Time.deltaTime);
-            //OVRCameraRig�̈ʒu�ύX
+            //OVRCameraRigの位置変更
             GameObject.Find("OVRPlayerController").transform.position += GameObject.Find("OVRPlayerController").transform.rotation * (new Vector3(PlayerSide, 0, (Playerlinear)));
             GameObject.Find("OVRPlayerController").transform.position = new(GameObject.Find("OVRPlayerController").transform.position[0], GameObject.Find("OVRPlayerController").transform.position[1]+ PlayerUpper, GameObject.Find("OVRPlayerController").transform.position[2]);
             if (VRManager.PlayerPoseMove_SW == 0)

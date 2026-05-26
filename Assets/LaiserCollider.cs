@@ -4,7 +4,6 @@ public class ControllerLay : MonoBehaviour
     public string GetOnVehicle;
     public string parentObjectName;
     public string OneBeforeRootObjectName;
-    public string hitObjectName;
 
     void OnCollisionEnter(Collision collision)
     {

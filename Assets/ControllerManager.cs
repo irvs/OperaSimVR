@@ -1,10 +1,10 @@
-using System.Collections.Generic;
+Ôªøusing System.Collections.Generic;
 using UnityEngine;
 using System;
 using TMPro;
 
 
-public class Controller_manager : MonoBehaviour
+public class ControllerManager : MonoBehaviour
 {
     ControllerLay From_VRcont;
     public bool DesignateVehicleFromInspector;
@@ -25,14 +25,12 @@ public class Controller_manager : MonoBehaviour
     private bool button;
     public bool DB_pose_sw;
     public bool DB_joint_sw;
-    private float DiffRotPlayerMachine;
     Model_name ModelInfo;
     SensorCameraNamespase SensorCameraInfo;
     SensorCameraImageSubscriber SensorCamerasImageSubscriber;
     OVRPlayerController PlayerControllScript;
     //
     public TextMeshProUGUI myTMPText;
-    public string WriteWord;
     private bool Sensorpod;
 
     // Start is called before the first frame update
@@ -40,16 +38,16 @@ public class Controller_manager : MonoBehaviour
     {
         From_VRcont = FindObjectOfType<ControllerLay>();
         PlayertargetObject = GameObject.Find("OVRPlayerController");
+        OVRPlayerController PlayerControllScript = PlayertargetObject.GetComponent<OVRPlayerController>();
+        From_VRcont = FindObjectOfType<ControllerLay>();
         Machine_Name_List.Add("zero");
     }
 
     // Update is called once per frame
     void Update()
     {
-        OVRPlayerController PlayerControllScript = PlayertargetObject.GetComponent<OVRPlayerController>();
         if (DesignateVehicleFromInspector == false)
         {
-            From_VRcont = FindObjectOfType<ControllerLay>();
             Machine_name = From_VRcont.GetOnVehicle;
             if (Machine_name != null && Machine_name != "OVRPlayerController")
             {
@@ -114,7 +112,7 @@ public class Controller_manager : MonoBehaviour
             {
                 PlayerControllScript.RotationRatchet = 45;
                 PlayerControllScript.RotationAmount = 0.5f;
-                PlayerControllScript.transform.SetParent(null); // éqÉIÉuÉWÉFÉNÉgâèú/////
+                PlayerControllScript.transform.SetParent(null); // Â≠ê„Ç™„Éñ„Ç∏„Çß„ÇØ„ÉàËß£Èô§/////
 
                 PlayerPoseMove_SW = 0;
                 num = 0;
@@ -179,7 +177,7 @@ public class Controller_manager : MonoBehaviour
                 {
                     Playerlinear = -0.01f;
                 }
-                //OVRCameraRigÇÃà íuïœçX
+                //OVRCameraRig„ÅÆ‰ΩçÁΩÆÂ§âÊõ¥
                 PlayertargetObject.transform.position += PlayertargetObject.transform.rotation * (new Vector3(0, 0, (Playerlinear)));
                 if (Input.GetKey(KeyCode.Q))
                 {

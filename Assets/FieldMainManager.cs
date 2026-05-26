@@ -1,11 +1,11 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class FieldMainManager : MonoBehaviour
 {
     //public 
     public enum SimOrRealOption { ForSimPhysX, ForSimAGX, ForReal }
 
-    public SimOrRealOption ForSimOrReal;
+   // public SimOrRealOption ForSimOrReal;
 
     public Terrain terrain;
 

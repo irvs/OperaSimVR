@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Networking;
 using System.Collections;
 using RosMessageTypes.BuiltinInterfaces;
@@ -30,7 +30,7 @@ public class Mongo_Joint_Writer : MonoBehaviour
 
     public string WriteTargetObject;
     GameObject targetobject;
-    Controller_manager SW_From_cont;
+    ControllerManager SW_From_cont;
 
     // Start is called before the first frame update
     void Start()
@@ -55,12 +55,12 @@ public class Mongo_Joint_Writer : MonoBehaviour
         message.name = jointNames.ToArray();
         ros = ROSConnection.GetOrCreateInstance();
         ros.RegisterPublisher<JointStateMsg>(topicName);
+        SW_From_cont = FindObjectOfType<ControllerManager>();
     }
 
     // Update is called once per constant rate
     void FixedUpdate()
     {
-        SW_From_cont = FindObjectOfType<Controller_manager>();
         WriteTargetObject = SW_From_cont.Machine_name;
         if (OnOffSw.ToString() == "On" || SW_From_cont.DB_joint_sw == true)
         {

@@ -8,7 +8,7 @@ using Unity.Robotics.UrdfImporter;
 
 public class JointControler : MonoBehaviour
 {
-    Controller_manager VRManager;
+    ControllerManager VRManager;
     JointAnglePublisher FromVRJointController;
     private List<ArticulationBody> targetjoints;
     private List<string> targetjointNames;
@@ -20,20 +20,20 @@ public class JointControler : MonoBehaviour
     GameObject targetPlayerObject;
     GameObject targetObject;
 
-    mode_selector mode;
+    ModeSelector mode;
 
     void Start()
     {
         targetPlayerObject = GameObject.Find("OVRPlayerController");
         targetObject = this.gameObject;
-        VRManager = FindObjectOfType<Controller_manager>();
-        mode = FindObjectOfType<mode_selector>();
+        VRManager = FindObjectOfType<ControllerManager>();
+        mode = FindObjectOfType<ModeSelector>();
     }
     void Update()
     {
         FromVRJointController = GetComponent<JointAnglePublisher>();
 
-        if ((mode.mode == 0 || mode.mode == 2) && FromVRJointController.OnOffSw.ToString() == "On") 
+        if ((mode.WhichMode == ModeSelector.ModeOption.NormalModeSimulator || mode.WhichMode == ModeSelector.ModeOption.PreviewMode) && FromVRJointController.OnOffSw.ToString() == "On") 
         {
             if (VRManager.PlayerPoseMove_SW > 0)
             {

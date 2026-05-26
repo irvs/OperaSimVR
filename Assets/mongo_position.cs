@@ -1,4 +1,4 @@
-using PID_Controller;
+Ôªøusing PID_Controller;
 using RosMessageTypes.BuiltinInterfaces;
 using RosMessageTypes.Geometry;
 using RosMessageTypes.Nav;
@@ -33,7 +33,7 @@ public class Mongo_pose_writer : MonoBehaviour
 
     public string WriteTargetObject;
     GameObject targetobject;
-    Controller_manager SW_From_cont;
+    ControllerManager SW_From_cont;
     GameObject Reference;
     Model_name MachineManager;
 
@@ -42,15 +42,15 @@ public class Mongo_pose_writer : MonoBehaviour
     {
         ros = ROSConnection.GetOrCreateInstance();
         odomMessage = new PoseStampedMsg();
-        // ROSÉRÉlÉNÉVÉáÉìÇ÷ÇÃÉTÉuÉXÉNÉâÉCÉoÅ[ÇÃìoò^
+        // ROS„Ç≥„Éç„ÇØ„Ç∑„Éß„É≥„Å∏„ÅÆ„Çµ„Éñ„Çπ„ÇØ„É©„Ç§„Éê„Éº„ÅÆÁôªÈå≤
         ros.RegisterPublisher<PoseStampedMsg>(WriterTopicName);
         Reference = GameObject.Find("MapReferencePoint");
+        SW_From_cont = FindObjectOfType<ControllerManager>();
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
-        SW_From_cont = FindObjectOfType<Controller_manager>();
         WriteTargetObject = SW_From_cont.Machine_name;
         if (OnOffSw.ToString() == "On" || SW_From_cont.DB_pose_sw == true)
         {
