@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using Unity.Robotics.ROSTCPConnector;
 using RosMessageTypes.TmsMsgDb;
@@ -27,7 +27,7 @@ public class WriteForDB : MonoBehaviour
     private Vector3 targetpose;
     private Quaternion targetrot;
     GameObject targetobject;
-    Controller_manager From_VR_manager;
+    ControllerManager From_VR_manager;
     Model_name MachineManager;
     public bool IsReal;
     private List<double> JointPositions;
@@ -45,6 +45,7 @@ public class WriteForDB : MonoBehaviour
         {
             ros.RegisterPublisher<TmsdbPoseWriteMsgMsg>(DBWriteTopicName);
         }
+        From_VR_manager = FindObjectOfType<ControllerManager>();
     }
 
     // Update is called once per frame
@@ -52,7 +53,6 @@ public class WriteForDB : MonoBehaviour
     {
         if (SendRequestSw == true)
         {
-            From_VR_manager = FindObjectOfType<Controller_manager>();
             WriteTargetObject = From_VR_manager.Machine_name;
             targetobject = GameObject.Find(WriteTargetObject);
             if (targetobject != null)

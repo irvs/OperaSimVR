@@ -10,17 +10,14 @@ using Unity.Robotics.UrdfImporter;
 
 public class JointAnglePublisher : MonoBehaviour
 {
-    Controller_manager VRManager;
-    mode_selector selected_mode;
+    ControllerManager VRManager;
+    ModeSelector mode;
     public enum ONOFF { Off, On }
     public ONOFF OnOffSw;
     public enum JointContorollerModeOption { Velocity, Position }
     public JointContorollerModeOption JointContorollerMode;
-    // public int sw = 0;
     public bool emergency;
     public bool key;
-    public float linearspeed = 1.00f;
-    public float rotspeed = 0.50f;
     float movespeed = 0.01f;
     ROSConnection ros;
     JointSubscriber RealJointAngular;
@@ -33,8 +30,6 @@ public class JointAnglePublisher : MonoBehaviour
     private float sw_timeElapsed = 0.0f;
     private float frontback;
     private float rotation;
-    private float dissconnect_timer;
-    private int dissconnect_detecter = 0;
     public List<List<double>> listOfJointPositionCmdList = new List<List<double>>();
     public List<List<double>> listOfJointVelocityCmdList = new List<List<double>>();
     List<List<double>> listOfJointPositionList = new List<List<double>>();
@@ -77,8 +72,8 @@ public class JointAnglePublisher : MonoBehaviour
 
     void Start()
     {
-        VRManager = FindObjectOfType<Controller_manager>();
-        selected_mode = FindObjectOfType<mode_selector>();
+        VRManager = FindObjectOfType<ControllerManager>();
+        mode = FindObjectOfType<ModeSelector>();
         RealJointAngular = GetComponent<JointSubscriber>();
         JointController = GetComponent<JointControler>();
         ros = ROSConnection.GetOrCreateInstance();
@@ -153,13 +148,11 @@ public class JointAnglePublisher : MonoBehaviour
 
         else if (emergency == false)
         {
-            if (VRManager.PlayerPoseMove_SW > 0 || OnOffSw == ONOFF.On)
+            if (VRManager.PlayerPoseMove_SW > 0 && OnOffSw == ONOFF.On)
             {
                 if (sw_timeElapsed >= publishMessageInterval * 50.0f) { return; }
 
-                dissconnect_timer += Time.deltaTime;
                 timeElapsed_start += Time.deltaTime;
-
 
                 if (PlayerController != null)
                 {
@@ -225,7 +218,7 @@ public class JointAnglePublisher : MonoBehaviour
 
                 if (timeElapsed > publishMessageInterval * 20.0f)
                 {
-                    if (selected_mode.mode == 2)
+                    if (mode.WhichMode == ModeSelector.ModeOption.PreviewMode)
                     {
                         if (JointContorollerMode == JointContorollerModeOption.Position)
                         {
@@ -249,7 +242,7 @@ public class JointAnglePublisher : MonoBehaviour
                     positions[2] = goalPose[2];
                     positions[3] = goalPose[3];
                     listOfJointPositionCmdList.Add(positions);
-                    if (selected_mode.mode == 2 && timeElapsed_start > (Time_Delay + 5.0f) && listOfJointPositionCmdList.Count - Mathf.RoundToInt(Time_Delay / publishMessageInterval) >= 0)
+                    if (mode.WhichMode == ModeSelector.ModeOption.PreviewMode && timeElapsed_start > (Time_Delay + 5.0f) && listOfJointPositionCmdList.Count - Mathf.RoundToInt(Time_Delay / publishMessageInterval) >= 0)
                     {
                         int CMD_time = Mathf.RoundToInt(Time_Delay / publishMessageInterval);
                         goalPose[0] = (float)listOfJointPositionCmdList[listOfJointPositionCmdList.Count - 1 - CMD_time][0];
@@ -269,7 +262,7 @@ public class JointAnglePublisher : MonoBehaviour
                         JointPositions[i] = joints[i].jointPosition[0];
                     }
                     listOfJointPositionList.Add(JointPositions);
-                    if (selected_mode.mode == 2 && timeElapsed_start > (Time_Delay + 5.0f) && listOfJointVelocityCmdList.Count - Mathf.RoundToInt(Time_Delay / publishMessageInterval) >= 0)
+                    if (mode.WhichMode == ModeSelector.ModeOption.PreviewMode && timeElapsed_start > (Time_Delay + 5.0f) && listOfJointVelocityCmdList.Count - Mathf.RoundToInt(Time_Delay / publishMessageInterval) >= 0)
                     {
                         int CMD_time = Mathf.RoundToInt(Time_Delay / publishMessageInterval);
                         velocities[0] = listOfJointVelocityCmdList[listOfJointVelocityCmdList.Count - 1 - CMD_time][0];

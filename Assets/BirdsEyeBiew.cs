@@ -3,6 +3,7 @@ using UnityEngine.XR;
 public class BirdsEyeBiew : MonoBehaviour
 {
     int birdseyeview = 0;
+    [Header("Move Speed Parameters")]
     public float updownspeed = 5.0f;
     public float movespeed = 0.10f;
     public float rotspeed = 10.0f;

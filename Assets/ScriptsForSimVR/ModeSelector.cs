@@ -1,9 +1,9 @@
-using UnityEngine;
+﻿using UnityEngine;
 
-public class mode_selector : MonoBehaviour
+public class ModeSelector : MonoBehaviour
 {
     // Start is called before the first frame update
-    public int mode = 0;
+    // public int mode = 0;
     public enum ModeOption { NormalModeSimulator, PlayMode , PreviewMode , Else }
     public ModeOption WhichMode;
     string WhichModePrev;
@@ -17,18 +17,18 @@ public class mode_selector : MonoBehaviour
     {
         if (WhichMode.ToString() != WhichModePrev)
         {
-            if (WhichMode.ToString() == "NormalModeSimulator"){mode = 0;}
-            else if (WhichMode.ToString() == "PlayMode") { mode = 1; }
-            else if (WhichMode.ToString() == "PreviewMode") { mode = 2; }
-            else if (WhichMode.ToString() == "Else") { mode = 10; }
+            // if (WhichMode.ToString() == "NormalModeSimulator"){mode = 0;}
+            // else if (WhichMode.ToString() == "PlayMode") { mode = 1; }
+            // else if (WhichMode.ToString() == "PreviewMode") { mode = 2; }
+            // else if (WhichMode.ToString() == "Else") { mode = 10; }
             WhichModePrev= WhichMode.ToString();
         }
 
-        if (mode == 0) //simlator
+        if (WhichMode == ModeOption.NormalModeSimulator) //simlator
         {
-            if (mode != prev_mode)
+            if (WhichMode.ToString() != WhichModePrev)
             {
-                prev_mode = mode;
+                WhichModePrev = WhichMode.ToString();
                 Dump1.GetComponent<DiffDriveController>().ControlMode = 0;
             }
             Dump1 = GameObject.Find("ic120");
@@ -61,6 +61,14 @@ public class mode_selector : MonoBehaviour
             Excavator1.transform.Find("base_link/body_link/boom_link").gameObject.GetComponent<JointPosController>().enabled = true;
             Excavator1.transform.Find("base_link/body_link/boom_link/arm_link").gameObject.GetComponent<JointPosController>().enabled = true;
             Excavator1.transform.Find("base_link/body_link/boom_link/arm_link/bucket_link").gameObject.GetComponent<JointPosController>().enabled = true;
+
+            Excavator1.transform.Find("base_link").gameObject.GetComponent<ArticulationBody>().enabled = true;
+            Excavator1.transform.Find("base_link/body_link").gameObject.GetComponent<ArticulationBody>().enabled = true;
+            Excavator1.transform.Find("base_link/body_link/boom_link").gameObject.GetComponent<ArticulationBody>().enabled = true;
+            Excavator1.transform.Find("base_link/body_link/boom_link/arm_link").gameObject.GetComponent<ArticulationBody>().enabled = true;
+            Excavator1.transform.Find("base_link/body_link/boom_link/arm_link/bucket_link").gameObject.GetComponent<ArticulationBody>().enabled = true;
+            Excavator1.transform.Find("base_link/body_link/boom_link/arm_link/bucket_link/bucket_end_link").gameObject.GetComponent<ArticulationBody>().enabled = true;
+            Excavator1.transform.Find("base_link/body_link/boom_link/arm_link/bucket_link/bucket_inner").gameObject.GetComponent<ArticulationBody>().enabled = true;
             //zx200 controllor
             Excavator1.GetComponent<JointControler>().enabled = true;
             Excavator1.GetComponent<Rigidbody>().isKinematic = false;
@@ -73,11 +81,11 @@ public class mode_selector : MonoBehaviour
 
 
         }
-        if (mode == 1)//visualization
+        if (WhichMode == ModeOption.PlayMode)//visualization
         {
-            if (mode != prev_mode)
+            if (WhichMode.ToString() != WhichModePrev)
             {
-                prev_mode = mode;
+                WhichModePrev = WhichMode.ToString();
             }
             Dump1 = GameObject.Find("ic120");
             Excavator1 = GameObject.Find("zx200");
@@ -112,6 +120,14 @@ public class mode_selector : MonoBehaviour
             Excavator1.transform.Find("base_link/body_link/boom_link/arm_link").gameObject.GetComponent<JointPosController>().enabled = false;
             Excavator1.transform.Find("base_link/body_link/boom_link/arm_link/bucket_link").gameObject.GetComponent<JointPosController>().enabled = false;
 
+            Excavator1.transform.Find("base_link").gameObject.GetComponent<ArticulationBody>().enabled = false;
+            Excavator1.transform.Find("base_link/body_link").gameObject.GetComponent<ArticulationBody>().enabled = false;
+            Excavator1.transform.Find("base_link/body_link/boom_link").gameObject.GetComponent<ArticulationBody>().enabled = false;
+            Excavator1.transform.Find("base_link/body_link/boom_link/arm_link").gameObject.GetComponent<ArticulationBody>().enabled = false;
+            Excavator1.transform.Find("base_link/body_link/boom_link/arm_link/bucket_link").gameObject.GetComponent<ArticulationBody>().enabled = false;
+            Excavator1.transform.Find("base_link/body_link/boom_link/arm_link/bucket_link/bucket_end_link").gameObject.GetComponent<ArticulationBody>().enabled = false;
+            Excavator1.transform.Find("base_link/body_link/boom_link/arm_link/bucket_link/bucket_inner").gameObject.GetComponent<ArticulationBody>().enabled = false;
+
             //zx200 controllor
             Excavator1.GetComponent<JointControler>().enabled = false;
             Excavator1.GetComponent<Rigidbody>().isKinematic = true;
@@ -126,16 +142,16 @@ public class mode_selector : MonoBehaviour
 
         }
 
-        if (mode == 2) //simlator+controller
+        if (WhichMode == ModeOption.PreviewMode) //simlator+controller
         {
-            if (mode != prev_mode)
+            if (WhichMode.ToString() != WhichModePrev)
             {
-                if (prev_mode != 0)
+                if (WhichModePrev != "NormalModeSimulator")
                 {
                  //   mode = 0;
                   //  mode_return = 2;
                 }
-                prev_mode = mode;
+                WhichModePrev = WhichMode.ToString();
             }
             Dump1 = GameObject.Find("ic120");
             Excavator1 = GameObject.Find("zx200");
@@ -168,6 +184,14 @@ public class mode_selector : MonoBehaviour
             Excavator1.transform.Find("base_link/body_link/boom_link").gameObject.GetComponent<JointPosController>().enabled = false;
             Excavator1.transform.Find("base_link/body_link/boom_link/arm_link").gameObject.GetComponent<JointPosController>().enabled = false;
             Excavator1.transform.Find("base_link/body_link/boom_link/arm_link/bucket_link").gameObject.GetComponent<JointPosController>().enabled = false;
+
+            Excavator1.transform.Find("base_link").gameObject.GetComponent<ArticulationBody>().enabled = true;
+            Excavator1.transform.Find("base_link/body_link").gameObject.GetComponent<ArticulationBody>().enabled = true;
+            Excavator1.transform.Find("base_link/body_link/boom_link").gameObject.GetComponent<ArticulationBody>().enabled = true;
+            Excavator1.transform.Find("base_link/body_link/boom_link/arm_link").gameObject.GetComponent<ArticulationBody>().enabled = true;
+            Excavator1.transform.Find("base_link/body_link/boom_link/arm_link/bucket_link").gameObject.GetComponent<ArticulationBody>().enabled = true;
+            Excavator1.transform.Find("base_link/body_link/boom_link/arm_link/bucket_link/bucket_end_link").gameObject.GetComponent<ArticulationBody>().enabled = true;
+            Excavator1.transform.Find("base_link/body_link/boom_link/arm_link/bucket_link/bucket_inner").gameObject.GetComponent<ArticulationBody>().enabled = true;
             //zx200 controllor
             Excavator1.GetComponent<JointControler>().enabled = true;
             Excavator1.GetComponent<Rigidbody>().isKinematic = false;

@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using Unity.Robotics.ROSTCPConnector;
 using RosMessageTypes.Std;
 
@@ -9,7 +9,7 @@ public class JointPosController : MonoBehaviour
     public double initTargetPos;
     private ArticulationBody joint;
     private Float64Msg targetPos;
-    private mode_selector mode;
+    private ModeSelector mode;
 
     // Start is called before the first frame update
     void Start()
@@ -36,13 +36,12 @@ public class JointPosController : MonoBehaviour
 
         targetPos.data = initTargetPos;
         ros.Subscribe<Float64Msg>(setpointTopicName, ExecuteJointPosControl);
+        mode = FindObjectOfType<ModeSelector>();
     }
 
     void ExecuteJointPosControl(Float64Msg msg)
     {
-        mode = FindObjectOfType<mode_selector>();
-
-        if (mode.mode == 0)//Simulater tool
+        if (mode.WhichMode == ModeSelector.ModeOption.NormalModeSimulator)//Simulater tool
         {
             targetPos = msg;
             var drive = joint.xDrive;
