@@ -15,10 +15,11 @@ public class JointSubscriber : MonoBehaviour
     public List<double> JointPositions;
     ROSConnection ros;
     [Header("Objects")]
-    public GameObject SwingObject;
-    public GameObject BoomObject;
-    public GameObject ArmObject;
-    public GameObject BucketObject;
+    GameObject Excavator;
+    Transform SwingObject;
+    Transform BoomObject;
+    Transform ArmObject;
+    Transform BucketObject;
     [Header("Offsets")]
     public float OffsetSwing;
     public float OffsetBoom;
@@ -33,6 +34,12 @@ public class JointSubscriber : MonoBehaviour
         ros.Subscribe<JointStateMsg>(SubscribeJointTopicName, Callback);
         JointPositions = new List<double> { 0.0f, 0.0f, 0.0f, 0.0f};
         mode = FindObjectOfType<ModeSelector>();
+
+        Excavator = this.gameObject;
+        SwingObject = Excavator.transform.Find("base_link/body_link");
+        BoomObject = Excavator.transform.Find("base_link/body_link/boom_link");
+        ArmObject = Excavator.transform.Find("base_link/body_link/boom_link/arm_link");
+        BucketObject = Excavator.transform.Find("base_link/body_link/boom_link/arm_link/bucket_link");
     }
     void Update()
     {
@@ -48,10 +55,10 @@ public class JointSubscriber : MonoBehaviour
             
             if (JointChengeSw == true)
             {
-                SwingObject.transform.localRotation = Quaternion.Euler(0, -(float)(JointPositions[0] * Mathf.Rad2Deg - OffsetSwing), 0);
-                BoomObject.transform.localRotation = Quaternion.Euler((float)(JointPositions[1] * Mathf.Rad2Deg - OffsetBoom), 0, 0);
-                ArmObject.transform.localRotation = Quaternion.Euler((float)(JointPositions[2] * Mathf.Rad2Deg - OffsetArm), 0, 0);
-                BucketObject.transform.localRotation = Quaternion.Euler((float)(JointPositions[3] * Mathf.Rad2Deg) + OffsetBucket, 0, 0);
+                SwingObject.localRotation = Quaternion.Euler(0, -(float)(JointPositions[0] * Mathf.Rad2Deg - OffsetSwing), 0);
+                BoomObject.localRotation = Quaternion.Euler((float)(JointPositions[1] * Mathf.Rad2Deg - OffsetBoom), 0, 0);
+                ArmObject.localRotation = Quaternion.Euler((float)(JointPositions[2] * Mathf.Rad2Deg - OffsetArm), 0, 0);
+                BucketObject.localRotation = Quaternion.Euler((float)(JointPositions[3] * Mathf.Rad2Deg) + OffsetBucket, 0, 0);
             }
         }
     }
