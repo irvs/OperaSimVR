@@ -14382,6 +14382,12 @@ PrefabInstance:
       addedObject: {fileID: 3551451264562611627}
     - targetCorrespondingSourceObject: {fileID: 330258041213618457, guid: 2dd7b6640a1df7f038639fda1ffd090a, type: 3}
       insertIndex: -1
+      addedObject: {fileID: 3551451264562611647}
+    - targetCorrespondingSourceObject: {fileID: 330258041213618457, guid: 2dd7b6640a1df7f038639fda1ffd090a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3551451264562611646}
+    - targetCorrespondingSourceObject: {fileID: 330258041213618457, guid: 2dd7b6640a1df7f038639fda1ffd090a, type: 3}
+      insertIndex: -1
       addedObject: {fileID: 3551451264562611645}
   m_SourcePrefab: {fileID: 100100000, guid: 2dd7b6640a1df7f038639fda1ffd090a, type: 3}
 --- !u!1 &3551451264562611626 stripped
@@ -14437,14 +14443,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   JointChengeSw: 0
-  JointSubscribeTopicName: /zx200/joint_states
+  JointSubscribeTopicName: /zx200/joint_state
   ViaDBSubscribeTopicName: /output/zx200/joint_states
   ViaDB: 0
   JointPositions: []
-  SwingObject: {fileID: 2026149192}
-  BoomObject: {fileID: 2026149191}
-  ArmObject: {fileID: 2026149190}
-  BucketObject: {fileID: 2026149189}
   OffsetSwing: 0
   OffsetBoom: -28.4
   OffsetArm: 0
@@ -14510,6 +14512,38 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 02de61eb407e7414f8689d81cd8fb002, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &3551451264562611646
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3551451264562611626}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 31d41c73dbae6e04a8cd1866662983c5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  PreviewTime: 2
+  JointChengeSw: 0
+  OffsetSwing: 0
+  OffsetBoom: -28.4
+  OffsetArm: 0
+  OffsetBucket: 0
+--- !u!114 &3551451264562611647
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3551451264562611626}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b354d3fe1d9108458de85abd9ce62b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  topicName: /joint_path_pla
+  Obtained: 0
 --- !u!1001 &7980615343327131005
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -20523,6 +20557,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1317419082812128674, guid: 748b13c0952f385c79117355f87638be, type: 3}
       insertIndex: -1
       addedObject: {fileID: 9193752695730317220}
+    - targetCorrespondingSourceObject: {fileID: 1317419082812128674, guid: 748b13c0952f385c79117355f87638be, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 9193752695730317231}
+    - targetCorrespondingSourceObject: {fileID: 1317419082812128674, guid: 748b13c0952f385c79117355f87638be, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 9193752695730317230}
     - targetCorrespondingSourceObject: {fileID: 6180961855719871360, guid: 748b13c0952f385c79117355f87638be, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1875948293}
@@ -20625,3 +20665,33 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 794dfdad3f8187b469e369eee0adf340, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &9193752695730317230
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9193752695730317207}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 185d0d0f6a1ff234e96e9714929582a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  PredictTime: 2
+  historyDuration: 2
+  historyInterval: 0.5
+  Reset: 0
+--- !u!114 &9193752695730317231
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9193752695730317207}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e3c363d2fa913a41b2f79268e22b151, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  PathPoints: []
+  SubscribeTopicName: /ic120/plan
