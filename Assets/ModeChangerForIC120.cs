@@ -2,8 +2,6 @@
 
 public class ModeChangerForIC120 : MonoBehaviour
 {
-    public enum ModeOption { NormalModeSimulator, PlayMode, PreviewMode, Else }
-    public ModeOption WhichMode;
     string WhichModePrev;
     private int prev_mode;
     private int mode_return;
@@ -17,9 +15,12 @@ public class ModeChangerForIC120 : MonoBehaviour
     PoseSubscriber PoseSubscriber;
     ArticulationBody ArticulationBody_base;
     ArticulationBody ArticulationBody_vessel;
+    ModeSelector mode;
 
     void Start()
     {
+        mode = FindObjectOfType<ModeSelector>();
+
         Dump = this.gameObject;
         DiffDriveController = Dump.GetComponent<DiffDriveController>();
         JointStatePublisher = Dump.GetComponent<JointStatePublisher>();
@@ -35,86 +36,80 @@ public class ModeChangerForIC120 : MonoBehaviour
     }
     void Update()
     {
-        if (WhichMode.ToString() != WhichModePrev)
+        if (mode.WhichMode.ToString() != WhichModePrev)
         {
-            WhichModePrev = WhichMode.ToString();
+            WhichModePrev = mode.WhichMode.ToString();
         }
 
-        if (WhichMode == ModeOption.NormalModeSimulator) //simlator
+        if (mode.WhichMode == ModeSelector.ModeOption.NormalModeSimulator) //simlator
         {
-            if (WhichMode.ToString() != WhichModePrev)
+            if (mode.WhichMode.ToString() != WhichModePrev)
             {
-                WhichModePrev = WhichMode.ToString();
+                WhichModePrev = mode.WhichMode.ToString();
                 DiffDriveController.ControlMode = 0;
             }
-            //
+            //crawler&position
             DiffDriveController.enabled = true;
-
-            JointStatePublisher.enabled = true;
-
             PoseStampedPublisher.enabled = true;
+            PoseSubscriber.enabled = false;
+
+            Rigidbody.isKinematic = false;
+
+            //joints
+            JointStatePublisher.enabled = true;
             VesselController.enabled = true;
             VesselSubscriber.enabled = false;
-            //
-            Rigidbody.isKinematic = false;
+
             ArticulationBody_base.enabled = true;
             ArticulationBody_vessel.enabled = true;
-            //
-            PoseSubscriber.enabled = false;
         }
-        if (WhichMode == ModeOption.PlayMode)//visualization
+        if (mode.WhichMode == ModeSelector.ModeOption.PlayMode)//visualization
         {
-            if (WhichMode.ToString() != WhichModePrev)
+            if (mode.WhichMode.ToString() != WhichModePrev)
             {
-                WhichModePrev = WhichMode.ToString();
+                WhichModePrev = mode.WhichMode.ToString();
             }
-            //
+            //crawler&position
             DiffDriveController.enabled = false;
-
-            JointStatePublisher.enabled = false;
-
             PoseStampedPublisher.enabled = false;
+            PoseSubscriber.enabled = true;
+            
+            Rigidbody.isKinematic = true;
+
+            //joints
+            JointStatePublisher.enabled = false;
             VesselController.enabled = false;
             VesselSubscriber.enabled = true;
-            //
-            Rigidbody.isKinematic = true;
+
             ArticulationBody_base.enabled = false;
             ArticulationBody_vessel.enabled = false;
-
-            PoseSubscriber.enabled = true;
-
         }
 
-        if (WhichMode == ModeOption.PreviewMode) //simlator+controller
+        if (mode.WhichMode == ModeSelector.ModeOption.PreviewMode) //simlator+controller
         {
-            if (WhichMode.ToString() != WhichModePrev)
+            if (mode.WhichMode.ToString() != WhichModePrev)
             {
                 if (WhichModePrev != "NormalModeSimulator")
                 {
                     //   mode = 0;
                     //  mode_return = 2;
                 }
-                WhichModePrev = WhichMode.ToString();
+                WhichModePrev = mode.WhichMode.ToString();
             }
-            //
+            //crawler&position
             DiffDriveController.enabled = true;
             DiffDriveController.ControlMode = 1;
-            JointStatePublisher.enabled = false;
-
             PoseStampedPublisher.enabled = false;
-            VesselController.enabled = false;
-            VesselSubscriber.enabled = true;
-            //
-            Rigidbody.isKinematic = false;
-            ArticulationBody_base.enabled = true;
-            ArticulationBody_vessel.enabled = true;
-            //
             PoseSubscriber.enabled = true;
 
-
+            Rigidbody.isKinematic = false;
+            //joints
+            JointStatePublisher.enabled = false;
+            VesselController.enabled = false;
+            VesselSubscriber.enabled = true;
+            
+            ArticulationBody_base.enabled = true;
+            ArticulationBody_vessel.enabled = true;
         }
-
     }
-
-
 }
