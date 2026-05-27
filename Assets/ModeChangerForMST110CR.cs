@@ -2,10 +2,6 @@
 
 public class ModeChangerForMST110CR : MonoBehaviour
 {
-    // Start is called before the first frame update
-    // public int mode = 0;
-    public enum ModeOption { NormalModeSimulator, PlayMode, PreviewMode, Else }
-    public ModeOption WhichMode;
     string WhichModePrev;
     private int prev_mode;
     private int mode_return;
@@ -22,9 +18,12 @@ public class ModeChangerForMST110CR : MonoBehaviour
     ArticulationBody ArticulationBody_vessel_cylinder_link;
     ArticulationBody ArticulationBody_vessel_rod_link;
     ArticulationBody ArticulationBody_vessel_link;
+    ModeSelector mode;
 
     void Start()
     {
+        mode = FindObjectOfType<ModeSelector>();
+
         Dump = this.gameObject;
         //crawler&position
         DiffDriveController = Dump.GetComponent<DiffDriveController>();
@@ -46,16 +45,16 @@ public class ModeChangerForMST110CR : MonoBehaviour
     }
     void Update()
     {
-        if (WhichMode.ToString() != WhichModePrev)
+        if (mode.WhichMode.ToString() != WhichModePrev)
         {
-            WhichModePrev = WhichMode.ToString();
+            WhichModePrev = mode.WhichMode.ToString();
         }
 
-        if (WhichMode == ModeOption.NormalModeSimulator) //simlator
+        if (mode.WhichMode == ModeSelector.ModeOption.NormalModeSimulator) //simlator
         {
-            if (WhichMode.ToString() != WhichModePrev)
+            if (mode.WhichMode.ToString() != WhichModePrev)
             {
-                WhichModePrev = WhichMode.ToString();
+                WhichModePrev = mode.WhichMode.ToString();
                 DiffDriveController.ControlMode = 0;
             }
             //crawler&position
@@ -76,11 +75,11 @@ public class ModeChangerForMST110CR : MonoBehaviour
             ArticulationBody_vessel_rod_link.enabled = true;
             ArticulationBody_vessel_link.enabled = true;
         }
-        if (WhichMode == ModeOption.PlayMode)//visualization
+        if (mode.WhichMode == ModeSelector.ModeOption.PlayMode)//visualization
         {
-            if (WhichMode.ToString() != WhichModePrev)
+            if (mode.WhichMode.ToString() != WhichModePrev)
             {
-                WhichModePrev = WhichMode.ToString();
+                WhichModePrev = mode.WhichMode.ToString();
             }
             //crawler&position
             DiffDriveController.enabled = false;
@@ -101,16 +100,16 @@ public class ModeChangerForMST110CR : MonoBehaviour
             ArticulationBody_vessel_link.enabled = false;
         }
 
-        if (WhichMode == ModeOption.PreviewMode) //simlator+controller
+        if (mode.WhichMode == ModeSelector.ModeOption.PreviewMode) //simlator+controller
         {
-            if (WhichMode.ToString() != WhichModePrev)
+            if (mode.WhichMode.ToString() != WhichModePrev)
             {
                 if (WhichModePrev != "NormalModeSimulator")
                 {
                     //   mode = 0;
                     //  mode_return = 2;
                 }
-                WhichModePrev = WhichMode.ToString();
+                WhichModePrev = mode.WhichMode.ToString();
             }
             //crawler&position
             DiffDriveController.enabled = true;
@@ -131,8 +130,5 @@ public class ModeChangerForMST110CR : MonoBehaviour
             ArticulationBody_vessel_rod_link.enabled = true;
             ArticulationBody_vessel_link.enabled = true;
         }
-
     }
-
-
 }

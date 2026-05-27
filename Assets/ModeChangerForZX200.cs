@@ -2,8 +2,6 @@
 
 public class ModeChangerForZX200 : MonoBehaviour
 {
-    public enum ModeOption { NormalModeSimulator, PlayMode, PreviewMode, Else }
-    public ModeOption WhichMode;
     string WhichModePrev;
     private int prev_mode;
     private int mode_return;
@@ -27,9 +25,12 @@ public class ModeChangerForZX200 : MonoBehaviour
     ArticulationBody ArticulationBody_bucket;
     ArticulationBody ArticulationBody_bucket_end;
     ArticulationBody ArticulationBody_bucket_inner;
+    ModeSelector mode;
 
     void Start()
     {
+        mode = FindObjectOfType<ModeSelector>();
+        
         Excavator = this.gameObject;
         //crawler&position
         DiffDriveController = Excavator.GetComponent<DiffDriveController>();
@@ -59,16 +60,16 @@ public class ModeChangerForZX200 : MonoBehaviour
     }
     void Update()
     {
-        if (WhichMode.ToString() != WhichModePrev)
+        if (mode.WhichMode.ToString() != WhichModePrev)
         {
-            WhichModePrev = WhichMode.ToString();
+            WhichModePrev = mode.WhichMode.ToString();
         }
 
-        if (WhichMode == ModeOption.NormalModeSimulator) //simlator
+        if (mode.WhichMode == ModeSelector.ModeOption.NormalModeSimulator) //simlator
         {
-            if (WhichMode.ToString() != WhichModePrev)
+            if (mode.WhichMode.ToString() != WhichModePrev)
             {
-                WhichModePrev = WhichMode.ToString();
+                WhichModePrev = mode.WhichMode.ToString();
             }
             //crawler&position
             DiffDriveController.enabled = true;
@@ -95,11 +96,11 @@ public class ModeChangerForZX200 : MonoBehaviour
             ArticulationBody_bucket_end.enabled = true;
             ArticulationBody_bucket_inner.enabled = true;
         }
-        if (WhichMode == ModeOption.PlayMode)//visualization
+        if (mode.WhichMode == ModeSelector.ModeOption.PlayMode)//visualization
         {
-            if (WhichMode.ToString() != WhichModePrev)
+            if (mode.WhichMode.ToString() != WhichModePrev)
             {
-                WhichModePrev = WhichMode.ToString();
+                WhichModePrev = mode.WhichMode.ToString();
             }
             //crawler&position
             DiffDriveController.enabled = false;
@@ -127,16 +128,16 @@ public class ModeChangerForZX200 : MonoBehaviour
             ArticulationBody_bucket_inner.enabled = false;
         }
 
-        if (WhichMode == ModeOption.PreviewMode) //simlator+controller
+        if (mode.WhichMode == ModeSelector.ModeOption.PreviewMode) //simlator+controller
         {
-            if (WhichMode.ToString() != WhichModePrev)
+            if (mode.WhichMode.ToString() != WhichModePrev)
             {
                 if (WhichModePrev != "NormalModeSimulator")
                 {
                     //   mode = 0;
                     //  mode_return = 2;
                 }
-                WhichModePrev = WhichMode.ToString();
+                WhichModePrev = mode.WhichMode.ToString();
             }
             //crawler&position
             DiffDriveController.enabled = false;
