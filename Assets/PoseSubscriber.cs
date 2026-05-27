@@ -30,7 +30,7 @@ public class PoseSubscriber : MonoBehaviour
     public bool UseHeightFromTopic;
     public bool DumpUpperCorrection;
     public float DumpUpperDiff;
-    DumpVesselSub MachineUpperJoints;
+    DumpVesselSubscriber MachineUpperJoints;
 
     void Start()
     {
@@ -38,7 +38,7 @@ public class PoseSubscriber : MonoBehaviour
         SelectorObject = GameObject.Find("FieldManager");
         Reference = GameObject.Find("MapReferencePoint");
         MachineManager = targetObject.GetComponent<Model_name>();
-        MachineUpperJoints = GetComponent<DumpVesselSub>();
+        MachineUpperJoints = GetComponent<DumpVesselSubscriber>();
         mode = SelectorObject.GetComponent<ModeSelector>();
         FieldManager = SelectorObject.GetComponent<FieldMainManager>();
         ros = ROSConnection.GetOrCreateInstance();
