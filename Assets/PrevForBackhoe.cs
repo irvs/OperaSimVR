@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-public class PrevForPlayBackhoe : MonoBehaviour
+public class PrevForBackhoe : MonoBehaviour
 {
     Model_name ModelIdentifier;
     FieldMainManager FieldManager;
