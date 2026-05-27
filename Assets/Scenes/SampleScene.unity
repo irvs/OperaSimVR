@@ -2007,7 +2007,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed3ac5e88f3105f4c80b8b28cc068901, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  terrain: {fileID: 0}
+  terrain: {fileID: 1392124484}
 --- !u!4 &267972053
 Transform:
   m_ObjectHideFlags: 0
@@ -11613,27 +11613,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 6180961855719871360, guid: 748b13c0952f385c79117355f87638be, type: 3}
   m_PrefabInstance: {fileID: 9193752695730317206}
   m_PrefabAsset: {fileID: 0}
---- !u!171741748 &1875948291 stripped
-ArticulationBody:
-  m_CorrespondingSourceObject: {fileID: 5786457008270186887, guid: 748b13c0952f385c79117355f87638be, type: 3}
-  m_PrefabInstance: {fileID: 9193752695730317206}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1875948293
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1875948286}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 55b59c34254d9f548a42e158d73eef84, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ViaDB: 0
-  VesselSubscriberTopicName: dump/cmd
-  ViaDBVesselSubscriberTopicName: 
-  dump_joint: {fileID: 1875948291}
 --- !u!4 &1983081748 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5312023781718596108, guid: c12a7b61b5050d61bbdc6698f0017fae, type: 3}
@@ -16448,11 +16427,13 @@ MonoBehaviour:
   ViaDB: 0
   VesselSubscriberTopicName: /mst110cr_2/joint_states
   ViaDBVesselSubscriberTopicName: /output/mst110cr_2/joint_states
+  JointSelection: 1
   AngleOfSwing: 0
   AngleOfVessel: 0
   SwingNumber: 1
   VesselNumber: 0
-  RootObject: {fileID: 8805772978195839601}
+  SwingDirection: 0
+  VesselDirection: 0
   SwingObject: {fileID: 8805772978195839603}
   VesselObject: {fileID: 8805772978195839602}
   AddOrRemove: 1
@@ -20541,9 +20522,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1317419082812128674, guid: 748b13c0952f385c79117355f87638be, type: 3}
       insertIndex: -1
       addedObject: {fileID: 9193752695730317230}
-    - targetCorrespondingSourceObject: {fileID: 6180961855719871360, guid: 748b13c0952f385c79117355f87638be, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 1317419082812128674, guid: 748b13c0952f385c79117355f87638be, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1875948293}
+      addedObject: {fileID: 9193752695730317232}
   m_SourcePrefab: {fileID: 100100000, guid: 748b13c0952f385c79117355f87638be, type: 3}
 --- !u!1 &9193752695730317207 stripped
 GameObject:
@@ -20672,3 +20653,28 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PathPoints: []
   SubscribeTopicName: /ic120/plan
+--- !u!114 &9193752695730317232
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9193752695730317207}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eeb91105ee5f85d41b741d4648bae60b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ViaDB: 0
+  VesselSubscriberTopicName: /ic120/joint_states
+  ViaDBVesselSubscriberTopicName: /output/ic120/joint_states
+  JointSelection: 0
+  AngleOfSwing: 0
+  AngleOfVessel: 0
+  SwingNumber: 0
+  VesselNumber: 1
+  SwingDirection: 0
+  VesselDirection: 1
+  SwingObject: {fileID: 0}
+  VesselObject: {fileID: 1875948286}
+  AddOrRemove: 0

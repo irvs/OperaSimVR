@@ -9,15 +9,22 @@ public class BirdsEyeBiew : MonoBehaviour
     public float rotspeed = 10.0f;
     Vector3 posiorigin;
     Quaternion rotrigin;
+    GameObject PlayerObject;
+    CharacterController CharacterController;
+
+    void Start()
+    {
+        PlayerObject = GameObject.Find("OVRPlayerController");
+        CharacterController = PlayerObject.GetComponent<CharacterController>();
+    }
     
     void Update()
     {
-        GameObject PlayerObject = GameObject.Find("OVRPlayerController");
         Vector3 posiplayer = PlayerObject.transform.position;
         Quaternion rotplayer = PlayerObject.transform.rotation;
         if (OVRInput.Get(OVRInput.RawButton.X) && OVRInput.Get(OVRInput.RawButton.Y) && birdseyeview == 0)
         {
-            PlayerObject.GetComponent<CharacterController>().enabled = false;
+            CharacterController.enabled = false;
             birdseyeview = 1;
             posiorigin = PlayerObject.transform.position;
             rotrigin = PlayerObject.transform.rotation;
@@ -58,13 +65,11 @@ public class BirdsEyeBiew : MonoBehaviour
             {
                 float rotationAmountX = 1f; // Rotation angle in the x direction
 
-
                 PlayerObject.transform.RotateAround(PlayerObject.transform.position, PlayerObject.transform.TransformDirection(Vector3.right), rotationAmountX);
             }
             if (OVRInput.Get(OVRInput.RawButton.RThumbstickDown))
             {
                 float rotationAmountX = 1f; // Rotation angle in the x direction
-
 
                 PlayerObject.transform.RotateAround(PlayerObject.transform.position, PlayerObject.transform.TransformDirection(Vector3.right), -rotationAmountX);
             }
@@ -75,7 +80,7 @@ public class BirdsEyeBiew : MonoBehaviour
             birdseyeview = 0;
             PlayerObject.transform.position = posiorigin + new Vector3(0,5,0);
             PlayerObject.transform.rotation = rotrigin;
-            PlayerObject.GetComponent<CharacterController>().enabled = true;
+            CharacterController.enabled = true;
         }
     }
 }
