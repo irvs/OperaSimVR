@@ -2,7 +2,7 @@
 using Unity.Robotics.ROSTCPConnector;
 using RosMessageTypes.Sensor;
 
-public class DumpVesselSub : MonoBehaviour
+public class DumpVesselSubscriber : MonoBehaviour
 {
     public bool ViaDB;
     private ROSConnection ros;
