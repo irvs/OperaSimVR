@@ -16,11 +16,16 @@ public class SensorCameraImageSubscriber : MonoBehaviour
    // public int SensorPodsNumber = 1;
     private bool IsVRorKey;
     public Material defaultSkyboxMaterial;
+    private GameObject PlayerObject;
+    CharacterController CharacterController;
+    Collider PlayerCollider;
 
     // Start is called before the first frame update
     void Start()
     {
-
+        PlayerObject = GameObject.Find("OVRPlayerController");
+        CharacterController = PlayerObject.GetComponent<CharacterController>();
+        PlayerCollider = PlayerObject.GetComponent<Collider>();
     }
 
     // Update is called once per frame
@@ -108,23 +113,23 @@ public class SensorCameraImageSubscriber : MonoBehaviour
 
     private void ChangeCameraPosition()
     {
-        PosOrigin = GameObject.Find("OVRPlayerController").transform.position;
-        if (GameObject.Find("OVRPlayerController").GetComponent<CharacterController>().enabled == true) 
+        PosOrigin = PlayerObject.transform.position;
+        if (CharacterController.enabled == true) 
         {
             IsVRorKey = true;
         }
-        GameObject.Find("OVRPlayerController").GetComponent<CharacterController>().enabled = false;
-        GameObject.Find("OVRPlayerController").GetComponent<Collider>().enabled = false;
-        GameObject.Find("OVRPlayerController").transform.position = new Vector3(0.0f,10000.0f,0.0f);
+        CharacterController.enabled = false;
+        PlayerCollider.enabled = false;
+        PlayerObject.transform.position = new Vector3(0.0f,10000.0f,0.0f);
     }
 
     private void ResetCameraPosition()
     {
-        GameObject.Find("OVRPlayerController").transform.position = PosOrigin;
+        PlayerObject.transform.position = PosOrigin;
         if (IsVRorKey == true)
         {
-            GameObject.Find("OVRPlayerController").GetComponent<CharacterController>().enabled = true;
-            GameObject.Find("OVRPlayerController").GetComponent<Collider>().enabled = true;
+            CharacterController.enabled = true;
+            PlayerCollider.enabled = true;
         }
     }
 }
