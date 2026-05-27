@@ -18,30 +18,30 @@ public class JointControler : MonoBehaviour
     public JointContorollerModeOption JointContorollerMode;
 
     GameObject targetPlayerObject;
+    OVRPlayerController OVRPlayerControllerScript;
     GameObject targetObject;
 
     ModeSelector mode;
 
     void Start()
     {
-        targetPlayerObject = GameObject.Find("OVRPlayerController");
         targetObject = this.gameObject;
+        targetPlayerObject = GameObject.Find("OVRPlayerController");
+        OVRPlayerControllerScript = targetPlayerObject.GetComponent<OVRPlayerController>();
+        FromVRJointController = GetComponent<JointAnglePublisher>();
         VRManager = FindObjectOfType<ControllerManager>();
         mode = FindObjectOfType<ModeSelector>();
     }
     void Update()
     {
-        FromVRJointController = GetComponent<JointAnglePublisher>();
-
         if ((mode.WhichMode == ModeSelector.ModeOption.NormalModeSimulator || mode.WhichMode == ModeSelector.ModeOption.PreviewMode) && FromVRJointController.OnOffSw.ToString() == "On") 
         {
             if (VRManager.PlayerPoseMove_SW > 0)
-            {
-                OVRPlayerController scriptA = targetPlayerObject.GetComponent<OVRPlayerController>();
-                if (scriptA != null)
+            {  
+                if (OVRPlayerControllerScript != null)
                 {
-                    scriptA.RotationRatchet = 0;
-                    scriptA.RotationAmount = 0;
+                    OVRPlayerControllerScript.RotationRatchet = 0;
+                    OVRPlayerControllerScript.RotationAmount = 0;
                 }
               
                 targetjoints = new List<ArticulationBody>();

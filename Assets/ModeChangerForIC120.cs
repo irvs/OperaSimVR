@@ -10,7 +10,7 @@ public class ModeChangerForIC120 : MonoBehaviour
     JointStatePublisher JointStatePublisher;
     PoseStampedPublisher PoseStampedPublisher;
     VesselController VesselController;
-    VesselSubscriber VesselSubscriber;
+    DumpVesselSubscriber DumpVesselSubscriber;
     Rigidbody Rigidbody;
     PoseSubscriber PoseSubscriber;
     ArticulationBody ArticulationBody_base;
@@ -26,7 +26,7 @@ public class ModeChangerForIC120 : MonoBehaviour
         JointStatePublisher = Dump.GetComponent<JointStatePublisher>();
         PoseStampedPublisher = Dump.transform.Find("base_link").gameObject.GetComponent<PoseStampedPublisher>();
         VesselController = Dump.transform.Find("base_link/vessel_link").gameObject.GetComponent<VesselController>();
-        VesselSubscriber = Dump.transform.Find("base_link/vessel_link").gameObject.GetComponent<VesselSubscriber>();
+        DumpVesselSubscriber = Dump.GetComponent<DumpVesselSubscriber>();
         Rigidbody = Dump.GetComponent<Rigidbody>();
 
         ArticulationBody_base = Dump.transform.Find("base_link").gameObject.GetComponent<ArticulationBody>();
@@ -58,7 +58,7 @@ public class ModeChangerForIC120 : MonoBehaviour
             //joints
             JointStatePublisher.enabled = true;
             VesselController.enabled = true;
-            VesselSubscriber.enabled = false;
+            DumpVesselSubscriber.enabled = false;
 
             ArticulationBody_base.enabled = true;
             ArticulationBody_vessel.enabled = true;
@@ -79,7 +79,7 @@ public class ModeChangerForIC120 : MonoBehaviour
             //joints
             JointStatePublisher.enabled = false;
             VesselController.enabled = false;
-            VesselSubscriber.enabled = true;
+            DumpVesselSubscriber.enabled = true;
 
             ArticulationBody_base.enabled = false;
             ArticulationBody_vessel.enabled = false;
@@ -106,7 +106,7 @@ public class ModeChangerForIC120 : MonoBehaviour
             //joints
             JointStatePublisher.enabled = false;
             VesselController.enabled = false;
-            VesselSubscriber.enabled = true;
+            DumpVesselSubscriber.enabled = true;
             
             ArticulationBody_base.enabled = true;
             ArticulationBody_vessel.enabled = true;
