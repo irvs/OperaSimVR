@@ -1,4 +1,4 @@
-using System;
+Ôªøusing System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,7 +10,7 @@ using System.Text;
 public class EvaluatePlan : MonoBehaviour
 {
     public string SubscribeTopicName;
-    PrevForPlayBackhoe PrevForPlayBackhoe;
+    PrevForBackhoe PrevForBackhoe;
     public List<(DateTime time, float[] angles)> PlanJointAngle;
     DateTime PlanCreatedTime;
     public GameObject SwingPlanObject;
@@ -29,7 +29,7 @@ public class EvaluatePlan : MonoBehaviour
     void Start()
     {
         ROSConnection.GetOrCreateInstance().Subscribe<JointTrajectoryMsg>(SubscribeTopicName, OnPathReceived);
-        PrevForPlayBackhoe = GetComponent<PrevForPlayBackhoe>();
+        PrevForBackhoe = GetComponent<PrevForBackhoe>();
         JointAngles = new List<(double, float[], float[])>();
     }
 
@@ -41,7 +41,7 @@ public class EvaluatePlan : MonoBehaviour
             //obtain plan
 
             //plan
-         //   PlanJointAngle = PrevForPlayBackhoe.PlanJointAngle;
+         //   PlanJointAngle = PrevForBackhoe.PlanJointAngle;
          //   PlanCreatedTime = PlanJointAngle[0].time;
             //current plan joint state
             float CurrentSwingPlan = SwingPlanObject.transform.localRotation.eulerAngles.y;
@@ -69,10 +69,10 @@ public class EvaluatePlan : MonoBehaviour
         string path = Application.dataPath + "/plan.csv";
         StringBuilder sb = new StringBuilder();
 
-        // ÉwÉbÉ_Å[
+        // „Éò„ÉÉ„ÉÄ„Éº
         sb.AppendLine("time,swing,boom,arm,bucket");
 
-        foreach (var data in PrevForPlayBackhoe.PlanJointAngle)
+        foreach (var data in PrevForBackhoe.PlanJointAngle)
         {
             string line = data.time.ToString();
 
@@ -86,7 +86,7 @@ public class EvaluatePlan : MonoBehaviour
 
         File.WriteAllText(path, sb.ToString());
 
-        Debug.Log("CSVï€ë∂: " + path);
+        Debug.Log("CSV‰øùÂ≠ò: " + path);
     }
     */
     void ExportJointCSV()
@@ -94,7 +94,7 @@ public class EvaluatePlan : MonoBehaviour
         string path = Application.dataPath + "/plan_model.csv";
         StringBuilder sb = new StringBuilder();
 
-        // ÉwÉbÉ_Å[
+        // „Éò„ÉÉ„ÉÄ„Éº
         sb.AppendLine("time,swingplan,boomplan,armplan,bucketplan,swingcurrent,boomcurrent,armcurrent,bucketcurrent");
 
         foreach (var data in JointAngles)
@@ -115,7 +115,7 @@ public class EvaluatePlan : MonoBehaviour
 
         File.WriteAllText(path, sb.ToString());
 
-        Debug.Log("CSVï€ë∂: " + path);
+        Debug.Log("CSV‰øùÂ≠ò: " + path);
     }
     
     void OnPathReceived(JointTrajectoryMsg msg)

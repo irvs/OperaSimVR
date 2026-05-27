@@ -2,7 +2,7 @@
 using UnityEngine;
 using System;///for evaluate///
 
-public class PrevForPlayBackhoe : MonoBehaviour
+public class PrevForBackhoe : MonoBehaviour
 {
     Model_name ModelIdentifier;
     FieldMainManager FieldManager;

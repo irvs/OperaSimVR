@@ -11783,26 +11783,6 @@ Mesh:
     offset: 0
     size: 0
     path: 
---- !u!1 &2026149189 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 2475730653099896157, guid: 2dd7b6640a1df7f038639fda1ffd090a, type: 3}
-  m_PrefabInstance: {fileID: 3551451264562611625}
-  m_PrefabAsset: {fileID: 0}
---- !u!1 &2026149190 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 6896237325348521548, guid: 2dd7b6640a1df7f038639fda1ffd090a, type: 3}
-  m_PrefabInstance: {fileID: 3551451264562611625}
-  m_PrefabAsset: {fileID: 0}
---- !u!1 &2026149191 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1692593602678822202, guid: 2dd7b6640a1df7f038639fda1ffd090a, type: 3}
-  m_PrefabInstance: {fileID: 3551451264562611625}
-  m_PrefabAsset: {fileID: 0}
---- !u!1 &2026149192 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 5864811885909104740, guid: 2dd7b6640a1df7f038639fda1ffd090a, type: 3}
-  m_PrefabInstance: {fileID: 3551451264562611625}
-  m_PrefabAsset: {fileID: 0}
 --- !u!43 &2040629286
 Mesh:
   m_ObjectHideFlags: 0
@@ -14500,13 +14480,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 3551451264562611626}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 31d41c73dbae6e04a8cd1866662983c5, type: 3}
+  m_Script: {fileID: 11500000, guid: 15593fc581486784e99c7dcd3ff54c39, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   PreviewTime: 2
   JointChengeSw: 0
   OffsetSwing: 0
-  OffsetBoom: -28.4
+  OffsetBoom: 0
   OffsetArm: 0
   OffsetBucket: 0
 --- !u!114 &3551451264562611647
@@ -20534,6 +20514,9 @@ PrefabInstance:
       addedObject: {fileID: 9193752695730317209}
     - targetCorrespondingSourceObject: {fileID: 1317419082812128674, guid: 748b13c0952f385c79117355f87638be, type: 3}
       insertIndex: -1
+      addedObject: {fileID: 9193752695730317232}
+    - targetCorrespondingSourceObject: {fileID: 1317419082812128674, guid: 748b13c0952f385c79117355f87638be, type: 3}
+      insertIndex: -1
       addedObject: {fileID: 9193752695730317208}
     - targetCorrespondingSourceObject: {fileID: 1317419082812128674, guid: 748b13c0952f385c79117355f87638be, type: 3}
       insertIndex: -1
@@ -20544,9 +20527,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1317419082812128674, guid: 748b13c0952f385c79117355f87638be, type: 3}
       insertIndex: -1
       addedObject: {fileID: 9193752695730317230}
-    - targetCorrespondingSourceObject: {fileID: 1317419082812128674, guid: 748b13c0952f385c79117355f87638be, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 9193752695730317232}
   m_SourcePrefab: {fileID: 100100000, guid: 748b13c0952f385c79117355f87638be, type: 3}
 --- !u!1 &9193752695730317207 stripped
 GameObject:
@@ -20655,7 +20635,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 9193752695730317207}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 185d0d0f6a1ff234e96e9714929582a0, type: 3}
+  m_Script: {fileID: 11500000, guid: 99156d1ae3e68674ab76d154db13788e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   PredictTime: 2
@@ -20676,6 +20656,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PathPoints: []
   SubscribeTopicName: /ic120/plan
+  offset_x: 0
+  offset_y: 0
+  offset_z: 0
 --- !u!114 &9193752695730317232
 MonoBehaviour:
   m_ObjectHideFlags: 0

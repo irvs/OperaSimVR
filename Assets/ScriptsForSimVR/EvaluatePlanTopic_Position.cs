@@ -1,4 +1,4 @@
-using System;
+Ôªøusing System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -12,7 +12,7 @@ public class EvaluatePlanTopic_Position : MonoBehaviour
 {
     public string SubscribePlanTopicName;
     public string SubscribePositionTopicName;
-    PrevForPlayPlanPath PrevForPlayPlanPath;
+    PreviewForCruise PreviewForCruise;
     public List<(DateTime time, Vector3 position)> PlanPositon;
     DateTime PlanCreatedTime;
     List<(double time, Vector3 planposition, Vector3 currentposition)> Positions;
@@ -27,7 +27,7 @@ public class EvaluatePlanTopic_Position : MonoBehaviour
         ROSConnection.GetOrCreateInstance().Subscribe<PathMsg>(SubscribePlanTopicName, OnPathReceived);
         //ROSConnection.GetOrCreateInstance().Subscribe<OdometryMsg>(SubscribePositionTopicName, OnCurrentPositionReceived);
         ROSConnection.GetOrCreateInstance().Subscribe<PoseStampedMsg>(SubscribePositionTopicName, OnCurrentPositionReceivedPoseSt);
-        PrevForPlayPlanPath = GetComponent<PrevForPlayPlanPath>();
+        PreviewForCruise = GetComponent<PreviewForCruise>();
         Positions = new List<(double, Vector3, Vector3)>();
         CurrentPosition = new List<Vector3>();
         CurrentOrientation = new List<Quaternion>();
@@ -36,7 +36,7 @@ public class EvaluatePlanTopic_Position : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        PlanPositon = PrevForPlayPlanPath.PlanPositon;
+        PlanPositon = PreviewForCruise.PlanPositon;
         if (ObtainPlan == true)
         {
             if (ObtainPlan && PlanPositon.Count > 0 && CurrentPosition.Count > 0)
@@ -65,7 +65,7 @@ public class EvaluatePlanTopic_Position : MonoBehaviour
         string path = Application.dataPath + "/plan.csv";
         StringBuilder sb = new StringBuilder();
 
-        // ÉwÉbÉ_Å[
+        // „Éò„ÉÉ„ÉÄ„Éº
         sb.AppendLine("time,swing,boom,arm,bucket");
 
         foreach (var data in PrevForPlayBackhoe.PlanJointAngle)
@@ -82,7 +82,7 @@ public class EvaluatePlanTopic_Position : MonoBehaviour
 
         File.WriteAllText(path, sb.ToString());
 
-        Debug.Log("CSVï€ë∂: " + path);
+        Debug.Log("CSV‰øùÂ≠ò: " + path);
     }
     */
     void ExportJointCSV()
@@ -90,7 +90,7 @@ public class EvaluatePlanTopic_Position : MonoBehaviour
         string path = Application.dataPath + "/plan_model_position.csv";
         StringBuilder sb = new StringBuilder();
 
-        // ÉwÉbÉ_Å[
+        // „Éò„ÉÉ„ÉÄ„Éº
         sb.AppendLine("time,swingplan,boomplan,armplan,bucketplan,swingcurrent,boomcurrent,armcurrent,bucketcurrent");
 
         foreach (var data in Positions)
@@ -110,7 +110,7 @@ public class EvaluatePlanTopic_Position : MonoBehaviour
 
         File.WriteAllText(path, sb.ToString());
 
-        Debug.Log("CSVï€ë∂: " + path);
+        Debug.Log("CSV‰øùÂ≠ò: " + path);
     }
     
     void OnPathReceived(PathMsg msg)
