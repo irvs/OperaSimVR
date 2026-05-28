@@ -7,17 +7,19 @@ public class ColliderInvalid : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        // eƒIƒuƒWƒFƒNƒg‚Ìq‘S‚Ä‚ÌBoxCollider‚ğ–³Œø‚É‚·‚é
+        // ï¿½eï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½Ìqï¿½Sï¿½Ä‚ï¿½BoxColliderï¿½ğ–³Œï¿½ï¿½É‚ï¿½ï¿½ï¿½
         BoxCollider[] colliders = GetComponentsInChildren<BoxCollider>();
 
         foreach (BoxCollider collider in colliders)
         {
-            collider.enabled = false;
+            //collider.enabled = false;
+            collider.isTrigger = true;
         }
         MeshCollider[] meshColliders = GetComponentsInChildren<MeshCollider>();
         foreach (MeshCollider meshCollider in meshColliders)
         {
-            meshCollider.enabled = false;
+            //meshCollider.enabled = false;
+            meshCollider.isTrigger = true;
         }
     }
 
