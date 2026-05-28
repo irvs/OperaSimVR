@@ -138,7 +138,7 @@ public class VRCrawlerOp : MonoBehaviour
 
             {
                 timeElapsed += Time.deltaTime;
-                if (mode.WhichMode == ModeSelector.ModeOption.PreviewMode)
+                if (mode.WhichMode == ModeSelector.ModeOption.PreviewModeForTeleop)
                 {
                     timeElapsed_adopt_starter += Time.deltaTime;
                     timeElapsed_start += Time.deltaTime;
@@ -148,7 +148,7 @@ public class VRCrawlerOp : MonoBehaviour
 
                 ReadInput();
 
-                if (mode.WhichMode == ModeSelector.ModeOption.PreviewMode)
+                if (mode.WhichMode == ModeSelector.ModeOption.PreviewModeForTeleop)
                 {
                     if (LinearOrRot == 0)
                     {
@@ -167,7 +167,7 @@ public class VRCrawlerOp : MonoBehaviour
                     else if (LinearOrRot == 2) { frontback = 0; }
                 }
 
-                if (mode.WhichMode == ModeSelector.ModeOption.PreviewMode)
+                if (mode.WhichMode == ModeSelector.ModeOption.PreviewModeForTeleop)
                 {
                     if (((LinearOrRot == 2 && rotation != 0) || (LinearOrRot == 1 && frontback != 0)) && moover_sw == 1)
                     {
@@ -209,7 +209,7 @@ public class VRCrawlerOp : MonoBehaviour
                         PrevLinearCMD = frontback;
                         PrevAngularCMD = rotation;
                     }
-                    else if (mode.WhichMode == ModeSelector.ModeOption.PreviewMode)
+                    else if (mode.WhichMode == ModeSelector.ModeOption.PreviewModeForTeleop)
                     {
                         PrevLinearCMD = CMD_linear_list[CMD_linear_list.Count - 1];
                         PrevAngularCMD = CMD_anglar_list[CMD_anglar_list.Count - 1];
@@ -236,7 +236,7 @@ public class VRCrawlerOp : MonoBehaviour
                         CommandPublisher(frontback, rotation);
                         timeElapsed = 0.0f;
                     }
-                    if (mode.WhichMode == ModeSelector.ModeOption.PreviewMode)
+                    if (mode.WhichMode == ModeSelector.ModeOption.PreviewModeForTeleop)
                     {
                         CMD_linear_list.Add(frontback);
                         CMD_anglar_list.Add(rotation);
@@ -261,7 +261,7 @@ public class VRCrawlerOp : MonoBehaviour
                     }
                 }
 
-                if (mode.WhichMode == ModeSelector.ModeOption.PreviewMode)
+                if (mode.WhichMode == ModeSelector.ModeOption.PreviewModeForTeleop)
                 {
                     if (prev_control_mode != 2)
                     {
@@ -274,7 +274,7 @@ public class VRCrawlerOp : MonoBehaviour
                     newPosition = RealPosition.MapMachinePosition;
                     newRotation = RealPosition.MapMachineRotation;
 
-                    if (mode.WhichMode == ModeSelector.ModeOption.PreviewMode && OnOffSw == ONOFF.On) //Controll mode (Pose modify)
+                    if (mode.WhichMode == ModeSelector.ModeOption.PreviewModeForTeleop && OnOffSw == ONOFF.On) //Controll mode (Pose modify)
                     {
                         DateTime currentTime = DateTime.Now;
                         if (currentTime >= nextActionTime)
@@ -290,7 +290,7 @@ public class VRCrawlerOp : MonoBehaviour
             
 
 
-            if (mode.WhichMode == ModeSelector.ModeOption.PreviewMode && RecordPlaySw == true)
+            if (mode.WhichMode == ModeSelector.ModeOption.PreviewModeForTeleop && RecordPlaySw == true)
             {
                 DateTime currentTime = DateTime.Now;
                 long timestamp = ((DateTimeOffset)currentTime).ToUnixTimeSeconds();

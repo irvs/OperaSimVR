@@ -218,7 +218,7 @@ public class JointAnglePublisher : MonoBehaviour
 
                 if (timeElapsed > publishMessageInterval * 20.0f)
                 {
-                    if (mode.WhichMode == ModeSelector.ModeOption.PreviewMode)
+                    if (mode.WhichMode == ModeSelector.ModeOption.PreviewModeForTeleop)
                     {
                         if (JointContorollerMode == JointContorollerModeOption.Position)
                         {
@@ -242,7 +242,7 @@ public class JointAnglePublisher : MonoBehaviour
                     positions[2] = goalPose[2];
                     positions[3] = goalPose[3];
                     listOfJointPositionCmdList.Add(positions);
-                    if (mode.WhichMode == ModeSelector.ModeOption.PreviewMode && timeElapsed_start > (Time_Delay + 5.0f) && listOfJointPositionCmdList.Count - Mathf.RoundToInt(Time_Delay / publishMessageInterval) >= 0)
+                    if (mode.WhichMode == ModeSelector.ModeOption.PreviewModeForTeleop && timeElapsed_start > (Time_Delay + 5.0f) && listOfJointPositionCmdList.Count - Mathf.RoundToInt(Time_Delay / publishMessageInterval) >= 0)
                     {
                         int CMD_time = Mathf.RoundToInt(Time_Delay / publishMessageInterval);
                         goalPose[0] = (float)listOfJointPositionCmdList[listOfJointPositionCmdList.Count - 1 - CMD_time][0];
@@ -262,7 +262,7 @@ public class JointAnglePublisher : MonoBehaviour
                         JointPositions[i] = joints[i].jointPosition[0];
                     }
                     listOfJointPositionList.Add(JointPositions);
-                    if (mode.WhichMode == ModeSelector.ModeOption.PreviewMode && timeElapsed_start > (Time_Delay + 5.0f) && listOfJointVelocityCmdList.Count - Mathf.RoundToInt(Time_Delay / publishMessageInterval) >= 0)
+                    if (mode.WhichMode == ModeSelector.ModeOption.PreviewModeForTeleop && timeElapsed_start > (Time_Delay + 5.0f) && listOfJointVelocityCmdList.Count - Mathf.RoundToInt(Time_Delay / publishMessageInterval) >= 0)
                     {
                         int CMD_time = Mathf.RoundToInt(Time_Delay / publishMessageInterval);
                         velocities[0] = listOfJointVelocityCmdList[listOfJointVelocityCmdList.Count - 1 - CMD_time][0];

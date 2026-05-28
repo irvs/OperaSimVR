@@ -2,7 +2,7 @@
 
 public class ModeSelector : MonoBehaviour
 {
-    public enum ModeOption { NormalModeSimulator, PlayMode , PreviewMode , Else }
+    public enum ModeOption { NormalModeSimulator, PlayMode , PreviewModeForTeleop , PreviewAndPlay, PreviewAR, Else }
     public ModeOption WhichMode;
     string WhichModePrev;
     private int prev_mode;
@@ -29,7 +29,7 @@ public class ModeSelector : MonoBehaviour
             //clock
             Clock.enabled = true;
         }
-        if (WhichMode == ModeOption.PlayMode)//visualization
+        if (WhichMode == ModeOption.PlayMode || WhichMode == ModeOption.PreviewAndPlay || WhichMode == ModeOption.PreviewAR)//visualization
         {
             if (WhichMode.ToString() != WhichModePrev)
             {
@@ -39,7 +39,7 @@ public class ModeSelector : MonoBehaviour
             Clock.enabled = false;
         }
 
-        if (WhichMode == ModeOption.PreviewMode) //simlator+controller
+        if (WhichMode == ModeOption.PreviewModeForTeleop) //simlator+controller
         {
             if (WhichMode.ToString() != WhichModePrev)
             {

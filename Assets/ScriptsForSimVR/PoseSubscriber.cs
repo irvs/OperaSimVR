@@ -101,7 +101,7 @@ public class PoseSubscriber : MonoBehaviour
         }
         rot_offset = new Vector3(RotOffsetX, RotOffsetY, RotOffsetZ);
         chenged_orientation = NewRotation.eulerAngles - rot_offset;      
-        if (mode.WhichMode == ModeSelector.ModeOption.PlayMode || (MachineManager.ObjectTypeIsPaperMachine = true && mode.WhichMode == ModeSelector.ModeOption.PreviewMode)) //Visual tool
+        if (mode.WhichMode == ModeSelector.ModeOption.PlayMode || (MachineManager.ObjectTypeIsPaperMachine = true && mode.WhichMode == ModeSelector.ModeOption.PreviewModeForTeleop)) //Visual tool
         {
             if (ChengePosition_sw == true)
             {

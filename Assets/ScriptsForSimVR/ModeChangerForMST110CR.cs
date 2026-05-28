@@ -100,7 +100,7 @@ public class ModeChangerForMST110CR : MonoBehaviour
             ArticulationBody_vessel_link.enabled = false;
         }
 
-        if (mode.WhichMode == ModeSelector.ModeOption.PreviewMode) //simlator+controller
+        if (mode.WhichMode == ModeSelector.ModeOption.PreviewModeForTeleop) //simlator+controller
         {
             if (mode.WhichMode.ToString() != WhichModePrev)
             {

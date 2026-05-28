@@ -85,7 +85,7 @@ public class ModeChangerForIC120 : MonoBehaviour
             ArticulationBody_vessel.enabled = false;
         }
 
-        if (mode.WhichMode == ModeSelector.ModeOption.PreviewMode) //simlator+controller
+        if (mode.WhichMode == ModeSelector.ModeOption.PreviewModeForTeleop) //simlator+controller
         {
             if (mode.WhichMode.ToString() != WhichModePrev)
             {
