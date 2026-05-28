@@ -16,14 +16,14 @@ public class CollisionDetector : MonoBehaviour
         
     }
 
-    void OnTriggerStay(Collider other)
-    {
-        Debug.Log("ÚG‚µ‚Ä‚¢‚é: " + other.gameObject.name);
+    // void OnTriggerStay(Collider other)
+    // {
+    //     Debug.Log("ï¿½ÚGï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½: " + other.gameObject.name);
 
-        if (other.CompareTag("Player"))
-        {
-            Debug.Log("Player‚ÆÚG’†");
-        }
-    }
+    //     if (other.CompareTag("Player"))
+    //     {
+    //         Debug.Log("Playerï¿½ÆÚGï¿½ï¿½");
+    //     }
+    // }
 
 }

@@ -9,11 +9,9 @@ public class PrevForBackhoe : MonoBehaviour
     private List<(List<double> joints, double time)> PlanPosition = new List<(List<double>, double)>();
 
     // 関節角の履歴
-    public float PreviewTime = 2.0f;       // 何秒後を予測するか
-    public bool JointChengeSw;
-    int Counter;
-
+    public float PreviewTime =3.0f;       // 何秒後を予測するか
     GameObject Excavator;
+    public GameObject SubscriberObject;
     // 各関節のオブジェクト
     Transform SwingObject;
     Transform BoomObject;
@@ -32,16 +30,16 @@ public class PrevForBackhoe : MonoBehaviour
 
     void Start()
     {
-        var selector = GameObject.Find("FieldManager");
-        JointPathPlanSubscriber = GetComponent<PathJointSubscriber>();
-        ModelIdentifier = GetComponent<Model_name>();
-        FieldManager = selector.GetComponent<FieldMainManager>();
-
         Excavator = this.gameObject;
         SwingObject = Excavator.transform.Find("base_link/body_link");
         BoomObject = Excavator.transform.Find("base_link/body_link/boom_link");
         ArmObject = Excavator.transform.Find("base_link/body_link/boom_link/arm_link");
         BucketObject = Excavator.transform.Find("base_link/body_link/boom_link/arm_link/bucket_link");
+
+        var selector = GameObject.Find("FieldManager");
+        JointPathPlanSubscriber = SubscriberObject.GetComponent<PathJointSubscriber>();
+        ModelIdentifier = GetComponent<Model_name>();
+        FieldManager = selector.GetComponent<FieldMainManager>();        
     }
 
     void Update()

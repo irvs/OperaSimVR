@@ -16,6 +16,10 @@ public class ModeChangerForIC120 : MonoBehaviour
     ArticulationBody ArticulationBody_base;
     ArticulationBody ArticulationBody_vessel;
     ModeSelector mode;
+    ModeSelector.ModeOption CurrentMode;
+    public GameObject PreviewObject;
+    GameObject PrevObject;
+    PreviewForCruise PreviewForCruise;
 
     void Start()
     {
@@ -63,7 +67,7 @@ public class ModeChangerForIC120 : MonoBehaviour
             ArticulationBody_base.enabled = true;
             ArticulationBody_vessel.enabled = true;
         }
-        if (mode.WhichMode == ModeSelector.ModeOption.PlayMode)//visualization
+        if (mode.WhichMode == ModeSelector.ModeOption.PlayMode || mode.WhichMode == ModeSelector.ModeOption.PreviewAndPlay)//visualization
         {
             if (mode.WhichMode.ToString() != WhichModePrev)
             {
@@ -83,6 +87,14 @@ public class ModeChangerForIC120 : MonoBehaviour
 
             ArticulationBody_base.enabled = false;
             ArticulationBody_vessel.enabled = false;
+
+            if(mode.WhichMode == ModeSelector.ModeOption.PreviewAndPlay)
+            {
+                if(CurrentMode != ModeSelector.ModeOption.PreviewAndPlay)
+                {
+                    InitializePreviewmodel();
+                }     
+            }
         }
 
         if (mode.WhichMode == ModeSelector.ModeOption.PreviewModeForTeleop) //simlator+controller
@@ -111,5 +123,20 @@ public class ModeChangerForIC120 : MonoBehaviour
             ArticulationBody_base.enabled = true;
             ArticulationBody_vessel.enabled = true;
         }
+        if (CurrentMode == ModeSelector.ModeOption.PreviewAndPlay)
+        {
+            if(CurrentMode != mode.WhichMode)
+                {
+                    Destroy(PrevObject);
+                }
+        }
+        CurrentMode = mode.WhichMode;
+    }
+    void InitializePreviewmodel()
+    {
+        PrevObject = Instantiate(PreviewObject, this.gameObject.transform.position, this.gameObject.transform.rotation);
+        PreviewForCruise = PrevObject.GetComponent<PreviewForCruise>();
+        PreviewForCruise.SubscriberObject = this.gameObject;
+        PreviewForCruise.enabled = true;
     }
 }
