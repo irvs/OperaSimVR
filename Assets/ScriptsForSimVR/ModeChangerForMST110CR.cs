@@ -79,7 +79,7 @@ public class ModeChangerForMST110CR : MonoBehaviour
             ArticulationBody_vessel_rod_link.enabled = true;
             ArticulationBody_vessel_link.enabled = true;
         }
-        if (mode.WhichMode == ModeSelector.ModeOption.PlayMode ||mode.WhichMode == ModeSelector.ModeOption.PreviewAndPlay)//visualization
+        if (mode.WhichMode == ModeSelector.ModeOption.PlayMode || mode.WhichMode == ModeSelector.ModeOption.PreviewAndPlay)//visualization
         {
             if (mode.WhichMode.ToString() != WhichModePrev)
             {

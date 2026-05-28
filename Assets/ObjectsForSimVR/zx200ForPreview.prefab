@@ -2429,8 +2429,8 @@ MonoBehaviour:
   PreviewTime: 3
   SubscriberObject: {fileID: 0}
   OffsetSwing: 0
-  OffsetBoom: 0
-  OffsetArm: 28.4
+  OffsetBoom: -28.4
+  OffsetArm: 0
   OffsetBucket: 0
 --- !u!54 &8786024472118186884
 Rigidbody:

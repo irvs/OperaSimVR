@@ -40,10 +40,11 @@ public class PreviewForCruise : MonoBehaviour
         Reference = GameObject.Find("MapReferencePoint");
         targetObject = this.gameObject;
 
-        MachinePoseSubscriber = GetComponent<PoseSubscriber>();
         ModelIdentifier = GetComponent<Model_name>();
-        FieldManager = SelectorObject.GetComponent<FieldMainManager>();
+        MachinePoseSubscriber = SubscriberObject.GetComponent<PoseSubscriber>();
         PathSub = SubscriberObject.GetComponent<PathSubscriber>();
+
+        FieldManager = SelectorObject.GetComponent<FieldMainManager>();
     }
 
     void Update()

@@ -48,7 +48,7 @@ public class JointSubscriber : MonoBehaviour
 
     void Callback(JointStateMsg msg)
     {
-        if (mode.WhichMode == ModeSelector.ModeOption.PlayMode)//Visual tool
+        if (mode.WhichMode == ModeSelector.ModeOption.PlayMode || mode.WhichMode == ModeSelector.ModeOption.PreviewAndPlay)//Visual tool
         {
             for (int i = 0; i < 4; i++)
                 JointPositions[i] = msg.position[i];
