@@ -26,6 +26,10 @@ public class ModeChangerForZX200 : MonoBehaviour
     ArticulationBody ArticulationBody_bucket_end;
     ArticulationBody ArticulationBody_bucket_inner;
     ModeSelector mode;
+    ModeSelector.ModeOption CurrentMode;
+    public GameObject PreviewObject;
+    GameObject PrevObject;
+    PrevForBackhoe PrevForBackhoe;
 
     void Start()
     {
@@ -195,6 +199,30 @@ public class ModeChangerForZX200 : MonoBehaviour
             ArticulationBody_bucket.enabled = false;
             ArticulationBody_bucket_end.enabled = false;
             ArticulationBody_bucket_inner.enabled = false;
+
+            if(mode.WhichMode == ModeSelector.ModeOption.PreviewAndPlay)
+            {
+                if(CurrentMode != ModeSelector.ModeOption.PreviewAndPlay)
+                {
+                    InitializePreviewmodel();
+                }     
+            }
         }
+        if (CurrentMode == ModeSelector.ModeOption.PreviewAndPlay)
+        {
+            if(CurrentMode != mode.WhichMode)
+                {
+                    Destroy(PrevObject);
+                }
+        }
+        CurrentMode = mode.WhichMode;
+    }
+    
+    void InitializePreviewmodel()
+    {
+        PrevObject = Instantiate(PreviewObject, this.gameObject.transform.position, this.gameObject.transform.rotation);
+        PrevForBackhoe = PrevObject.GetComponent<PrevForBackhoe>();
+        PrevForBackhoe.SubscriberObject = this.gameObject;
+        PrevForBackhoe.enabled = true;
     }
 }

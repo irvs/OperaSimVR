@@ -19,6 +19,10 @@ public class ModeChangerForMST110CR : MonoBehaviour
     ArticulationBody ArticulationBody_vessel_rod_link;
     ArticulationBody ArticulationBody_vessel_link;
     ModeSelector mode;
+    ModeSelector.ModeOption CurrentMode;
+    public GameObject PreviewObject;
+    GameObject PrevObject;
+    PreviewForCruise PreviewForCruise;
 
     void Start()
     {
@@ -75,7 +79,7 @@ public class ModeChangerForMST110CR : MonoBehaviour
             ArticulationBody_vessel_rod_link.enabled = true;
             ArticulationBody_vessel_link.enabled = true;
         }
-        if (mode.WhichMode == ModeSelector.ModeOption.PlayMode)//visualization
+        if (mode.WhichMode == ModeSelector.ModeOption.PlayMode ||mode.WhichMode == ModeSelector.ModeOption.PreviewAndPlay)//visualization
         {
             if (mode.WhichMode.ToString() != WhichModePrev)
             {
@@ -98,6 +102,14 @@ public class ModeChangerForMST110CR : MonoBehaviour
             ArticulationBody_vessel_cylinder_link.enabled = false;
             ArticulationBody_vessel_rod_link.enabled = false;
             ArticulationBody_vessel_link.enabled = false;
+
+            if(mode.WhichMode == ModeSelector.ModeOption.PreviewAndPlay)
+            {
+                if(CurrentMode != ModeSelector.ModeOption.PreviewAndPlay)
+                {
+                    InitializePreviewmodel();
+                }     
+            }
         }
 
         if (mode.WhichMode == ModeSelector.ModeOption.PreviewModeForTeleop) //simlator+controller
@@ -130,5 +142,20 @@ public class ModeChangerForMST110CR : MonoBehaviour
             ArticulationBody_vessel_rod_link.enabled = true;
             ArticulationBody_vessel_link.enabled = true;
         }
+        if (CurrentMode == ModeSelector.ModeOption.PreviewAndPlay)
+        {
+            if(CurrentMode != mode.WhichMode)
+                {
+                    Destroy(PrevObject);
+                }
+        }
+        CurrentMode = mode.WhichMode;
     }
+    void InitializePreviewmodel()
+        {
+            PrevObject = Instantiate(PreviewObject, this.gameObject.transform.position, this.gameObject.transform.rotation);
+            PreviewForCruise = PrevObject.GetComponent<PreviewForCruise>();
+            PreviewForCruise.SubscriberObject = this.gameObject;
+            PreviewForCruise.enabled = true;
+        }
 }

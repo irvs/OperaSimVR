@@ -9,7 +9,6 @@ public class PathJointSubscriber : MonoBehaviour
     ROSConnection ros;
     private JointTrajectoryMsg latestTraj;
     public bool Obtained = false;
-
     public List<(List<double> joints, double time)> JointPositions = new List<(List<double>, double)>();
 
     void Start()
