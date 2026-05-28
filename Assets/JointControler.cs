@@ -34,7 +34,7 @@ public class JointControler : MonoBehaviour
     }
     void Update()
     {
-        if ((mode.WhichMode == ModeSelector.ModeOption.NormalModeSimulator || mode.WhichMode == ModeSelector.ModeOption.PreviewMode) && FromVRJointController.OnOffSw.ToString() == "On") 
+        if ((mode.WhichMode == ModeSelector.ModeOption.NormalModeSimulator || mode.WhichMode == ModeSelector.ModeOption.PreviewModeForTeleop) && FromVRJointController.OnOffSw.ToString() == "On") 
         {
             if (VRManager.PlayerPoseMove_SW > 0)
             {  
