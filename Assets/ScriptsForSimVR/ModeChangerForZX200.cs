@@ -100,76 +100,7 @@ public class ModeChangerForZX200 : MonoBehaviour
             ArticulationBody_bucket_end.enabled = true;
             ArticulationBody_bucket_inner.enabled = true;
         }
-        if (mode.WhichMode == ModeSelector.ModeOption.PlayMode)//visualization
-        {
-            if (mode.WhichMode.ToString() != WhichModePrev)
-            {
-                WhichModePrev = mode.WhichMode.ToString();
-            }
-            //crawler&position
-            DiffDriveController.enabled = false;
-            PoseStampedPublisher.enabled = false;
-            PoseSubscriber.enabled = true;
-
-            Rigidbody.isKinematic = true;
-            //arm
-            JointStatePublisher.enabled = false;
-            Com3FrontController.enabled = false;
-            JointControler.enabled = false;
-            JointSubscriber.enabled = true;
-
-            JointPosController_body.enabled = false;
-            JointPosController_boom.enabled = false;
-            JointPosController_arm.enabled = false;
-            JointPosController_bucket.enabled = false;
-
-            ArticulationBody_base.enabled = false;
-            ArticulationBody_body.enabled = false;
-            ArticulationBody_boom.enabled = false;
-            ArticulationBody_arm.enabled = false;
-            ArticulationBody_bucket.enabled = false;
-            ArticulationBody_bucket_end.enabled = false;
-            ArticulationBody_bucket_inner.enabled = false;
-        }
-
-        if (mode.WhichMode == ModeSelector.ModeOption.PreviewModeForTeleop) //simlator+controller
-        {
-            if (mode.WhichMode.ToString() != WhichModePrev)
-            {
-                if (WhichModePrev != "NormalModeSimulator")
-                {
-                    //   mode = 0;
-                    //  mode_return = 2;
-                }
-                WhichModePrev = mode.WhichMode.ToString();
-            }
-            //crawler&position
-            DiffDriveController.enabled = false;
-            PoseStampedPublisher.enabled = false;
-            PoseSubscriber.enabled = false;
-
-            Rigidbody.isKinematic = false;
-            //arm
-            JointStatePublisher.enabled = false;
-            Com3FrontController.enabled = false;
-            JointControler.enabled = true;
-            JointSubscriber.enabled = false;
-
-            JointPosController_body.enabled = false;
-            JointPosController_boom.enabled = false;
-            JointPosController_arm.enabled = false;
-            JointPosController_bucket.enabled = false;
-
-            ArticulationBody_base.enabled = true;
-            ArticulationBody_body.enabled = true;
-            ArticulationBody_boom.enabled = true;
-            ArticulationBody_arm.enabled = true;
-            ArticulationBody_bucket.enabled = true;
-            ArticulationBody_bucket_end.enabled = true;
-            ArticulationBody_bucket_inner.enabled = true;
-        }
-
-        if (mode.WhichMode == ModeSelector.ModeOption.PreviewAndPlay)//preview
+        if (mode.WhichMode == ModeSelector.ModeOption.PlayMode || mode.WhichMode == ModeSelector.ModeOption.PreviewAndPlay)//visualization
         {
             if (mode.WhichMode.ToString() != WhichModePrev)
             {
@@ -207,6 +138,43 @@ public class ModeChangerForZX200 : MonoBehaviour
                     InitializePreviewmodel();
                 }     
             }
+        }
+
+        if (mode.WhichMode == ModeSelector.ModeOption.PreviewModeForTeleop) //simlator+controller
+        {
+            if (mode.WhichMode.ToString() != WhichModePrev)
+            {
+                if (WhichModePrev != "NormalModeSimulator")
+                {
+                    //   mode = 0;
+                    //  mode_return = 2;
+                }
+                WhichModePrev = mode.WhichMode.ToString();
+            }
+            //crawler&position
+            DiffDriveController.enabled = false;
+            PoseStampedPublisher.enabled = false;
+            PoseSubscriber.enabled = false;
+
+            Rigidbody.isKinematic = false;
+            //arm
+            JointStatePublisher.enabled = false;
+            Com3FrontController.enabled = false;
+            JointControler.enabled = true;
+            JointSubscriber.enabled = false;
+
+            JointPosController_body.enabled = false;
+            JointPosController_boom.enabled = false;
+            JointPosController_arm.enabled = false;
+            JointPosController_bucket.enabled = false;
+
+            ArticulationBody_base.enabled = true;
+            ArticulationBody_body.enabled = true;
+            ArticulationBody_boom.enabled = true;
+            ArticulationBody_arm.enabled = true;
+            ArticulationBody_bucket.enabled = true;
+            ArticulationBody_bucket_end.enabled = true;
+            ArticulationBody_bucket_inner.enabled = true;
         }
         if (CurrentMode == ModeSelector.ModeOption.PreviewAndPlay)
         {

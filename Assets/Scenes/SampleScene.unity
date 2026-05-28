@@ -14424,8 +14424,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   JointChengeSw: 0
-  JointSubscribeTopicName: /zx200/joint_states
-  ViaDBSubscribeTopicName: 
+  JointSubscribeTopicName: /zx200/joint_state
+  ViaDBSubscribeTopicName: /output/zx200/joint_state
   ViaDB: 0
   JointPositions: []
   OffsetSwing: 0
@@ -14474,9 +14474,9 @@ MonoBehaviour:
   PaperMachine: {fileID: 0}
   Modelname: 
   KindsOfHeavyMachinery: 0
-  Offset_x: 0
+  Offset_x: 14034.45
   Offset_y: 0
-  Offset_z: 0
+  Offset_z: 21395.18
   OffsetRotation_x: 0
   OffsetRotation_y: 0
   OffsetRotation_z: 0
@@ -20637,11 +20637,11 @@ MonoBehaviour:
   PaperMachine: {fileID: 0}
   Modelname: 
   KindsOfHeavyMachinery: 0
-  Offset_x: 0
+  Offset_x: 14034.45
   Offset_y: 0
-  Offset_z: 0
+  Offset_z: 21395.18
   OffsetRotation_x: 0
-  OffsetRotation_y: 0
+  OffsetRotation_y: -90
   OffsetRotation_z: 0
   OffsetList: []
 --- !u!114 &9193752695730317220

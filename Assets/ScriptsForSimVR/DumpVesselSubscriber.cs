@@ -57,7 +57,7 @@ public class DumpVesselSubscriber : MonoBehaviour
 
     void ExecuteVesselControl(JointStateMsg msg)
     {
-        if (mode.WhichMode == ModeSelector.ModeOption.PlayMode && msg.position.Length > 1)
+        if ((mode.WhichMode == ModeSelector.ModeOption.PlayMode || mode.WhichMode == ModeSelector.ModeOption.PreviewAndPlay) && msg.position.Length > 1)
         {
             Quaternion RootTransform = RootObject.transform.rotation;
             if (SwingDirection == SwingPN.Negative){SwingInverter = -1;}

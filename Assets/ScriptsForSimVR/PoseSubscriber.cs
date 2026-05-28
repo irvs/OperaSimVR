@@ -4,6 +4,7 @@ using RosMessageTypes.Geometry;
 using RosMessageTypes.Nav;
 public class PoseSubscriber : MonoBehaviour
 {
+    public bool ChengePosition_sw;
     public bool ViaDB;
     public bool WorldToMap;
     public enum PoseMessageType { OdometryMsg, PoseStampedMsg }
@@ -14,13 +15,10 @@ public class PoseSubscriber : MonoBehaviour
     private string SubscribeTopicName;
     private Vector3 rot_offset;
     private Vector3 chenged_orientation;
-    public bool ChengePosition_sw;
     private ModeSelector mode;
     ROSConnection ros;
     Vector3 newPosition;
     Quaternion newRotation;
-    public Vector3 MapMachinePosition;
-    public Quaternion MapMachineRotation;
     GameObject SelectorObject;
     Model_name MachineManager;
     GameObject Reference;
@@ -30,6 +28,8 @@ public class PoseSubscriber : MonoBehaviour
     public bool UseHeightFromTopic;
     public bool DumpUpperCorrection;
     public float DumpUpperDiff;
+    public Vector3 MapMachinePosition;
+    public Quaternion MapMachineRotation;
     DumpVesselSubscriber MachineUpperJoints;
 
     void Start()
@@ -101,7 +101,7 @@ public class PoseSubscriber : MonoBehaviour
         }
         rot_offset = new Vector3(RotOffsetX, RotOffsetY, RotOffsetZ);
         chenged_orientation = NewRotation.eulerAngles - rot_offset;      
-        if (mode.WhichMode == ModeSelector.ModeOption.PlayMode || (MachineManager.ObjectTypeIsPaperMachine = true && mode.WhichMode == ModeSelector.ModeOption.PreviewModeForTeleop)) //Visual tool
+        if (mode.WhichMode == ModeSelector.ModeOption.PlayMode || mode.WhichMode == ModeSelector.ModeOption.PreviewAndPlay || (MachineManager.ObjectTypeIsPaperMachine = true && mode.WhichMode == ModeSelector.ModeOption.PreviewModeForTeleop)) //Visual tool
         {
             if (ChengePosition_sw == true)
             {
