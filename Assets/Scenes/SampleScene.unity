@@ -20577,7 +20577,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ViaDB: 0
   WorldToMap: 1
-  PoseMsgType: 0
+  PoseMsgType: 1
   PoseSubscribeTopicName: /ic120/global_pose
   ViaDBSubscribeTopicName: /output/ic120/odom
   ChengePosition_sw: 0
