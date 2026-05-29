@@ -123,7 +123,36 @@ public class ModeChangerForIC120 : MonoBehaviour
             ArticulationBody_base.enabled = true;
             ArticulationBody_vessel.enabled = true;
         }
-        if (CurrentMode == ModeSelector.ModeOption.PreviewAndPlay)
+        if (mode.WhichMode == ModeSelector.ModeOption.PreviewAR)//visualization
+        {
+            if (mode.WhichMode.ToString() != WhichModePrev)
+            {
+                WhichModePrev = mode.WhichMode.ToString();
+            }
+            //crawler&position
+            DiffDriveController.enabled = false;
+            PoseStampedPublisher.enabled = false;
+            PoseSubscriber.enabled = true;
+            PoseSubscriber.ChengePosition_sw = false;
+            
+            Rigidbody.isKinematic = true;
+
+            //joints
+            JointStatePublisher.enabled = false;
+
+            VesselController.enabled = false;
+            DumpVesselSubscriber.enabled = true;
+            DumpVesselSubscriber.JointChengeSw = false;
+
+            ArticulationBody_base.enabled = false;
+            ArticulationBody_vessel.enabled = false;
+
+            if(CurrentMode != ModeSelector.ModeOption.PreviewAR)
+            {
+                InitializePreviewmodel();
+            }     
+        }
+        if (CurrentMode == ModeSelector.ModeOption.PreviewAndPlay || CurrentMode == ModeSelector.ModeOption.PreviewAR)
         {
             if(CurrentMode != mode.WhichMode)
                 {
