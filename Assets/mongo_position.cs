@@ -35,7 +35,7 @@ public class Mongo_pose_writer : MonoBehaviour
     GameObject targetobject;
     ControllerManager SW_From_cont;
     GameObject Reference;
-    Model_name MachineManager;
+    ModelIdentifier MachineManager;
 
     // Start is called before the first frame update
     void Start()
@@ -56,7 +56,7 @@ public class Mongo_pose_writer : MonoBehaviour
         {
             timeElapsed += Time.deltaTime;
             targetobject = GameObject.Find(WriteTargetObject);
-            MachineManager = targetobject.GetComponent<Model_name>();
+            MachineManager = targetobject.GetComponent<ModelIdentifier>();
 
             if (IsReal == false)
             {

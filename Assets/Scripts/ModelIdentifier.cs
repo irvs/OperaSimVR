@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Model_name : MonoBehaviour
+public class ModelIdentifier : MonoBehaviour
 {
     public GameObject targetObject;
     public bool ObjectTypeIsPaperMachine;
