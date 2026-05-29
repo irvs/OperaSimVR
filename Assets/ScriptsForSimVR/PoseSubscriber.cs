@@ -20,7 +20,7 @@ public class PoseSubscriber : MonoBehaviour
     Vector3 newPosition;
     Quaternion newRotation;
     GameObject SelectorObject;
-    Model_name MachineManager;
+    ModelIdentifier MachineManager;
     GameObject Reference;
     public enum CoordinateSelect { JapaneseGeodeticSystem, ROS }
     public CoordinateSelect Coordinate;
@@ -37,7 +37,7 @@ public class PoseSubscriber : MonoBehaviour
         targetObject = this.gameObject;
         SelectorObject = GameObject.Find("FieldManager");
         Reference = GameObject.Find("MapReferencePoint");
-        MachineManager = targetObject.GetComponent<Model_name>();
+        MachineManager = targetObject.GetComponent<ModelIdentifier>();
         MachineUpperJoints = GetComponent<DumpVesselSubscriber>();
         mode = SelectorObject.GetComponent<ModeSelector>();
         FieldManager = SelectorObject.GetComponent<FieldMainManager>();

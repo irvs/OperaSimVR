@@ -102,7 +102,7 @@ Set from the "PoseSubscriber" attached to the construction machine.
 
 #### (b) convert from world coordinate system to map coordinate system
 
-The origin of the map coordinates in the world coordinate system is specified by the "Model_name" attached to each construction equipment object. And move the object's "MapReferencePoint" to the same position in the cyberspace field as the origin of the map coordinate system of the actual field.
+The origin of the map coordinates in the world coordinate system is specified by the "ModelIdentifier" attached to each construction equipment object. And move the object's "MapReferencePoint" to the same position in the cyberspace field as the origin of the map coordinate system of the actual field.
 
 **explanation of parameter**
 | parameter name | description |

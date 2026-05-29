@@ -25,7 +25,7 @@ public class ControllerManager : MonoBehaviour
     private bool button;
     public bool DB_pose_sw;
     public bool DB_joint_sw;
-    Model_name ModelInfo;
+    ModelIdentifier ModelInfo;
     SensorCameraNamespase SensorCameraInfo;
     SensorCameraImageSubscriber SensorCamerasImageSubscriber;
     OVRPlayerController PlayerControllScript;
@@ -72,7 +72,7 @@ public class ControllerManager : MonoBehaviour
             if ((GetOnMachine == 1) && (PlayerPoseMove_SW == 0))
             {
                 VehicletargetObject = GameObject.Find(Machine_name);
-                ModelInfo = VehicletargetObject.GetComponent<Model_name>();
+                ModelInfo = VehicletargetObject.GetComponent<ModelIdentifier>();
                 if (ModelInfo != null)
                 {
                     MachineCameraPosition = GameObject.Find(Machine_name + "_cam");

@@ -28,7 +28,7 @@ public class WriteForDB : MonoBehaviour
     private Quaternion targetrot;
     GameObject targetobject;
     ControllerManager From_VR_manager;
-    Model_name MachineManager;
+    ModelIdentifier MachineManager;
     public bool IsReal;
     private List<double> JointPositions;
     private List<ArticulationBody> joints;
@@ -57,7 +57,7 @@ public class WriteForDB : MonoBehaviour
             targetobject = GameObject.Find(WriteTargetObject);
             if (targetobject != null)
             {
-                MachineManager = targetobject.GetComponent<Model_name>();
+                MachineManager = targetobject.GetComponent<ModelIdentifier>();
 
                 MachineName = WriteTargetObject;
                 MachineKinds = MachineManager.KindsOfHeavyMachinery.ToString();
