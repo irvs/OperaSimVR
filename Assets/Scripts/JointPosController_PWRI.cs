@@ -7,7 +7,7 @@ using RosMessageTypes.Std;
 /// <summary>
 /// 各関節を独立して制御する
 /// </summary>
-public class JointPosController : MonoBehaviour
+public class JointPosController_PWRI : MonoBehaviour
 {
     private ROSConnection ros;
 
@@ -22,7 +22,7 @@ public class JointPosController : MonoBehaviour
     private EmergencyStop emergencyStop;
     private bool currentEmergencyStop = false;
     private float emergencyStopPosition = 0.0f;
-    public bool JointChangeSW;
+
     // Start is called before the first frame update
     IEnumerator Start()
     {
@@ -52,6 +52,7 @@ public class JointPosController : MonoBehaviour
         {
             Debug.Log("No ArticulationBody are found");
         }
+
         ros.Subscribe<Float64Msg>(Utils.PreprocessNamespace(this.gameObject, setpointTopicName), ExecuteJointPosControl);
     }
 
@@ -78,13 +79,10 @@ public class JointPosController : MonoBehaviour
     {
         if (emergencyStop && emergencyStop.isEmergencyStop)
             return;
-        if (JointChangeSW == true)//Simulater tool
-        {
-            targetPos = msg;
-            var drive = joint.xDrive;
-            drive.target = (float)(targetPos.data * Mathf.Rad2Deg);
-            joint.xDrive = drive;
-            //Debug.Log("Joint Target Position:" + targetPos.data);
-        }
+        targetPos = msg;
+        var drive = joint.xDrive;
+        drive.target = (float)(targetPos.data * Mathf.Rad2Deg);
+        joint.xDrive = drive;
+        //Debug.Log("Joint Target Position:" + targetPos.data);
     }
 }

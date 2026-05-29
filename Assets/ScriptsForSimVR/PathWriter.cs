@@ -20,12 +20,8 @@ public class PathWriter : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        Reference = GameObject.Find("MapReferencePoint");
         ros = ROSConnection.GetOrCreateInstance();
-        // ROSコネクションへのサブスクライバーの登録
         ros.Subscribe<PathMsg>(Subscribe_topic_name, Callback);
-        Debug.Log("already:PathWriter");
-        //
         //
         lineRenderer = gameObject.AddComponent<LineRenderer>();
         // LineRendererの設定
@@ -58,9 +54,7 @@ public class PathWriter : MonoBehaviour
             path_list.Add(new Vector3(((float)pose.pose.position.x) + offset_x + (Reference.transform.position)[0], 0.0f + offset_y, ((float)pose.pose.position.y) + offset_z + (Reference.transform.position)[2]));
             path_angular_list.Add(angular);
         }
-
             lineRenderer.positionCount = path_list.Count;
-
             for (int i = 0; i < path_list.Count; i++)
             {
                 lineRenderer.SetPosition(i, path_list[i]);

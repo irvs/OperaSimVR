@@ -91,6 +91,11 @@ public class ModeChangerForZX200 : MonoBehaviour
             JointPosController_boom.enabled = true;
             JointPosController_arm.enabled = true;
             JointPosController_bucket.enabled = true;
+            
+            JointPosController_body.JointChangeSW = true;
+            JointPosController_boom.JointChangeSW = true;
+            JointPosController_arm.JointChangeSW = true;
+            JointPosController_bucket.JointChangeSW = true;
 
             ArticulationBody_base.enabled = true;
             ArticulationBody_body.enabled = true;
@@ -122,6 +127,11 @@ public class ModeChangerForZX200 : MonoBehaviour
             JointPosController_boom.enabled = false;
             JointPosController_arm.enabled = false;
             JointPosController_bucket.enabled = false;
+
+            JointPosController_body.JointChangeSW = false;
+            JointPosController_boom.JointChangeSW = false;
+            JointPosController_arm.JointChangeSW = false;
+            JointPosController_bucket.JointChangeSW = false;
 
             ArticulationBody_base.enabled = false;
             ArticulationBody_body.enabled = false;
@@ -167,6 +177,11 @@ public class ModeChangerForZX200 : MonoBehaviour
             JointPosController_boom.enabled = false;
             JointPosController_arm.enabled = false;
             JointPosController_bucket.enabled = false;
+
+            JointPosController_body.JointChangeSW = false;
+            JointPosController_boom.JointChangeSW = false;
+            JointPosController_arm.JointChangeSW = false;
+            JointPosController_bucket.JointChangeSW = false;
 
             ArticulationBody_base.enabled = true;
             ArticulationBody_body.enabled = true;
