@@ -25,6 +25,7 @@ public class PreviewForCruise : MonoBehaviour
     FieldMainManager FieldManager;
     PoseSubscriber MachinePoseSubscriber;
     PathSubscriber PathSub;
+    ModeSelector mode;
 
     // ---------------------------
     // 過去位置記録用
@@ -42,6 +43,7 @@ public class PreviewForCruise : MonoBehaviour
         SelectorObject = GameObject.Find("FieldManager");
         Reference = GameObject.Find("MapReferencePoint");
         targetObject = this.gameObject;
+        mode = SelectorObject.GetComponent<ModeSelector>();
 
         ModelIdentifier = GetComponent<Model_name>();
         MachinePoseSubscriber = SubscriberObject.GetComponent<PoseSubscriber>();
@@ -96,6 +98,8 @@ public class PreviewForCruise : MonoBehaviour
                        + FieldManager.terrain.transform.position.y
                        + ModelIdentifier.Offset_y;
         previewPos.y = yHeight;
+
+        if (mode.WhichMode == ModeSelector.ModeOption.PreviewAR){previewPos.y = yHeight + 10000f;}
 
         // ---------------------------
         // モデルを未来位置に移動

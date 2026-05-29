@@ -4,6 +4,7 @@ using RosMessageTypes.Sensor;
 
 public class DumpVesselSubscriber : MonoBehaviour
 {
+    public bool JointChengeSw;
     public bool ViaDB;
     private ROSConnection ros;
     [Header("Topic names")]
@@ -57,7 +58,7 @@ public class DumpVesselSubscriber : MonoBehaviour
 
     void ExecuteVesselControl(JointStateMsg msg)
     {
-        if ((mode.WhichMode == ModeSelector.ModeOption.PlayMode || mode.WhichMode == ModeSelector.ModeOption.PreviewAndPlay) && msg.position.Length > 1)
+        if (JointChengeSw && (mode.WhichMode == ModeSelector.ModeOption.PlayMode || mode.WhichMode == ModeSelector.ModeOption.PreviewAndPlay) && msg.position.Length > 1)
         {
             Quaternion RootTransform = RootObject.transform.rotation;
             if (SwingDirection == SwingPN.Negative){SwingInverter = -1;}
