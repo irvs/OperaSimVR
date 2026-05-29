@@ -103,7 +103,7 @@ public class DiffDriveController : MonoBehaviour
     public float publishMessageInterval = 0.02f;//50Hz
 
     // Used to determine how much time has elapsed since the last message was published
-    private double timeElapsed;
+    private float timeElapsed;
 
     private EmergencyStop emergencyStop;
 
@@ -112,6 +112,10 @@ public class DiffDriveController : MonoBehaviour
     private static double Clamp(double x, double lo, double hi) => x < lo ? lo : (x > hi ? hi : x);
     private static double Clamp01(double x) => Clamp(x, 0.0, 1.0);
     private static double SignNonzero(double x) => x < 0.0 ? -1.0 : (x > 0.0 ? 1.0 : 0.0);
+
+    public float LinearCMD;
+    public float AngularCMD;
+    public int ControlMode;
 
     // Start is called before the first frame update
     protected virtual void Start()
@@ -140,7 +144,7 @@ public class DiffDriveController : MonoBehaviour
             Debug.Log("Check left!");
 
             /* Get ArticulationBody-type Component named "left_middle_wheel_link" */
-            if(left.name == "left_middle_wheel_link"){
+            if (left.name == "left_middle_wheel_link"){
                 leftMiddleWheel = body;
             }
             leftWheelControllers.Add(new PID(pGain, iGain, dGain, 1, torqueLimit, -torqueLimit));
@@ -152,14 +156,14 @@ public class DiffDriveController : MonoBehaviour
             body.ConfigureVehicleSubsteps(5f, 100, 100);
             rightWheelColliders.Add(body);
             Debug.Log("Check right!");
-            
+
             /* Get ArticulationBody-type Component named "right_middle_wheel_link" */
-            if(right.name == "right_middle_wheel_link"){
+            if (right.name == "right_middle_wheel_link"){
                 rightMiddleWheel = body;
             }
             rightWheelControllers.Add(new PID(pGain, iGain, dGain, 1, torqueLimit, -torqueLimit));
         }
-        tread_half = Mathf.Abs(leftWheels[0].transform.localPosition.x - rightWheels[0].transform.localPosition.x)/2;
+        tread_half = Mathf.Abs(leftWheels[0].transform.localPosition.x - rightWheels[0].transform.localPosition.x) / 2;
 
         preprocessedRobotName = Utils.PreprocessNamespace(this.gameObject, robotName);
         preprocessedChildFrameName = Utils.PreprocessNamespace(this.gameObject, childFrameName);
@@ -198,64 +202,76 @@ public class DiffDriveController : MonoBehaviour
         // Debug.Log("LeftJointVelocity:"+leftVelMes);
         // Debug.Log("RightJointVelocity:"+rightVelMes);
 
-        /* Calculate linear and angular velocity based on kinematics */
-        double linearVel = (rightVelMes + leftVelMes)/2.0;
-        double angularVel = (rightVelMes - leftVelMes)/(2.0*tread_half*treadCollectionFactor);   
-        // Debug.Log("LinearVelocity:"+linearVel);
-        // Debug.Log("AngularVelocity:"+angularVel);
-        // Debug.Log("tread_half:"+tread_half);
-        // Debug.Log("deltaTime:"+deltaTime);
-
-        yaw += angularVel * deltaTime;
-        /* Normalize Yaw [batween -PI and +PI] */
-        if(Mathf.Abs((float)yaw) > Mathf.PI){
-            yaw -= (double)(2*Mathf.PI*Mathf.Sign((float)yaw));
-        }
-
-        odomMessage.pose.pose.position.x += linearVel * (double)Mathf.Cos((float)yaw) * deltaTime;
-        odomMessage.pose.pose.position.y += linearVel * (double)Mathf.Sin((float)yaw) * deltaTime;
-
-        // Debug.Log("x:"+odomMessage.pose.pose.position.x);
-        // Debug.Log("y:"+odomMessage.pose.pose.position.y);
-        // Debug.Log("yaw:"+yaw);
-
-        Quaternion rotation = Quaternion.Euler(0, 0, (float)(yaw*180.0/(double)Mathf.PI));
-
-        odomMessage.pose.pose.orientation.w = rotation.w;
-        odomMessage.pose.pose.orientation.x = rotation.x;
-        odomMessage.pose.pose.orientation.y = rotation.y;
-        odomMessage.pose.pose.orientation.z = rotation.z;
-
-        odomMessage.pose.covariance = new double[] {0.001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000.0};
-
-        odomMessage.twist.twist.linear.x = linearVel;
-        odomMessage.twist.twist.linear.y = 0.0;
-        odomMessage.twist.twist.linear.z = 0.0;
-
-        odomMessage.twist.twist.angular.x = 0.0;
-        odomMessage.twist.twist.angular.y = 0.0;
-        odomMessage.twist.twist.angular.z = angularVel;
-
-        odomMessage.twist.covariance = new double[] {0.001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000.0};
-        
-        if (timeElapsed >= publishMessageInterval)
+        if (ControlMode != 1)
         {
-            odomMessage.header.frame_id = preprocessedRobotName + "_tf/odom";
-            odomMessage.header.stamp = new TimeStamp(Clock.time);
-            odomMessage.child_frame_id = preprocessedChildFrameName;
+            double linearVel = 0.0;
+            double angularVel = 0.0;
 
-            ros.Publish(preprocessedOdomTopicName, odomMessage);
-            timeElapsed = 0.0f;
+            /* Calculate linear and angular velocity based on kinematics */
+            linearVel = (rightVelMes + leftVelMes) / 2.0;
+            angularVel = (rightVelMes - leftVelMes) / (2.0 * tread_half * treadCollectionFactor);
+            // Debug.Log("LinearVelocity:"+linearVel);
+            // Debug.Log("AngularVelocity:"+angularVel);
+            // Debug.Log("tread_half:"+tread_half);
+            // Debug.Log("deltaTime:"+deltaTime);
+
+            yaw += angularVel * deltaTime;
+            /* Normalize Yaw [batween -PI and +PI] */
+            if (Mathf.Abs((float)yaw) > Mathf.PI){
+                yaw -= (double)(2 * Mathf.PI * Mathf.Sign((float)yaw));
+            }
+
+            odomMessage.pose.pose.position.x += linearVel * (double)Mathf.Cos((float)yaw) * deltaTime;
+            odomMessage.pose.pose.position.y += linearVel * (double)Mathf.Sin((float)yaw) * deltaTime;
+
+            // Debug.Log("x:"+odomMessage.pose.pose.position.x);
+            // Debug.Log("y:"+odomMessage.pose.pose.position.y);
+            // Debug.Log("yaw:"+yaw);
+
+            Quaternion rotation = Quaternion.Euler(0, 0, (float)(yaw * 180.0 / (double)Mathf.PI));
+
+            odomMessage.pose.pose.orientation.w = rotation.w;
+            odomMessage.pose.pose.orientation.x = rotation.x;
+            odomMessage.pose.pose.orientation.y = rotation.y;
+            odomMessage.pose.pose.orientation.z = rotation.z;
+
+            odomMessage.pose.covariance = new double[] { 0.001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000.0 };
+
+            odomMessage.twist.twist.linear.x = linearVel;
+            odomMessage.twist.twist.linear.y = 0.0;
+            odomMessage.twist.twist.linear.z = 0.0;
+
+            odomMessage.twist.twist.angular.x = 0.0;
+            odomMessage.twist.twist.angular.y = 0.0;
+            odomMessage.twist.twist.angular.z = angularVel;
+
+            odomMessage.twist.covariance = new double[] { 0.001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1000.0 };
+
+            if (timeElapsed >= publishMessageInterval)
+            {
+                odomMessage.header.frame_id = preprocessedRobotName + "_tf/odom";
+                odomMessage.header.stamp = new TimeStamp(Clock.time);
+                odomMessage.child_frame_id = preprocessedChildFrameName;
+
+                ros.Publish(preprocessedOdomTopicName, odomMessage);
+                timeElapsed = 0.0f;
+            }
+
+            if (emergencyStop && emergencyStop.isEmergencyStop) {
+                leftVelCmd = 0.0;
+                rightVelCmd = 0.0;
+            }
         }
 
-        if (emergencyStop && emergencyStop.isEmergencyStop) {
-            leftVelCmd = 0.0;
-            rightVelCmd = 0.0;
+        if (ControlMode == 1)
+        {
+            CommandLinearAngularVelocity(LinearCMD, AngularCMD);
         }
 
         /* Set targetVelocity in xDrive in wheels */
         var ts = TimeSpan.FromSeconds(deltaTime);
-        for (var i = 0; i < leftWheelColliders.Count; i++) {
+        for (var i = 0; i < leftWheelColliders.Count; i++)
+        {
             var left = leftWheelColliders[i];
             var pid = leftWheelControllers[i];
             var v = (float)pid.PID_iterate(leftVelCmd, leftVelMes, ts);
@@ -293,6 +309,7 @@ public class DiffDriveController : MonoBehaviour
         //Debug.Log("RightJointVelocityDiff:" + (rightVelCmd - rightTrackVel));
 
         previousTime = time;
+       // Debug.Log("Diff Move");
     }
 
     void CommandLinearAngularVelocity(double cmdLinearVel, double cmdAngularVel)
