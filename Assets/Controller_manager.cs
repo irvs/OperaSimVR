@@ -33,7 +33,7 @@ public class Controller_manager : MonoBehaviour
     //
     public TextMeshProUGUI myTMPText;
     public string WriteWord;
-    private bool Sensorpod;
+    private bool SensorCamera;
 
     // Start is called before the first frame update
     void Start()
@@ -78,7 +78,7 @@ public class Controller_manager : MonoBehaviour
                 if (ModelInfo != null)
                 {
                     MachineCameraPosition = GameObject.Find(Machine_name + "_cam");
-                    Sensorpod = false;
+                    SensorCamera = false;
                     //Debug.Log(Machine_name : " + machine");
                     posiorigin = PlayertargetObject.transform.position;
                     rotrigin = PlayertargetObject.transform.rotation;
@@ -96,7 +96,7 @@ public class Controller_manager : MonoBehaviour
                 if (SensorCamerasImageSubscriber != null)
                 {
                     button = false;
-                    Sensorpod = true;
+                    SensorCamera = true;
                     posiorigin = PlayertargetObject.transform.position;
                     SensorCameraInfo = GameObject.Find(From_VRcont.OneBeforeRootObjectName).GetComponent<SensorCameraNamespase>();
                     SensorCamerasImageSubscriber.topicName = SensorCameraInfo.ImageTopicName;
@@ -114,11 +114,11 @@ public class Controller_manager : MonoBehaviour
             {
                 PlayerControllScript.RotationRatchet = 45;
                 PlayerControllScript.RotationAmount = 0.5f;
-                PlayerControllScript.transform.SetParent(null); // éqÉIÉuÉWÉFÉNÉgâèú/////
+                PlayerControllScript.transform.SetParent(null); // ÔøΩqÔøΩIÔøΩuÔøΩWÔøΩFÔøΩNÔøΩgÔøΩÔøΩÔøΩÔøΩ/////
 
                 PlayerPoseMove_SW = 0;
                 num = 0;
-                if (Sensorpod == true) { SensorCamerasImageSubscriber.isImageReceived = true; }
+                if (SensorCamera == true) { SensorCamerasImageSubscriber.isImageReceived = true; }
 
                 GetOnMachine = 0;
                 VRCrawlerOp scriptB_c = VehicletargetObject.GetComponent<VRCrawlerOp>();
@@ -179,7 +179,7 @@ public class Controller_manager : MonoBehaviour
                 {
                     Playerlinear = -0.01f;
                 }
-                //OVRCameraRigÇÃà íuïœçX
+                //OVRCameraRigÔøΩÃà íuÔøΩœçX
                 PlayertargetObject.transform.position += PlayertargetObject.transform.rotation * (new Vector3(0, 0, (Playerlinear)));
                 if (Input.GetKey(KeyCode.Q))
                 {
