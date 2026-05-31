@@ -291,4 +291,3 @@ Then, set "SendRequestSw" to true.
 |IsReal|When set to "true", the position and orientation information is converted to a planar orthogonal coordinate system and recorded.|
 
 <img src=images/OperaSimVR/DBWriter.png width="500px">
-
