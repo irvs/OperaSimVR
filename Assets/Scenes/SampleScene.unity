@@ -14594,7 +14594,7 @@ MonoBehaviour:
   ViaDB: 0
   JointPositions: []
   OffsetSwing: 0
-  OffsetBoom: 0
+  OffsetBoom: -28.4
   OffsetArm: 0
   OffsetBucket: 0
 --- !u!114 &3551451264562611630
@@ -14636,7 +14636,6 @@ MonoBehaviour:
   targetObject: {fileID: 0}
   ObjectTypeIsPaperMachine: 0
   ParentMachine: 
-  PaperMachine: {fileID: 0}
   Modelname: 
   KindsOfHeavyMachinery: 0
   Offset_x: 14034.45
@@ -16635,7 +16634,6 @@ MonoBehaviour:
   targetObject: {fileID: 0}
   ObjectTypeIsPaperMachine: 0
   ParentMachine: 
-  PaperMachine: {fileID: 0}
   Modelname: 
   KindsOfHeavyMachinery: 0
   Offset_x: 14034.45
@@ -20799,7 +20797,6 @@ MonoBehaviour:
   targetObject: {fileID: 0}
   ObjectTypeIsPaperMachine: 0
   ParentMachine: 
-  PaperMachine: {fileID: 0}
   Modelname: 
   KindsOfHeavyMachinery: 0
   Offset_x: 14034.45
@@ -20836,9 +20833,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PathPoints: []
   SubscribeTopicName: /ic120/plan
-  offset_x: 0
-  offset_y: 0
-  offset_z: 0
 --- !u!114 &9193752695730317232
 MonoBehaviour:
   m_ObjectHideFlags: 0

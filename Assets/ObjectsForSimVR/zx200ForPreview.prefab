@@ -2405,7 +2405,6 @@ MonoBehaviour:
   targetObject: {fileID: 0}
   ObjectTypeIsPaperMachine: 0
   ParentMachine: 
-  PaperMachine: {fileID: 0}
   Modelname: 
   KindsOfHeavyMachinery: 0
   Offset_x: 0
@@ -2424,7 +2423,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 3349462833093941787}
   m_Enabled: 0
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 15593fc581486784e99c7dcd3ff54c39, type: 3}
+  m_Script: {fileID: 11500000, guid: 31d41c73dbae6e04a8cd1866662983c5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   PreviewTime: 3

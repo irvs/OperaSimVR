@@ -48,9 +48,9 @@ public class PreviewForCruise : MonoBehaviour
         ModelIdentifier = GetComponent<ModelIdentifier>();
         MachinePoseSubscriber = SubscriberObject.GetComponent<PoseSubscriber>();
         PathSub = SubscriberObject.GetComponent<PathSubscriber>();
-        PlanPositon = new List<(DateTime, Vector3)>();///for evaluate///
 
         FieldManager = SelectorObject.GetComponent<FieldMainManager>();
+        PlanPositon = new List<(DateTime, Vector3)>();///for evaluate///
     }
 
     void Update()

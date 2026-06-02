@@ -42,7 +42,9 @@ public class PrevForBackhoe : MonoBehaviour
         var selector = GameObject.Find("FieldManager");
         JointPathPlanSubscriber = SubscriberObject.GetComponent<PathJointSubscriber>();
         ModelIdentifier = GetComponent<ModelIdentifier>();
-        FieldManager = selector.GetComponent<FieldMainManager>();        
+        FieldManager = selector.GetComponent<FieldMainManager>();   
+
+        PlanJointAngle = new List<(DateTime, float[])>();
     }
 
     void Update()
@@ -93,6 +95,11 @@ public class PrevForBackhoe : MonoBehaviour
         BoomObject.localRotation = Quaternion.Euler(boomDeg, 0, 0);
         ArmObject.localRotation = Quaternion.Euler(armDeg, 0, 0);
         BucketObject.localRotation = Quaternion.Euler(bucketDeg, 0, 0);
+
+        // PlanJointAngle = new List<(DateTime, float[])>();
+        PlanJointAngle.Add(
+           (DateTime.UtcNow, new float[] { (float)joints[0], (float)joints[1] - OffsetSwing * (Mathf.PI / 180), (float)joints[2], (float)joints[3] })
+       );
     }
 
     int FindPreviewIndex(double previewTime)
