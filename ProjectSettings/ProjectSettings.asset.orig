@@ -620,11 +620,7 @@ PlayerSettings:
   webGLMemoryGeometricGrowthCap: 96
   webGLPowerPreference: 2
   scriptingDefineSymbols:
-<<<<<<< HEAD
-    Standalone: ROS2;ROS2
-=======
     Standalone: ROS2
->>>>>>> main
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend: {}
