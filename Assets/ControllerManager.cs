@@ -38,7 +38,7 @@ public class ControllerManager : MonoBehaviour
     {
         From_VRcont = FindObjectOfType<ControllerLay>();
         PlayertargetObject = GameObject.Find("OVRPlayerController");
-        OVRPlayerController PlayerControllScript = PlayertargetObject.GetComponent<OVRPlayerController>();
+        PlayerControllScript = PlayertargetObject.GetComponent<OVRPlayerController>();
         From_VRcont = FindObjectOfType<ControllerLay>();
         Machine_Name_List.Add("zero");
     }
@@ -75,7 +75,17 @@ public class ControllerManager : MonoBehaviour
                 ModelInfo = VehicletargetObject.GetComponent<ModelIdentifier>();
                 if (ModelInfo != null)
                 {
-                    MachineCameraPosition = GameObject.Find(Machine_name + "_cam");
+                    Transform camTransform = FindChildRecursive(VehicletargetObject.transform,"camera_point");
+                    if (camTransform != null)
+                    {
+                        MachineCameraPosition = camTransform.gameObject;
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"{Machine_name}_cam が {VehicletargetObject.name} 配下に見つかりません");
+                    }
+                  //  MachineCameraPosition = camTransform.gameObject;
+                    //MachineCameraPosition = GameObject.Find(Machine_name + "_cam");
                     SensorCamera = false;
                     //Debug.Log(Machine_name : " + machine");
                     posiorigin = PlayertargetObject.transform.position;
@@ -249,6 +259,25 @@ public class ControllerManager : MonoBehaviour
             string coloredText = $"<mark={colorCode}>{baseText}</mark>";
             myTMPText.text = coloredText;
         }
+    }
+
+    private Transform FindChildRecursive(Transform parent, string targetName)
+    {
+        foreach (Transform child in parent)
+        {
+            if (child.name == targetName)
+            {
+                return child;
+            }
+
+            Transform result = FindChildRecursive(child, targetName);
+            if (result != null)
+            {
+                return result;
+            }
+        }
+
+        return null;
     }
 
 }

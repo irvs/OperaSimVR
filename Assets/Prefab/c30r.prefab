@@ -1696,7 +1696,7 @@ Transform:
   - {fileID: 2807625129950714371}
   - {fileID: 6708216573999849332}
   m_Father: {fileID: 0}
-  m_RootOrder: 8
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 80.071, z: 0}
 --- !u!114 &7125873246095346220
 MonoBehaviour:
@@ -1827,6 +1827,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: de755eb9608519242b24f7ffc65aad35, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  EnableVWBehaviorMode: 1
+  VWDecelFactor: 1
+  VWRatioFactor: 0.9
   leftWheels:
   - {fileID: 3572522523699060590}
   - {fileID: 8943536549602474604}
@@ -1849,6 +1852,9 @@ MonoBehaviour:
   maxLinearVelocity: 3
   maxAngularVelocity: 3
   publishMessageInterval: 0.02
+  LinearCMD: 0
+  AngularCMD: 0
+  ControlMode: 0
 --- !u!1 &256828119924515236
 GameObject:
   m_ObjectHideFlags: 0
@@ -52657,6 +52663,37 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.028391289, y: 0.31723133, z: 0.027497035}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &6484050983450886591
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8741087626076861459}
+  m_Layer: 0
+  m_Name: camera_point
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8741087626076861459
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6484050983450886591}
+  m_LocalRotation: {x: 0.5, y: -0.5, z: -0.5, w: 0.5}
+  m_LocalPosition: {x: -1.783, y: 0.345, z: 1.403}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2289447628659113920}
+  m_RootOrder: -1
+  m_LocalEulerAnglesHint: {x: 0, y: -90, z: -90}
 --- !u!1 &6501292545184922099
 GameObject:
   m_ObjectHideFlags: 0
@@ -76562,6 +76599,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: d7de86f1f9b2a7e46ac11f20221a5e3e, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6252212532209884962}
+    - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: d7de86f1f9b2a7e46ac11f20221a5e3e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8741087626076861459}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d7de86f1f9b2a7e46ac11f20221a5e3e, type: 3}
 --- !u!4 &2289447628659113920 stripped

@@ -950,7 +950,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 824596219436593471}
-  m_LocalRotation: {x: -0.5016209, y: -0, z: 0, w: 0.8650876}
+  m_LocalRotation: {x: -0.5016207, y: -0, z: 0, w: 0.8650877}
   m_LocalPosition: {x: 0, y: 2.657002, z: -1.0588334}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -985,7 +985,7 @@ ArticulationBody:
   serializedVersion: 5
   m_Mass: 0.03
   m_ParentAnchorPosition: {x: -0.00000014901161, y: 2.657003, z: -1.0588338}
-  m_ParentAnchorRotation: {x: -0.35469946, y: 0.35469946, z: 0.61170954, w: 0.61170954}
+  m_ParentAnchorRotation: {x: -0.3546996, y: 0.3546996, z: 0.6117094, w: 0.6117094}
   m_AnchorPosition: {x: 0, y: 0, z: 0}
   m_AnchorRotation: {x: 0, y: 0, z: 0.7071068, w: 0.7071068}
   m_MatchAnchors: 1
@@ -1314,6 +1314,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   setpointTopicName: zx120/boom/cmd
   initTargetPos: -46
+  JointChangeSW: 0
 --- !u!1 &918535174021584550
 GameObject:
   m_ObjectHideFlags: 0
@@ -2894,6 +2895,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   setpointTopicName: zx120/bucket/cmd
   initTargetPos: 46
+  JointChangeSW: 0
 --- !u!1 &1744080786153237408
 GameObject:
   m_ObjectHideFlags: 0
@@ -4167,6 +4169,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: de755eb9608519242b24f7ffc65aad35, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  EnableVWBehaviorMode: 1
+  VWDecelFactor: 1
+  VWRatioFactor: 0.9
   leftWheels:
   - {fileID: 5656173056766670005}
   - {fileID: 5004105183583142850}
@@ -4189,6 +4194,9 @@ MonoBehaviour:
   maxLinearVelocity: 3
   maxAngularVelocity: 3
   publishMessageInterval: 0.02
+  LinearCMD: 0
+  AngularCMD: 0
+  ControlMode: 0
 --- !u!54 &512488383328262228
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -4858,6 +4866,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   setpointTopicName: zx120/arm/cmd
   initTargetPos: 114
+  JointChangeSW: 0
 --- !u!1 &2712672079618212518
 GameObject:
   m_ObjectHideFlags: 0
@@ -12154,6 +12163,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   setpointTopicName: zx120/swing/cmd
   initTargetPos: 0
+  JointChangeSW: 0
 --- !u!1 &3912907092938036591
 GameObject:
   m_ObjectHideFlags: 0
@@ -15156,7 +15166,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5593105784225897296}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.00000014901161, y: 0.0000009536743, z: -0.87944496}
+  m_LocalPosition: {x: -0.00000014901161, y: 0.00000166893, z: -0.87944484}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -15188,7 +15198,7 @@ ArticulationBody:
   m_Enabled: 1
   serializedVersion: 5
   m_Mass: 0.03
-  m_ParentAnchorPosition: {x: -0.00000014901161, y: 0.000002682209, z: -0.879444}
+  m_ParentAnchorPosition: {x: -0.00000014901161, y: 0.0000013113022, z: -0.87944514}
   m_ParentAnchorRotation: {x: 0, y: -0.707107, z: 0, w: 0.707107}
   m_AnchorPosition: {x: 0, y: 0, z: 0}
   m_AnchorRotation: {x: 0, y: -0.7071068, z: 0, w: 0.7071068}
@@ -17148,6 +17158,37 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   geometryType: 3
+--- !u!1 &6703304009103513730
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3006553919067382524}
+  m_Layer: 0
+  m_Name: camera_point
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3006553919067382524
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6703304009103513730}
+  m_LocalRotation: {x: -0, y: -0.7071068, z: -0, w: 0.7071068}
+  m_LocalPosition: {x: -1.452, y: 0.661, z: -0.888}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4536342219111566106}
+  m_RootOrder: -1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6772271140169866684
 GameObject:
   m_ObjectHideFlags: 0
@@ -26729,7 +26770,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: d48f8b4f05ae420459a21da3e33bb4e4, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3006553919067382524}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d48f8b4f05ae420459a21da3e33bb4e4, type: 3}
 --- !u!4 &4536342219111566106 stripped
