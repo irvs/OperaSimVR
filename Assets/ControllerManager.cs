@@ -32,6 +32,11 @@ public class ControllerManager : MonoBehaviour
     //
     public TextMeshProUGUI myTMPText;
     private bool SensorCamera;
+    ModeSelector mode;
+    public GameObject PlaneObject;
+    GameObject ScreenObject;
+    PoseChanger PoseChanger;
+    bool CreatedScreen;
 
     // Start is called before the first frame update
     void Start()
@@ -40,6 +45,7 @@ public class ControllerManager : MonoBehaviour
         PlayertargetObject = GameObject.Find("OVRPlayerController");
         PlayerControllScript = PlayertargetObject.GetComponent<OVRPlayerController>();
         Machine_Name_List.Add("zero");
+        mode = FindObjectOfType<ModeSelector>();
     }
 
     // Update is called once per frame
@@ -114,7 +120,18 @@ public class ControllerManager : MonoBehaviour
             }
             if ((PlayerPoseMove_SW > 0) && outside_sw == false)
             {
-                PlayertargetObject.transform.position = MachineCameraPosition.transform.position;
+                if(mode.WhichMode == ModeSelector.ModeOption.PreviewAR)
+                {
+                    if(!CreatedScreen)
+                    {
+                        CreatePlene();
+                        CreatedScreen = true;
+                    }
+                    PlayertargetObject.transform.position = MachineCameraPosition.transform.position + new Vector3(0, 100, 0);
+
+                    
+                }
+                else{PlayertargetObject.transform.position = MachineCameraPosition.transform.position;}
                 num = 1;
             }
             if (((PlayerPoseMove_SW > 0 || GetOnMachine == 1) && OVRInput.GetDown(OVRInput.RawButton.B) && (num == 1)) || ((PlayerPoseMove_SW > 0 || GetOnMachine == 1) && (num == 1)) && Input.GetKeyDown(KeyCode.B))
@@ -258,6 +275,14 @@ public class ControllerManager : MonoBehaviour
             string coloredText = $"<mark={colorCode}>{baseText}</mark>";
             myTMPText.text = coloredText;
         }
+    }
+
+    public void CreatePlene()
+    {
+        ScreenObject = Instantiate(PlaneObject, MachineCameraPosition.transform.position + new Vector3(0, 100, 0), MachineCameraPosition.transform.rotation);
+        PoseChanger = ScreenObject.GetComponent<PoseChanger>();
+        PoseChanger.SubscriberObject = MachineCameraPosition;
+        PoseChanger.enabled = true;
     }
 
     private Transform FindChildRecursive(Transform parent, string targetName)
