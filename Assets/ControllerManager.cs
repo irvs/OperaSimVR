@@ -39,7 +39,6 @@ public class ControllerManager : MonoBehaviour
         From_VRcont = FindObjectOfType<ControllerLay>();
         PlayertargetObject = GameObject.Find("OVRPlayerController");
         PlayerControllScript = PlayertargetObject.GetComponent<OVRPlayerController>();
-        From_VRcont = FindObjectOfType<ControllerLay>();
         Machine_Name_List.Add("zero");
     }
 
