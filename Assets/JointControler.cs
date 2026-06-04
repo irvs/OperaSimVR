@@ -36,7 +36,7 @@ public class JointControler : MonoBehaviour
     {
         if ((mode.WhichMode == ModeSelector.ModeOption.NormalModeSimulator || mode.WhichMode == ModeSelector.ModeOption.PreviewModeForTeleop) && FromVRJointController.OnOffSw.ToString() == "On") 
         {
-            if (VRManager.PlayerPoseMove_SW > 0)
+            if (VRManager.GetOnMachine == ControllerManager.RideOption.GetOn)
             {  
                 if (OVRPlayerControllerScript != null)
                 {
