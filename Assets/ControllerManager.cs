@@ -12,7 +12,9 @@ public class ControllerManager : MonoBehaviour
     bool outside_sw = false;
     public string Machine_name;
     GameObject VehicletargetObject;
-    public int GetOnMachine = 0;
+    //public int GetOnMachine = 0;
+    public enum RideOption {GetOff, GetOn}
+    public RideOption GetOnMachine;
     List<string> Machine_Name_List = new List<string>();
     public int PlayerPoseMove_SW = 0;
     Vector3 posiorigin;
@@ -65,16 +67,16 @@ public class ControllerManager : MonoBehaviour
             Machine_name = Machine_Name_List[Machine_Name_List.Count - 1];
         }
 
-        if (GetOnMachine == 0 && (Machine_name != null && Machine_name != "") && (OVRInput.Get(OVRInput.RawButton.LIndexTrigger) || Input.GetKeyDown(KeyCode.V)))
+        if (GetOnMachine == RideOption.GetOff && (Machine_name != null && Machine_name != "") && (OVRInput.Get(OVRInput.RawButton.LIndexTrigger) || Input.GetKeyDown(KeyCode.V)))
         {
-            GetOnMachine = 1;
+            GetOnMachine = RideOption.GetOn;
             Debug.Log(Machine_name);
         }
 
         if (Machine_name != null && Machine_name != "" && Machine_name != "OVRPlayerController")
         {
             button = true;
-            if ((GetOnMachine == 1) && (PlayerPoseMove_SW == 0))
+            if ((GetOnMachine == RideOption.GetOn) && (PlayerPoseMove_SW == 0))
             {
                 VehicletargetObject = GameObject.Find(Machine_name);
                 ModelInfo = VehicletargetObject.GetComponent<ModelIdentifier>();
@@ -134,7 +136,7 @@ public class ControllerManager : MonoBehaviour
                 else{PlayertargetObject.transform.position = MachineCameraPosition.transform.position;}
                 num = 1;
             }
-            if (((PlayerPoseMove_SW > 0 || GetOnMachine == 1) && OVRInput.GetDown(OVRInput.RawButton.B) && (num == 1)) || ((PlayerPoseMove_SW > 0 || GetOnMachine == 1) && (num == 1)) && Input.GetKeyDown(KeyCode.B))
+            if (((PlayerPoseMove_SW > 0 || GetOnMachine == RideOption.GetOn) && OVRInput.GetDown(OVRInput.RawButton.B) && num == 1) || (PlayerPoseMove_SW > 0 || GetOnMachine == RideOption.GetOn) && num == 1 && Input.GetKeyDown(KeyCode.B))
             {
                 PlayerControllScript.RotationRatchet = 45;
                 PlayerControllScript.RotationAmount = 0.5f;
@@ -144,7 +146,7 @@ public class ControllerManager : MonoBehaviour
                 num = 0;
                 if (SensorCamera == true) { SensorCamerasImageSubscriber.isImageReceived = true; }
 
-                GetOnMachine = 0;
+                GetOnMachine = RideOption.GetOff;
                 VRCrawlerOp scriptB_c = VehicletargetObject.GetComponent<VRCrawlerOp>();
                 if (scriptB_c != null)
                 {

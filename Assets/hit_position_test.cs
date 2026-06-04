@@ -57,7 +57,7 @@ public class TerrainCollisionPoint : MonoBehaviour
                 CreateSphereAtCollisionPoint(collisionPoint);
             }
         }
-        if (((Geton_controller_manager.GetOnMachine == 0 && OVRInput.Get(OVRInput.RawButton.LIndexTrigger)) || (Geton_controller_manager.GetOnMachine == 0 && Input.GetKey(KeyCode.B))) && ApproximatelyEqual(PrevPosition, collisionPoint))
+        if (((Geton_controller_manager.GetOnMachine == ControllerManager.RideOption.GetOff && OVRInput.Get(OVRInput.RawButton.LIndexTrigger)) || (Geton_controller_manager.GetOnMachine == ControllerManager.RideOption.GetOff && Input.GetKey(KeyCode.B))) && ApproximatelyEqual(PrevPosition, collisionPoint))
         {
             PathForDB.Add(collisionPoint);
             PrevPosition = collisionPoint;
