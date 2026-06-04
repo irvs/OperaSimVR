@@ -116,6 +116,7 @@ public class VRCrawlerOp : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if(VRManager == null){return;}
         if (emergency || VRManager.emergency_sw)
         {
             timeElapsed += Time.deltaTime;
