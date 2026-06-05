@@ -30,12 +30,14 @@ public class ControllerManager : MonoBehaviour
     OVRPlayerController PlayerControllScript;
     public TextMeshProUGUI myTMPText;
     ModeSelector mode;
-    public GameObject PlaneObject;
     GameObject ScreenObject;
     PoseChanger PoseChanger;
     bool CreatedScreen;
     VRCrawlerOp VRCrawlerOp;
     JointAnglePublisher JointAnglePublisher;
+    private Camera centerEyeCamera;
+    PillarCameraNamespace PillarCameraNamespace;
+    private float OriginFOV;
 
     // Start is called before the first frame update
     void Start()
@@ -137,7 +139,7 @@ public class ControllerManager : MonoBehaviour
         VehicletargetObject = GameObject.Find(Machine_name);
         ModelInfo = VehicletargetObject.GetComponent<ModelIdentifier>();
         SensorCamerasImageSubscriber = VehicletargetObject.GetComponent<SensorCameraImageSubscriber>();
-        PillarCameraNamespace PillarCameraNamespace = VehicletargetObject.GetComponent<PillarCameraNamespace>();
+        PillarCameraNamespace = VehicletargetObject.GetComponent<PillarCameraNamespace>();
 
         posiorigin = PlayertargetObject.transform.position;
 
@@ -170,14 +172,14 @@ public class ControllerManager : MonoBehaviour
             SensorCamerasImageSubscriber.isImageReceived = false;
             UpdateTextWithMarkup(From_VRcont.OneBeforeRootObjectName, "#ff000055");
         }
-        else if (PillarCameraNamespace != null)
+        else if (PillarCameraNamespace != null && ModelInfo == null)
         {
             ObjectType = ObjectOption.PirrarCamera;
             CreatePlene(false);
             Transform camTransform = FindChildRecursive(VehicletargetObject.transform,"camera_point");
             MachineCameraPosition = camTransform.gameObject;
             PlayertargetObject.GetComponent<CharacterController>().enabled = false;
-            PlayertargetObject.transform.position = MachineCameraPosition.transform.position;
+            PlayertargetObject.transform.position = MachineCameraPosition.transform.position + new Vector3(0,100f,0);
             PlayertargetObject.transform.rotation = MachineCameraPosition.transform.rotation;
             PlayertargetObject.transform.SetParent(MachineCameraPosition.transform);
             UpdateTextWithMarkup(Machine_name, "#ff000055");
@@ -209,6 +211,7 @@ public class ControllerManager : MonoBehaviour
         {
             ScreenObject.SetActive(false);
             ScreenObject = null;
+            centerEyeCamera.fieldOfView = OriginFOV;
         }
         outside_sw = false;
         PlayertargetObject.GetComponent<Collider>().enabled = true;
@@ -267,9 +270,10 @@ public class ControllerManager : MonoBehaviour
 
     public void CreatePlene(bool ChangeCameraPoint)
     {
-        //ScreenObject = Instantiate(PlaneObject, MachineCameraPosition.transform.position + new Vector3(0, 100, 0), MachineCameraPosition.transform.rotation);
         Transform ScreenTransform = FindChildRecursive(VehicletargetObject.transform,"ScreenPlanePose");
         ScreenObject = ScreenTransform.gameObject;
+        Transform Plane = ScreenObject.transform.Find("Plane");
+        Plane.gameObject.GetComponent<ImageSubscriber>().topicName = PillarCameraNamespace.ImageTopicName;
         ScreenObject.SetActive(true);
         if (ChangeCameraPoint)
         {
@@ -277,6 +281,10 @@ public class ControllerManager : MonoBehaviour
             PoseChanger.SubscriberObject = MachineCameraPosition;
             PoseChanger.enabled = true;
         }
+        OVRCameraRig rig = PlayertargetObject.GetComponentInChildren<OVRCameraRig>();
+        centerEyeCamera = rig.centerEyeAnchor.GetComponent<Camera>();
+        OriginFOV = centerEyeCamera.fieldOfView;
+        centerEyeCamera.fieldOfView = PillarCameraNamespace.TargetFOV;
     }
 
     private Transform FindChildRecursive(Transform parent, string targetName)

@@ -3077,6 +3077,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ImageTopicName: /camera/image/compressed
+  TargetFOV: 14
 --- !u!1 &366857598
 GameObject:
   m_ObjectHideFlags: 0
@@ -9589,7 +9590,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 450289477043605734, guid: d9189d3224b0a36458d89404cb4b451b, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.37009335
+      value: 100.370094
       objectReference: {fileID: 0}
     - target: {fileID: 450289477043605734, guid: d9189d3224b0a36458d89404cb4b451b, type: 3}
       propertyPath: m_LocalPosition.z
@@ -11320,7 +11321,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1656646816
 Transform:
   m_ObjectHideFlags: 0
@@ -15910,6 +15911,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 330258041213618457, guid: 2dd7b6640a1df7f038639fda1ffd090a, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3551451264562611645}
+    - targetCorrespondingSourceObject: {fileID: 330258041213618457, guid: 2dd7b6640a1df7f038639fda1ffd090a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3551451264562611661}
   m_SourcePrefab: {fileID: 100100000, guid: 2dd7b6640a1df7f038639fda1ffd090a, type: 3}
 --- !u!1 &3551451264562611626 stripped
 GameObject:
@@ -16054,6 +16058,20 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3781840263404902456, guid: 2dd7b6640a1df7f038639fda1ffd090a, type: 3}
   m_PrefabInstance: {fileID: 3551451264562611625}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &3551451264562611661
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3551451264562611626}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 38c0a29fd7fad924db837b3dc06f2125, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ImageTopicName: /camera/image/compressed
+  TargetFOV: 90
 --- !u!1001 &7980615343327131005
 PrefabInstance:
   m_ObjectHideFlags: 0

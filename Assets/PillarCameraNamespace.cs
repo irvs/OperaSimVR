@@ -5,6 +5,7 @@ using UnityEngine;
 public class PillarCameraNamespace : MonoBehaviour
 {
     public string ImageTopicName;
+    public float TargetFOV = 90f;
     // Start is called before the first frame update
     void Start()
     {
