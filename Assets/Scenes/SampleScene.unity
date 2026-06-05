@@ -9624,6 +9624,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2523775668825240835, guid: d9189d3224b0a36458d89404cb4b451b, type: 3}
+      propertyPath: fixedHeight
+      value: 18
+      objectReference: {fileID: 0}
     - target: {fileID: 5749213551997701618, guid: d9189d3224b0a36458d89404cb4b451b, type: 3}
       propertyPath: m_Name
       value: ScreenPlanePose
