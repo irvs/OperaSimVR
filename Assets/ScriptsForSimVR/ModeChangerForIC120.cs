@@ -5,6 +5,7 @@ public class ModeChangerForIC120 : MonoBehaviour
     string WhichModePrev;
     private int prev_mode;
     private int mode_return;
+    public float HeightOffset;
     GameObject Dump; 
     DiffDriveController DiffDriveController;
     JointStatePublisher JointStatePublisher;
@@ -147,10 +148,15 @@ public class ModeChangerForIC120 : MonoBehaviour
             ArticulationBody_base.enabled = false;
             ArticulationBody_vessel.enabled = false;
 
-            if(CurrentMode != ModeSelector.ModeOption.PreviewAR)
+            if(mode.WhichMode == ModeSelector.ModeOption.PreviewAR)
             {
-                InitializePreviewmodel();
-            }     
+                if(CurrentMode != ModeSelector.ModeOption.PreviewAR)
+                {
+                    HeightOffset = 100.0f;
+                    InitializePreviewmodel();
+                    HeightOffset = 0.0f;
+                }     
+            }
         }
         if (CurrentMode == ModeSelector.ModeOption.PreviewAndPlay || CurrentMode == ModeSelector.ModeOption.PreviewAR)
         {
@@ -163,7 +169,7 @@ public class ModeChangerForIC120 : MonoBehaviour
     }
     void InitializePreviewmodel()
     {
-        PrevObject = Instantiate(PreviewObject, this.gameObject.transform.position, this.gameObject.transform.rotation);
+        PrevObject = Instantiate(PreviewObject, this.gameObject.transform.position + new Vector3(0, HeightOffset, 0), this.gameObject.transform.rotation);
         PreviewForCruise = PrevObject.GetComponent<PreviewForCruise>();
         PreviewForCruise.SubscriberObject = this.gameObject;
         PreviewForCruise.enabled = true;
