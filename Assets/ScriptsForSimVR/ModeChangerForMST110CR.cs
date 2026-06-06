@@ -2,9 +2,6 @@
 
 public class ModeChangerForMST110CR : MonoBehaviour
 {
-    string WhichModePrev;
-    private int prev_mode;
-    private int mode_return;
     public float HeightOffset;
     GameObject Dump; 
     DiffDriveController DiffDriveController;
@@ -50,18 +47,15 @@ public class ModeChangerForMST110CR : MonoBehaviour
     }
     void Update()
     {
-        if (mode.WhichMode.ToString() != WhichModePrev)
+        if (CurrentMode == ModeSelector.ModeOption.PreviewAndPlay || mode.WhichMode == ModeSelector.ModeOption.PreviewAR)
         {
-            WhichModePrev = mode.WhichMode.ToString();
+            if(CurrentMode != mode.WhichMode)
+            {
+                Destroy(PrevObject);
+            }
         }
-
         if (mode.WhichMode == ModeSelector.ModeOption.NormalModeSimulator) //simlator
         {
-            if (mode.WhichMode.ToString() != WhichModePrev)
-            {
-                WhichModePrev = mode.WhichMode.ToString();
-                DiffDriveController.ControlMode = 0;
-            }
             //crawler&position
             DiffDriveController.enabled = true;
             GroundTruthPublisher.enabled = true;
@@ -82,10 +76,6 @@ public class ModeChangerForMST110CR : MonoBehaviour
         }
         if (mode.WhichMode == ModeSelector.ModeOption.PlayMode || mode.WhichMode == ModeSelector.ModeOption.PreviewAndPlay || mode.WhichMode == ModeSelector.ModeOption.PreviewAR)//visualization
         {
-            if (mode.WhichMode.ToString() != WhichModePrev)
-            {
-                WhichModePrev = mode.WhichMode.ToString();
-            }
             //crawler&position
             DiffDriveController.enabled = false;
             GroundTruthPublisher.enabled = false;
@@ -124,15 +114,6 @@ public class ModeChangerForMST110CR : MonoBehaviour
 
         if (mode.WhichMode == ModeSelector.ModeOption.PreviewModeForTeleop) //simlator+controller
         {
-            if (mode.WhichMode.ToString() != WhichModePrev)
-            {
-                if (WhichModePrev != "NormalModeSimulator")
-                {
-                    //   mode = 0;
-                    //  mode_return = 2;
-                }
-                WhichModePrev = mode.WhichMode.ToString();
-            }
             //crawler&position
             DiffDriveController.enabled = true;
             DiffDriveController.ControlMode = 1;
@@ -151,13 +132,6 @@ public class ModeChangerForMST110CR : MonoBehaviour
             ArticulationBody_vessel_cylinder_link.enabled = true;
             ArticulationBody_vessel_rod_link.enabled = true;
             ArticulationBody_vessel_link.enabled = true;
-        }
-        if (CurrentMode == ModeSelector.ModeOption.PreviewAndPlay || mode.WhichMode == ModeSelector.ModeOption.PreviewAR)
-        {
-            if(CurrentMode != mode.WhichMode)
-                {
-                    Destroy(PrevObject);
-                }
         }
         CurrentMode = mode.WhichMode;
     }
