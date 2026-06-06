@@ -9,7 +9,6 @@ public class PathWriter : MonoBehaviour
     public float offset_x = 0;
     public float offset_y = 0;
     public float offset_z = 0;
-    private ModeSelector mode;
     public List<Vector3> path_list = new List<Vector3>();
     private List<Quaternion> path_angular_list = new List<Quaternion>();
     private Quaternion angular;

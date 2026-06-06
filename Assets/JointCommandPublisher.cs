@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using Unity.Robotics.Core;
 using Unity.Robotics.UrdfImporter;
 
-public class JointAnglePublisher : MonoBehaviour
+public class JointCommandPublisher : MonoBehaviour
 {
     ControllerManager VRManager;
     ModeSelector mode;

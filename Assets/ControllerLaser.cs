@@ -1,5 +1,5 @@
 using UnityEngine;
-public class ControllerLay : MonoBehaviour
+public class ControllerLaser : MonoBehaviour
 {
     public string GetOnVehicle;
     public string parentObjectName;

@@ -170,10 +170,10 @@ For each child object ("Camera") under "Cameras", specify the topic name for sub
 ### §1.4 about emergency function
 This system has the function to perform an emergency stop of the construction machine by sending an emergency stop topic or operation commands with speed and angular velocity set to 0 [m/s] and 0 [rad/s], respectively.
 ### settings
-Set the emergency stop topic name in the “EmergencyTopicName” field of either “VRCrawlerOp” or “VRArmOp.”
+Set the emergency stop topic name in the “EmergencyTopicName” field of either “DrivingCommandPublisher” or “VRArmOp.”
 If there is no dedicated emergency stop topic, you can set the control topic name instead. In this case, a stop command will be sent with speed and angular velocity set to 0 [m/s] and 0 [rad/s], respectively. (For details about control topics, refer to Chapter 2: Remote Operation.)
 ### usage
-To perform an emergency stop on a specific construction machine, check the “Emergency” checkbox in the corresponding “VRCrawlerOp” or “VRArmOp” component. When boarding the construction machine, press the Y button on the left VR controller if using VR, or press the C key if not using VR.
+To perform an emergency stop on a specific construction machine, check the “Emergency” checkbox in the corresponding “DrivingCommandPublisher” or “VRArmOp” component. When boarding the construction machine, press the Y button on the left VR controller if using VR, or press the C key if not using VR.
 
 ***
 
@@ -244,7 +244,7 @@ To distinguish between areas where construction machinery is allowed to enter an
 
 ![](images/OperaSimVR/GeofenceImage.png)
 
-When the construction machinery model comes into contact with this geofence (the pink line), a control command topic with a value of zero and an emergency stop topic are sent, causing the corresponding real-world machine to stop. Upon contact, the emergency flag in the script “VRCrawlerOp” for the crawler dump or “VRArmOp” for the backhoe is set to ON, and both the control command topic and the emergency stop topic are sent.
+When the construction machinery model comes into contact with this geofence (the pink line), a control command topic with a value of zero and an emergency stop topic are sent, causing the corresponding real-world machine to stop. Upon contact, the emergency flag in the script “DrivingCommandPublisher” for the crawler dump or “VRArmOp” for the backhoe is set to ON, and both the control command topic and the emergency stop topic are sent.
 
 ### usege
 1. Attach the script “Geofence” (Assets/Geofence.cs) to the object you want to set as the starting point of the fence. 

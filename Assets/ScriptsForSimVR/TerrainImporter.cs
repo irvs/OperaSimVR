@@ -3,7 +3,7 @@ using Unity.Robotics.ROSTCPConnector;
 using RosMessageTypes.Sensor;
 using RosMessageTypes.TmsMsgDb;
 
-public class TerrainReaderClient : MonoBehaviour
+public class TerrainImporter : MonoBehaviour
 {
     ROSConnection ros;
     //   private string serviceName = "output/terrain/heightmap/image";
@@ -155,10 +155,6 @@ public class TerrainReaderClient : MonoBehaviour
         ApplyTextures();
     }
 
-    private void OnApplicationQuit()
-    {
-        //    rosSocket.Close();
-    }
 
     void Update()
     {
@@ -176,10 +172,7 @@ public class TerrainReaderClient : MonoBehaviour
             awaitingResponseUntilTimestampTx = Time.time + requestInterval;
             Debug.Log("Service Requested(Texture)");
         }
-
     }
-
-
 
     void GenerateTerrainFromHeightmap()
     {

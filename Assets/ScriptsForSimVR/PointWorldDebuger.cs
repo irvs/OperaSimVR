@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class MapToWorld : MonoBehaviour
+public class PointWorldDebuger : MonoBehaviour
 {
     public GameObject TargetObject;
     public float MapRefetenceX;
@@ -21,13 +21,12 @@ public class MapToWorld : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        Reference = GameObject.Find("MapReferencePoint");
     }
 
     // Update is called once per frame
     void Update()
     {
-        Reference = GameObject.Find("MapReferencePoint");
         ReferencePointPose = Reference.transform.position;
         ReferencePointRot = Reference.transform.rotation;
         MapPosition = TargetObject.transform.position - ReferencePointPose;

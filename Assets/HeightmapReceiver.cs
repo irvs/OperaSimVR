@@ -11,11 +11,11 @@ public class HeightmapReceiver : MonoBehaviour
     float offsetX, offsetY, offsetZ;
     int terrainHeight, terrainWidth;
     float[,] heightData;
-    ApplyPartialHeightmap TerrainTransformer;
+    DynamicTerrain TerrainTransformer;
 
     void Start()
     {
-        TerrainTransformer = GetComponent<ApplyPartialHeightmap>();
+        TerrainTransformer = GetComponent<DynamicTerrain>();
         ROSConnection.GetOrCreateInstance().Subscribe<ImageMsg>(topicName, ImageCallback);
     }
 
@@ -66,7 +66,7 @@ public class HeightmapReceiver : MonoBehaviour
         int texWidth = width;
         int texHeight = height;
 
-        // TextureFormat ‚ğ RGB24 ‚É•ÏXi3ƒ`ƒƒƒ“ƒlƒ‹‚ÅƒOƒŒ[ƒXƒP[ƒ‹•\Œ»‚ª‰Â”\j
+        // TextureFormat ï¿½ï¿½ RGB24 ï¿½É•ÏXï¿½i3ï¿½`ï¿½ï¿½ï¿½ï¿½ï¿½lï¿½ï¿½ï¿½ÅƒOï¿½ï¿½ï¿½[ï¿½Xï¿½Pï¿½[ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½Â”\ï¿½j
         Texture2D tex = new Texture2D(texWidth, texHeight, TextureFormat.RGB24, false);
         tex.filterMode = FilterMode.Point;
 
@@ -81,7 +81,7 @@ public class HeightmapReceiver : MonoBehaviour
                 int dstIndex = flippedY * texWidth + x;
 
                 byte value = imageData[srcIndex];
-                // ƒOƒŒ[ƒXƒP[ƒ‹‚Æ‚µ‚Ä R,G,B ‚·‚×‚Ä‚É“¯‚¶’l‚ğƒZƒbƒg
+                // ï¿½Oï¿½ï¿½ï¿½[ï¿½Xï¿½Pï¿½[ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ï¿½ R,G,B ï¿½ï¿½ï¿½×‚Ä‚É“ï¿½ï¿½ï¿½ï¿½lï¿½ï¿½ï¿½Zï¿½bï¿½g
                 pixels[dstIndex] = new Color32(value, value, value, 255);
             }
         }
