@@ -148,7 +148,7 @@ public class JointAnglePublisher : MonoBehaviour
 
         else if (emergency == false)
         {
-            if (VRManager.PlayerPoseMove_SW > 0 && OnOffSw == ONOFF.On)
+            if (VRManager.GetOnMachine == ControllerManager.RideOption.GetOn && OnOffSw == ONOFF.On)
             {
                 if (sw_timeElapsed >= publishMessageInterval * 50.0f) { return; }
 

@@ -4,15 +4,21 @@ using RosMessageTypes.Sensor;
 
 public class ImageSubscriber : MonoBehaviour
 {
+    [Header("ROS")]
     public string topicName = "/camera/image_raw/compressed";
+
+    [Header("Display")]
     public Renderer targetRenderer;
 
-    ROSConnection ros;
+    [Tooltip("Planeの高さ(m)")]
+    public float fixedHeight = 1.0f;
 
-    Texture2D texture;
+    private ROSConnection ros;
 
-    byte[] latestImage;
-    bool newImageReceived = false;
+    private Texture2D texture;
+
+    private byte[] latestImage;
+    private bool newImageReceived = false;
 
     void Start()
     {
@@ -28,18 +34,37 @@ public class ImageSubscriber : MonoBehaviour
 
     void ImageCallback(CompressedImageMsg msg)
     {
+        //Debug.Log($"Received image: {msg.data.Length} bytes");
+
         latestImage = msg.data;
         newImageReceived = true;
     }
 
     void Update()
     {
-        if (newImageReceived)
-        {
-            texture.LoadImage(latestImage);
-            targetRenderer.material.mainTexture = texture;
+        if (!newImageReceived)
+            return;
 
-            newImageReceived = false;
-        }
+        // JPEG/PNGデータをTextureへ展開
+        texture.LoadImage(latestImage);
+
+        // テクスチャ設定
+        targetRenderer.material.mainTexture = texture;
+
+        // アスペクト比計算
+        float aspect = (float)texture.width / texture.height;
+
+        //Debug.Log($"Image Size: {texture.width} x {texture.height}, Aspect: {aspect:F3}");
+
+        // Planeサイズ調整
+        // Unity Planeは10×10なので補正が必要
+        Vector3 scale = targetRenderer.transform.localScale;
+
+        scale.x = fixedHeight * aspect / 10.0f;
+        scale.z = fixedHeight / 10.0f;
+
+        targetRenderer.transform.localScale = scale;
+
+        newImageReceived = false;
     }
 }

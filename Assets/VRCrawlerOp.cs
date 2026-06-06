@@ -116,7 +116,8 @@ public class VRCrawlerOp : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (emergency || VRManager.emergency_sw)
+        if(VRManager == null){return;}
+        if (emergency)
         {
             timeElapsed += Time.deltaTime;
             if (timeElapsed >= publishMessageInterval)
@@ -134,7 +135,7 @@ public class VRCrawlerOp : MonoBehaviour
         }
         else if (emergency == false)
         {
-            if (OnOffSw == ONOFF.On && RecordPlaySw == false && VRManager.PlayerPoseMove_SW > 0)
+            if (OnOffSw == ONOFF.On && RecordPlaySw == false && VRManager.GetOnMachine == ControllerManager.RideOption.GetOn)
 
             {
                 timeElapsed += Time.deltaTime;

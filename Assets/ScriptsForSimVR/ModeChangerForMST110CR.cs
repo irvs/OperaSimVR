@@ -5,6 +5,7 @@ public class ModeChangerForMST110CR : MonoBehaviour
     string WhichModePrev;
     private int prev_mode;
     private int mode_return;
+    public float HeightOffset;
     GameObject Dump; 
     DiffDriveController DiffDriveController;
     Com3FrontController Com3FrontController;
@@ -79,7 +80,7 @@ public class ModeChangerForMST110CR : MonoBehaviour
             ArticulationBody_vessel_rod_link.enabled = true;
             ArticulationBody_vessel_link.enabled = true;
         }
-        if (mode.WhichMode == ModeSelector.ModeOption.PlayMode || mode.WhichMode == ModeSelector.ModeOption.PreviewAndPlay)//visualization
+        if (mode.WhichMode == ModeSelector.ModeOption.PlayMode || mode.WhichMode == ModeSelector.ModeOption.PreviewAndPlay || mode.WhichMode == ModeSelector.ModeOption.PreviewAR)//visualization
         {
             if (mode.WhichMode.ToString() != WhichModePrev)
             {
@@ -108,6 +109,15 @@ public class ModeChangerForMST110CR : MonoBehaviour
                 if(CurrentMode != ModeSelector.ModeOption.PreviewAndPlay)
                 {
                     InitializePreviewmodel();
+                }     
+            }
+            else if(mode.WhichMode == ModeSelector.ModeOption.PreviewAR)
+            {
+                if(CurrentMode != ModeSelector.ModeOption.PreviewAR)
+                {
+                    HeightOffset = 100.0f;
+                    InitializePreviewmodel();
+                    HeightOffset = 0.0f;
                 }     
             }
         }
@@ -142,7 +152,7 @@ public class ModeChangerForMST110CR : MonoBehaviour
             ArticulationBody_vessel_rod_link.enabled = true;
             ArticulationBody_vessel_link.enabled = true;
         }
-        if (CurrentMode == ModeSelector.ModeOption.PreviewAndPlay)
+        if (CurrentMode == ModeSelector.ModeOption.PreviewAndPlay || mode.WhichMode == ModeSelector.ModeOption.PreviewAR)
         {
             if(CurrentMode != mode.WhichMode)
                 {
@@ -153,7 +163,7 @@ public class ModeChangerForMST110CR : MonoBehaviour
     }
     void InitializePreviewmodel()
         {
-            PrevObject = Instantiate(PreviewObject, this.gameObject.transform.position, this.gameObject.transform.rotation);
+            PrevObject = Instantiate(PreviewObject, this.gameObject.transform.position + new Vector3(0, HeightOffset, 0), this.gameObject.transform.rotation);
             PreviewForCruise = PrevObject.GetComponent<PreviewForCruise>();
             PreviewForCruise.SubscriberObject = this.gameObject;
             PreviewForCruise.enabled = true;

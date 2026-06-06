@@ -5,6 +5,7 @@ public class ModeChangerForZX200 : MonoBehaviour
     string WhichModePrev;
     private int prev_mode;
     private int mode_return;
+    public float HeightOffset;
     GameObject Excavator;
     DiffDriveController DiffDriveController;
     PoseStampedPublisher PoseStampedPublisher;
@@ -191,7 +192,55 @@ public class ModeChangerForZX200 : MonoBehaviour
             ArticulationBody_bucket_end.enabled = true;
             ArticulationBody_bucket_inner.enabled = true;
         }
-        if (CurrentMode == ModeSelector.ModeOption.PreviewAndPlay)
+
+        if (mode.WhichMode == ModeSelector.ModeOption.PreviewAR)//visualization
+        {
+            if (mode.WhichMode.ToString() != WhichModePrev)
+            {
+                WhichModePrev = mode.WhichMode.ToString();
+            }
+            //crawler&position
+            DiffDriveController.enabled = false;
+            PoseStampedPublisher.enabled = false;
+            PoseSubscriber.enabled = true;
+
+            Rigidbody.isKinematic = true;
+            //arm
+            JointStatePublisher.enabled = false;
+            Com3FrontController.enabled = false;
+            JointControler.enabled = false;
+            JointSubscriber.enabled = true;
+
+            JointPosController_body.enabled = false;
+            JointPosController_boom.enabled = false;
+            JointPosController_arm.enabled = false;
+            JointPosController_bucket.enabled = false;
+
+            JointPosController_body.JointChangeSW = false;
+            JointPosController_boom.JointChangeSW = false;
+            JointPosController_arm.JointChangeSW = false;
+            JointPosController_bucket.JointChangeSW = false;
+
+            ArticulationBody_base.enabled = false;
+            ArticulationBody_body.enabled = false;
+            ArticulationBody_boom.enabled = false;
+            ArticulationBody_arm.enabled = false;
+            ArticulationBody_bucket.enabled = false;
+            ArticulationBody_bucket_end.enabled = false;
+            ArticulationBody_bucket_inner.enabled = false;
+
+            if(mode.WhichMode == ModeSelector.ModeOption.PreviewAR)
+            {
+                if(CurrentMode != ModeSelector.ModeOption.PreviewAR)
+                {
+                    HeightOffset = 100.0f;
+                    InitializePreviewmodel();
+                    HeightOffset = 0.0f;
+                }     
+            }
+        }
+
+        if (CurrentMode == ModeSelector.ModeOption.PreviewAndPlay || CurrentMode == ModeSelector.ModeOption.PreviewAR)
         {
             if(CurrentMode != mode.WhichMode)
                 {
@@ -203,7 +252,7 @@ public class ModeChangerForZX200 : MonoBehaviour
     
     void InitializePreviewmodel()
     {
-        PrevObject = Instantiate(PreviewObject, this.gameObject.transform.position, this.gameObject.transform.rotation);
+        PrevObject = Instantiate(PreviewObject, this.gameObject.transform.position + new Vector3(0, HeightOffset, 0), this.gameObject.transform.rotation);
         PrevForBackhoe = PrevObject.GetComponent<PrevForBackhoe>();
         PrevForBackhoe.SubscriberObject = this.gameObject;
         PrevForBackhoe.enabled = true;
