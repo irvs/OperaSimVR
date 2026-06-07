@@ -3,9 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using Unity.Robotics.UrdfImporter;
 
-
-
-
 public class JointControler : MonoBehaviour
 {
     ControllerManager VRManager;
@@ -17,8 +14,6 @@ public class JointControler : MonoBehaviour
     public enum JointContorollerModeOption { Velocity, Position }
     public JointContorollerModeOption JointContorollerMode;
 
-    GameObject targetPlayerObject;
-    OVRPlayerController OVRPlayerControllerScript;
     GameObject targetObject;
 
     ModeSelector mode;
@@ -26,8 +21,6 @@ public class JointControler : MonoBehaviour
     void Start()
     {
         targetObject = this.gameObject;
-        targetPlayerObject = GameObject.Find("OVRPlayerController");
-        OVRPlayerControllerScript = targetPlayerObject.GetComponent<OVRPlayerController>();
         FromVRJointController = GetComponent<JointCommandPublisher>();
         VRManager = FindObjectOfType<ControllerManager>();
         mode = FindObjectOfType<ModeSelector>();
@@ -38,12 +31,6 @@ public class JointControler : MonoBehaviour
         {
             if (VRManager.GetOnMachine == ControllerManager.RideOption.GetOn)
             {  
-                if (OVRPlayerControllerScript != null)
-                {
-                    OVRPlayerControllerScript.RotationRatchet = 0;
-                    OVRPlayerControllerScript.RotationAmount = 0;
-                }
-              
                 targetjoints = new List<ArticulationBody>();
                 targetjointNames = new List<string>();
                 //

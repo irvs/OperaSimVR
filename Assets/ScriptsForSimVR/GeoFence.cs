@@ -54,10 +54,10 @@ public class Geofence : MonoBehaviour
                     scriptA.emergency = true;
                     Debug.Log("emergency");
                 }
-                ModelIdentifier scriptB = targetObject.GetComponent<ModelIdentifier>();
-                if (scriptB != null && scriptB.ObjectTypeIsPaperMachine == true) 
+                PreviewForCruise scriptB = targetObject.GetComponent<PreviewForCruise>();
+                if (scriptB != null) 
                 {
-                    DrivingCommandPublisher scriptC = GameObject.Find(scriptB.ParentMachine).GetComponent<DrivingCommandPublisher>();
+                    DrivingCommandPublisher scriptC = scriptB.SubscriberObject.GetComponent<DrivingCommandPublisher>();
                     if (scriptC != null)
                     {
                         scriptC.emergency = true;

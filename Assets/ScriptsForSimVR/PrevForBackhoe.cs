@@ -4,7 +4,6 @@ using System;///for evaluate///
 
 public class PrevForBackhoe : MonoBehaviour
 {
-    ModelIdentifier ModelIdentifier;
     FieldMainManager FieldManager;
     PathJointSubscriber JointPathPlanSubscriber;
     private List<(List<double> joints, double time)> PlanPosition = new List<(List<double>, double)>();
@@ -40,7 +39,6 @@ public class PrevForBackhoe : MonoBehaviour
 
         var selector = GameObject.Find("FieldManager");
         JointPathPlanSubscriber = SubscriberObject.GetComponent<PathJointSubscriber>();
-        ModelIdentifier = GetComponent<ModelIdentifier>();
         FieldManager = selector.GetComponent<FieldMainManager>();   
 
         PlanJointAngle = new List<(DateTime, float[])>();

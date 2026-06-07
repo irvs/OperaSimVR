@@ -27,7 +27,6 @@ public class JointCommandPublisher : MonoBehaviour
     public string EmergencyTopicName;
     public float publishMessageInterval = 0.02f;//50Hz
     private float timeElapsed;
-    private float sw_timeElapsed = 0.0f;
     private float frontback;
     private float rotation;
     public List<List<double>> listOfJointPositionCmdList = new List<List<double>>();
@@ -109,7 +108,6 @@ public class JointCommandPublisher : MonoBehaviour
     }
     void Update()
     {
-
         if (emergency == true)
         {
             timeElapsed += Time.deltaTime;
@@ -150,7 +148,6 @@ public class JointCommandPublisher : MonoBehaviour
         {
             if (VRManager.GetOnMachine == ControllerManager.RideOption.GetOn && OnOffSw == ONOFF.On)
             {
-                if (sw_timeElapsed >= publishMessageInterval * 50.0f) { return; }
 
                 timeElapsed_start += Time.deltaTime;
 
@@ -163,7 +160,7 @@ public class JointCommandPublisher : MonoBehaviour
                 Jointposition = new double[joints.Count];
                 for (int i = 0; i < joints.Count; i++)
                 {
-                    Jointposition[i] = joints[i].jointPosition[0];
+                    Jointposition[i] = RealJointAngular.JointPositions[i];
                 }
                 //
                 //for joint
@@ -213,8 +210,6 @@ public class JointCommandPublisher : MonoBehaviour
                 }
 
                 timeElapsed += Time.deltaTime;
-                sw_timeElapsed += Time.deltaTime;
-
 
                 if (timeElapsed > publishMessageInterval * 20.0f)
                 {
@@ -226,6 +221,21 @@ public class JointCommandPublisher : MonoBehaviour
                             JointController.JointTargets[1] = goalPose[1];
                             JointController.JointTargets[2] = goalPose[2];
                             JointController.JointTargets[3] = goalPose[3];
+
+                            Debug.Log("goal_pose : " + goalPose[0] + "  :  " + goalPose[1] + "  :  " + goalPose[2] + "  :  " + goalPose[3]);
+                            positions[0] = goalPose[0];
+                            positions[1] = goalPose[1];
+                            positions[2] = goalPose[2];
+                            positions[3] = goalPose[3];
+                            listOfJointPositionCmdList.Add(positions);
+                            if (mode.WhichMode == ModeSelector.ModeOption.PreviewModeForTeleop && timeElapsed_start > (Time_Delay + 5.0f) && listOfJointPositionCmdList.Count - Mathf.RoundToInt(Time_Delay / publishMessageInterval) >= 0)
+                            {
+                                int CMD_time = Mathf.RoundToInt(Time_Delay / publishMessageInterval);
+                                goalPose[0] = (float)listOfJointPositionCmdList[listOfJointPositionCmdList.Count - 1 - CMD_time][0];
+                                goalPose[1] = (float)listOfJointPositionCmdList[listOfJointPositionCmdList.Count - 1 - CMD_time][1];
+                                goalPose[2] = (float)listOfJointPositionCmdList[listOfJointPositionCmdList.Count - 1 - CMD_time][2];
+                                goalPose[3] = (float)listOfJointPositionCmdList[listOfJointPositionCmdList.Count - 1 - CMD_time][3];
+                            }
                         }
                         if (JointContorollerMode == JointContorollerModeOption.Velocity)
                         {
@@ -233,43 +243,29 @@ public class JointCommandPublisher : MonoBehaviour
                             JointController.JointTargets[1] = velocity[1];
                             JointController.JointTargets[2] = velocity[2];
                             JointController.JointTargets[3] = velocity[3];
+
+                            Debug.Log("velocity : " + velocity[0] + "  :  " + velocity[1] + "  :  " + velocity[2] + "  :  " + velocity[3]);
+                            velocities[0] = velocity[0];
+                            velocities[1] = velocity[1];
+                            velocities[2] = velocity[2];
+                            velocities[3] = velocity[3];
+                            listOfJointVelocityCmdList.Add(velocities);
+                            for (int i = 0; i < joints.Count; i++)
+                            {
+                                JointPositions[i] = joints[i].jointPosition[0];
+                            }
+                            listOfJointPositionList.Add(JointPositions);
+                            if (mode.WhichMode == ModeSelector.ModeOption.PreviewModeForTeleop && timeElapsed_start > (Time_Delay + 5.0f) && listOfJointVelocityCmdList.Count - Mathf.RoundToInt(Time_Delay / publishMessageInterval) >= 0)
+                            {
+                                int CMD_time = Mathf.RoundToInt(Time_Delay / publishMessageInterval);
+                                velocities[0] = listOfJointVelocityCmdList[listOfJointVelocityCmdList.Count - 1 - CMD_time][0];
+                                velocities[1] = listOfJointVelocityCmdList[listOfJointVelocityCmdList.Count - 1 - CMD_time][1];
+                                velocities[2] = listOfJointVelocityCmdList[listOfJointVelocityCmdList.Count - 1 - CMD_time][2];
+                                velocities[3] = listOfJointVelocityCmdList[listOfJointVelocityCmdList.Count - 1 - CMD_time][3];
+                            }
                         }
                     }
 
-                    Debug.Log("goal_pose : " + goalPose[0] + "  :  " + goalPose[1] + "  :  " + goalPose[2] + "  :  " + goalPose[3]);
-                    positions[0] = goalPose[0];
-                    positions[1] = goalPose[1];
-                    positions[2] = goalPose[2];
-                    positions[3] = goalPose[3];
-                    listOfJointPositionCmdList.Add(positions);
-                    if (mode.WhichMode == ModeSelector.ModeOption.PreviewModeForTeleop && timeElapsed_start > (Time_Delay + 5.0f) && listOfJointPositionCmdList.Count - Mathf.RoundToInt(Time_Delay / publishMessageInterval) >= 0)
-                    {
-                        int CMD_time = Mathf.RoundToInt(Time_Delay / publishMessageInterval);
-                        goalPose[0] = (float)listOfJointPositionCmdList[listOfJointPositionCmdList.Count - 1 - CMD_time][0];
-                        goalPose[1] = (float)listOfJointPositionCmdList[listOfJointPositionCmdList.Count - 1 - CMD_time][1];
-                        goalPose[2] = (float)listOfJointPositionCmdList[listOfJointPositionCmdList.Count - 1 - CMD_time][2];
-                        goalPose[3] = (float)listOfJointPositionCmdList[listOfJointPositionCmdList.Count - 1 - CMD_time][3];
-                    }
-
-                    Debug.Log("velocity : " + velocity[0] + "  :  " + velocity[1] + "  :  " + velocity[2] + "  :  " + velocity[3]);
-                    velocities[0] = velocity[0];
-                    velocities[1] = velocity[1];
-                    velocities[2] = velocity[2];
-                    velocities[3] = velocity[3];
-                    listOfJointVelocityCmdList.Add(velocities);
-                    for (int i = 0; i < joints.Count; i++)
-                    {
-                        JointPositions[i] = joints[i].jointPosition[0];
-                    }
-                    listOfJointPositionList.Add(JointPositions);
-                    if (mode.WhichMode == ModeSelector.ModeOption.PreviewModeForTeleop && timeElapsed_start > (Time_Delay + 5.0f) && listOfJointVelocityCmdList.Count - Mathf.RoundToInt(Time_Delay / publishMessageInterval) >= 0)
-                    {
-                        int CMD_time = Mathf.RoundToInt(Time_Delay / publishMessageInterval);
-                        velocities[0] = listOfJointVelocityCmdList[listOfJointVelocityCmdList.Count - 1 - CMD_time][0];
-                        velocities[1] = listOfJointVelocityCmdList[listOfJointVelocityCmdList.Count - 1 - CMD_time][1];
-                        velocities[2] = listOfJointVelocityCmdList[listOfJointVelocityCmdList.Count - 1 - CMD_time][2];
-                        velocities[3] = listOfJointVelocityCmdList[listOfJointVelocityCmdList.Count - 1 - CMD_time][3];
-                    }
                     string[] jointNamesArray = jointNames.ToArray();
                     double[] positionsArray = positions.ToArray();
                     double[] velocitiesArray = velocities.ToArray();
@@ -283,15 +279,12 @@ public class JointCommandPublisher : MonoBehaviour
                         effortsArray
                     );
                     ros.Publish(JointControlTopic, JointCMD);
-                    timeElapsed = 0;
 
                     //twist
                     TwistMsg Twist = new TwistMsg(
                        linear,
                        angular
                     );
-                    //
-                    //Publish
                     ros.Publish(topicName_cmd_vel, Twist);
                     timeElapsed = 0;
                 }
