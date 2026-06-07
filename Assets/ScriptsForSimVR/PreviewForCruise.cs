@@ -44,7 +44,7 @@ public class PreviewForCruise : MonoBehaviour
         targetObject = this.gameObject;
         mode = SelectorObject.GetComponent<ModeSelector>();
 
-        ModelIdentifier = GetComponent<ModelIdentifier>();
+        ModelIdentifier = SubscriberObject.GetComponent<ModelIdentifier>();
         MachinePoseSubscriber = SubscriberObject.GetComponent<PoseSubscriber>();
         PathSub = SubscriberObject.GetComponent<PathSubscriber>();
 

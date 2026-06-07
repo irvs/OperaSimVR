@@ -112,7 +112,6 @@ public class ModeChangerForIC120 : MonoBehaviour
             DiffDriveController.enabled = false;
             PoseStampedPublisher.enabled = false;
             PoseSubscriber.enabled = true;
-            PoseSubscriber.ChengePosition_sw = false;
             
             Rigidbody.isKinematic = true;
 

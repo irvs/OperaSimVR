@@ -2313,7 +2313,6 @@ GameObject:
   - component: {fileID: 2931790877391627450}
   - component: {fileID: 1581722854403603011}
   - component: {fileID: 395888849389791985}
-  - component: {fileID: 507111674475305157}
   - component: {fileID: 796187455454042068}
   - component: {fileID: 8786024472118186884}
   - component: {fileID: 2841958558944360367}
@@ -2390,31 +2389,6 @@ MonoBehaviour:
   torque: 100
   acceleration: 5
   highLightColor: {r: 1, g: 0, b: 0, a: 1}
---- !u!114 &507111674475305157
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3349462833093941787}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b564e56bdadf9cd4f9d96537279e8eb8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  targetObject: {fileID: 0}
-  ObjectTypeIsPaperMachine: 0
-  ParentMachine: 
-  PaperMachine: {fileID: 0}
-  Modelname: 
-  KindsOfHeavyMachinery: 0
-  Offset_x: 0
-  Offset_y: 0
-  Offset_z: 0
-  OffsetRotation_x: 0
-  OffsetRotation_y: 0
-  OffsetRotation_z: 0
-  OffsetList: []
 --- !u!114 &796187455454042068
 MonoBehaviour:
   m_ObjectHideFlags: 0
