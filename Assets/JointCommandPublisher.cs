@@ -62,11 +62,8 @@ public class JointCommandPublisher : MonoBehaviour
     private readonly float[] posSpeed = { 0.005f, 0.01f, 0.005f, -0.01f };
     private readonly float[] velSpeed = { -0.5f, 0.3f, -0.5f, -0.5f };
 
-    private readonly KeyCode[] plusKeys =
-    {KeyCode.Y, KeyCode.U, KeyCode.I, KeyCode.O};
-
-    private readonly KeyCode[] minusKeys =
-    {KeyCode.H, KeyCode.J, KeyCode.K, KeyCode.L};
+    private readonly KeyCode[] plusKeys = {KeyCode.Y, KeyCode.U, KeyCode.I, KeyCode.O};
+    private readonly KeyCode[] minusKeys = {KeyCode.H, KeyCode.J, KeyCode.K, KeyCode.L};
 
 
     void Start()
@@ -213,57 +210,16 @@ public class JointCommandPublisher : MonoBehaviour
 
                 if (timeElapsed > publishMessageInterval * 20.0f)
                 {
-                    if (mode.WhichMode == ModeSelector.ModeOption.PreviewModeForTeleop)
+                    int controltype = 0;
+                    if (JointContorollerMode == JointContorollerModeOption.Position)
                     {
-                        if (JointContorollerMode == JointContorollerModeOption.Position)
-                        {
-                            JointController.JointTargets[0] = goalPose[0];
-                            JointController.JointTargets[1] = goalPose[1];
-                            JointController.JointTargets[2] = goalPose[2];
-                            JointController.JointTargets[3] = goalPose[3];
-
-                            Debug.Log("goal_pose : " + goalPose[0] + "  :  " + goalPose[1] + "  :  " + goalPose[2] + "  :  " + goalPose[3]);
-                            positions[0] = goalPose[0];
-                            positions[1] = goalPose[1];
-                            positions[2] = goalPose[2];
-                            positions[3] = goalPose[3];
-                            listOfJointPositionCmdList.Add(positions);
-                            if (mode.WhichMode == ModeSelector.ModeOption.PreviewModeForTeleop && timeElapsed_start > (Time_Delay + 5.0f) && listOfJointPositionCmdList.Count - Mathf.RoundToInt(Time_Delay / publishMessageInterval) >= 0)
-                            {
-                                int CMD_time = Mathf.RoundToInt(Time_Delay / publishMessageInterval);
-                                goalPose[0] = (float)listOfJointPositionCmdList[listOfJointPositionCmdList.Count - 1 - CMD_time][0];
-                                goalPose[1] = (float)listOfJointPositionCmdList[listOfJointPositionCmdList.Count - 1 - CMD_time][1];
-                                goalPose[2] = (float)listOfJointPositionCmdList[listOfJointPositionCmdList.Count - 1 - CMD_time][2];
-                                goalPose[3] = (float)listOfJointPositionCmdList[listOfJointPositionCmdList.Count - 1 - CMD_time][3];
-                            }
-                        }
-                        if (JointContorollerMode == JointContorollerModeOption.Velocity)
-                        {
-                            JointController.JointTargets[0] = velocity[0];
-                            JointController.JointTargets[1] = velocity[1];
-                            JointController.JointTargets[2] = velocity[2];
-                            JointController.JointTargets[3] = velocity[3];
-
-                            Debug.Log("velocity : " + velocity[0] + "  :  " + velocity[1] + "  :  " + velocity[2] + "  :  " + velocity[3]);
-                            velocities[0] = velocity[0];
-                            velocities[1] = velocity[1];
-                            velocities[2] = velocity[2];
-                            velocities[3] = velocity[3];
-                            listOfJointVelocityCmdList.Add(velocities);
-                            for (int i = 0; i < joints.Count; i++)
-                            {
-                                JointPositions[i] = joints[i].jointPosition[0];
-                            }
-                            listOfJointPositionList.Add(JointPositions);
-                            if (mode.WhichMode == ModeSelector.ModeOption.PreviewModeForTeleop && timeElapsed_start > (Time_Delay + 5.0f) && listOfJointVelocityCmdList.Count - Mathf.RoundToInt(Time_Delay / publishMessageInterval) >= 0)
-                            {
-                                int CMD_time = Mathf.RoundToInt(Time_Delay / publishMessageInterval);
-                                velocities[0] = listOfJointVelocityCmdList[listOfJointVelocityCmdList.Count - 1 - CMD_time][0];
-                                velocities[1] = listOfJointVelocityCmdList[listOfJointVelocityCmdList.Count - 1 - CMD_time][1];
-                                velocities[2] = listOfJointVelocityCmdList[listOfJointVelocityCmdList.Count - 1 - CMD_time][2];
-                                velocities[3] = listOfJointVelocityCmdList[listOfJointVelocityCmdList.Count - 1 - CMD_time][3];
-                            }
-                        }
+                        JointCommand(positions, goalPose);
+                        controltype = 0;
+                    }
+                    else if (JointContorollerMode == JointContorollerModeOption.Velocity)
+                    {
+                        JointCommand(velocities, velocity);
+                        controltype = 1;
                     }
 
                     string[] jointNamesArray = jointNames.ToArray();
@@ -273,7 +229,7 @@ public class JointCommandPublisher : MonoBehaviour
 
                     JointCmdMsg JointCMD = new JointCmdMsg(
                         jointNamesArray,
-                        //     controltype,
+                        // controltype,
                         positionsArray,
                         velocitiesArray,
                         effortsArray
@@ -340,4 +296,27 @@ public class JointCommandPublisher : MonoBehaviour
                 speed[i]);
         }
     }
+
+    private void JointCommand(List<double> Commands, float[] InputCommands)
+    {
+        JointController.JointTargets[0] = InputCommands[0];
+        JointController.JointTargets[1] = InputCommands[1];
+        JointController.JointTargets[2] = InputCommands[2];
+        JointController.JointTargets[3] = InputCommands[3];
+
+        Debug.Log("goal_pose : " + InputCommands[0] + "  :  " + InputCommands[1] + "  :  " + InputCommands[2] + "  :  " + InputCommands[3]);
+        Commands[0] = InputCommands[0];
+        Commands[1] = InputCommands[1];
+        Commands[2] = InputCommands[2];
+        Commands[3] = InputCommands[3];
+        listOfJointPositionCmdList.Add(positions);
+        if (mode.WhichMode == ModeSelector.ModeOption.PreviewModeForTeleop && timeElapsed_start > (Time_Delay + 5.0f) && listOfJointPositionCmdList.Count - Mathf.RoundToInt(Time_Delay / publishMessageInterval) >= 0)
+        {
+            int CMD_time = Mathf.RoundToInt(Time_Delay / publishMessageInterval);
+            Commands[0] = (float)listOfJointPositionCmdList[listOfJointPositionCmdList.Count - 1 - CMD_time][0];
+            Commands[1] = (float)listOfJointPositionCmdList[listOfJointPositionCmdList.Count - 1 - CMD_time][1];
+            Commands[2] = (float)listOfJointPositionCmdList[listOfJointPositionCmdList.Count - 1 - CMD_time][2];
+            Commands[3] = (float)listOfJointPositionCmdList[listOfJointPositionCmdList.Count - 1 - CMD_time][3];
+        }
+    }   
 }

@@ -10,12 +10,9 @@ public class JointControler : MonoBehaviour
     private List<ArticulationBody> targetjoints;
     private List<string> targetjointNames;
     public List<double> JointTargets;
-    double targetPos;
     public enum JointContorollerModeOption { Velocity, Position }
     public JointContorollerModeOption JointContorollerMode;
-
     GameObject targetObject;
-
     ModeSelector mode;
 
     void Start()
@@ -47,19 +44,18 @@ public class JointControler : MonoBehaviour
                             //
                             if (FromVRJointController.listOfJointVelocityCmdList.Count - 1 >= 0)
                             {
-                                targetPos = FromVRJointController.listOfJointVelocityCmdList[FromVRJointController.listOfJointVelocityCmdList.Count - 1][j];
                                 var drive = joint.xDrive;//targetjoints[i].xDrive;
 
                                 if (JointContorollerMode == JointContorollerModeOption.Velocity)
                                 {
                                     drive.driveType = ArticulationDriveType.Velocity;// = targetVelocity;
-                                    drive.targetVelocity = (float)targetPos;
+                                    drive.targetVelocity = (float)JointTargets[j];
                                     joint.xDrive = drive;
                                 }
                                 else if (JointContorollerMode == JointContorollerModeOption.Position)
                                 {
                                     drive.driveType = ArticulationDriveType.Force;
-                                    drive.target = (float)(targetPos * Mathf.Rad2Deg);
+                                    drive.target = (float)(JointTargets[j] * Mathf.Rad2Deg);
                                     joint.xDrive = drive;//targetjoints[i].xDrive = drive;
                                 }
                                 j += 1;
