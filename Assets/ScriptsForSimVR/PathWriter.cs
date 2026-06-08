@@ -5,23 +5,20 @@ using RosMessageTypes.Nav;
 
 public class PathWriter : MonoBehaviour
 {
-    public string Subscribe_topic_name = "subscribe_topic";
     public float offset_x = 0;
     public float offset_y = 0;
     public float offset_z = 0;
-    private ModeSelector mode;
     public List<Vector3> path_list = new List<Vector3>();
     private List<Quaternion> path_angular_list = new List<Quaternion>();
-    private Quaternion angular;
-    ROSConnection ros;
     private LineRenderer lineRenderer;
     GameObject Reference;
+    PathSubscriber PathSub;
+    public GameObject SubscriberObject;
 
     // Start is called before the first frame update
     void Start()
     {
-        ros = ROSConnection.GetOrCreateInstance();
-        ros.Subscribe<PathMsg>(Subscribe_topic_name, Callback);
+        PathSub = SubscriberObject.GetComponent<PathSubscriber>();
         //
         lineRenderer = gameObject.AddComponent<LineRenderer>();
         // LineRendererの設定
@@ -41,23 +38,28 @@ public class PathWriter : MonoBehaviour
         }
 
     }
+    void Update()
+    {
+        if (PathSub == null || PathSub.PathPoints.Count < 2) return;
+        WritePath(PathSub.PathPoints);
+    }
 
-    void Callback(PathMsg msg)
+    void WritePath(List<Vector3> PathPoints)
     {
         path_list.Clear();
         path_angular_list.Clear();
+        path_list = new List<Vector3>(PathPoints);
        // Debug.Log($"Received path with {msg.poses.Length} waypoints"); // 受信したパスのデータを表示
 
-        foreach (var pose in msg.poses)
+        Vector3 refPos = Reference.transform.position;
+        for (int i = 0; i < path_list.Count; i++)
         {
-            angular = new(-(float)pose.pose.orientation.y, (float)pose.pose.orientation.z, (float)pose.pose.orientation.x, -(float)pose.pose.orientation.w);
-            path_list.Add(new Vector3(((float)pose.pose.position.x) + offset_x + (Reference.transform.position)[0], 0.0f + offset_y, ((float)pose.pose.position.y) + offset_z + (Reference.transform.position)[2]));
-            path_angular_list.Add(angular);
+            path_list[i] += refPos + new Vector3(offset_x, offset_y, offset_z);
         }
-            lineRenderer.positionCount = path_list.Count;
-            for (int i = 0; i < path_list.Count; i++)
-            {
-                lineRenderer.SetPosition(i, path_list[i]);
-            }
+        lineRenderer.positionCount = path_list.Count;
+        for (int i = 0; i < path_list.Count; i++)
+        {
+            lineRenderer.SetPosition(i, path_list[i]);
+        }
     }
 }

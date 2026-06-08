@@ -1,27 +1,30 @@
 ﻿using UnityEngine;
 
-public class Player_Key_mover : MonoBehaviour
+public class PlayerKeyMover : MonoBehaviour
 {
     private float Playerlinear;
     private float PlayerUpper;
     private float PlayerSide;
-    private float PlayerFrontRot;
     public float LinearSpeed = 0.01f;
     public float AngularSpeed = 0.2f;
     public float UpperSpeed = 0.01f;
     ControllerManager VRManager;
+    GameObject PlayerObject;
+    Collider Collider;
     // Start is called before the first frame update
     void Start()
     {
+        PlayerObject = GameObject.Find("OVRPlayerController");
         VRManager = FindObjectOfType<ControllerManager>();
+        Collider = PlayerObject.GetComponent<Collider>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (VRManager.GetOnMachine == ControllerManager.RideOption.GetOff)//VRcontroller.sw != 1)
+        if (VRManager.GetOnMachine == ControllerManager.RideOption.GetOff)
         {
-            GameObject.Find("OVRPlayerController").GetComponent<Collider>().enabled = false;
+            Collider.enabled = false;
             if (Input.GetKeyDown(KeyCode.UpArrow) && Input.GetKey(KeyCode.LeftShift) == false && Input.GetKey(KeyCode.RightShift) == false)
             {
                 Playerlinear = LinearSpeed;
@@ -65,15 +68,14 @@ public class Player_Key_mover : MonoBehaviour
                 PlayerSide = 0.0f;
             }
             
-            //transform.Rotate(Vector3.right * 0.1f * Time.deltaTime);
             //OVRCameraRigの位置変更
-            GameObject.Find("OVRPlayerController").transform.position += GameObject.Find("OVRPlayerController").transform.rotation * (new Vector3(PlayerSide, 0, (Playerlinear)));
-            GameObject.Find("OVRPlayerController").transform.position = new(GameObject.Find("OVRPlayerController").transform.position[0], GameObject.Find("OVRPlayerController").transform.position[1]+ PlayerUpper, GameObject.Find("OVRPlayerController").transform.position[2]);
+            PlayerObject.transform.position += PlayerObject.transform.rotation * (new Vector3(PlayerSide, 0, Playerlinear));
+            PlayerObject.transform.position = new (PlayerObject.transform.position[0], PlayerObject.transform.position[1]+ PlayerUpper, PlayerObject.transform.position[2]);
             if (VRManager.GetOnMachine == ControllerManager.RideOption.GetOff)
             {
                 if (Input.GetKey(KeyCode.LeftArrow) && Input.GetKey(KeyCode.LeftShift) == false)
                 {
-                    GameObject.Find("OVRPlayerController").transform.Rotate(0, -AngularSpeed, 0);
+                    PlayerObject.transform.Rotate(0, -AngularSpeed, 0);
                 }
                 else if (Input.GetKey(KeyCode.RightArrow) && Input.GetKey(KeyCode.LeftShift) == false)
                 {

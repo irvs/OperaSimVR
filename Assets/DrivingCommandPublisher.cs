@@ -5,7 +5,7 @@ using Unity.Robotics.ROSTCPConnector;
 using RosMessageTypes.Geometry;
 using RosMessageTypes.Std;
 
-public class VRCrawlerOp : MonoBehaviour
+public class DrivingCommandPublisher : MonoBehaviour
 {
     public enum ONOFF { Off, On }
     public ONOFF OnOffSw;

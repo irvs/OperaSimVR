@@ -11,7 +11,6 @@ public class PreviewForCruise : MonoBehaviour
     public float historyDuration = 2.0f; // 過去2秒で速度計算
     public float historyInterval = 0.5f;  // 0.5秒ごとに位置を記録
     public bool Reset;
-  //  public Vector3 PlanPositon;///for plan evaluate///
     public List<(DateTime time, Vector3 position)> PlanPositon;///for evaluate///
 
     // ---------------------------
@@ -45,7 +44,7 @@ public class PreviewForCruise : MonoBehaviour
         targetObject = this.gameObject;
         mode = SelectorObject.GetComponent<ModeSelector>();
 
-        ModelIdentifier = GetComponent<ModelIdentifier>();
+        ModelIdentifier = SubscriberObject.GetComponent<ModelIdentifier>();
         MachinePoseSubscriber = SubscriberObject.GetComponent<PoseSubscriber>();
         PathSub = SubscriberObject.GetComponent<PathSubscriber>();
 

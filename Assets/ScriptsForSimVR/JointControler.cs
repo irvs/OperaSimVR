@@ -3,32 +3,22 @@ using System.Collections.Generic;
 using UnityEngine;
 using Unity.Robotics.UrdfImporter;
 
-
-
-
 public class JointControler : MonoBehaviour
 {
     ControllerManager VRManager;
-    JointAnglePublisher FromVRJointController;
+    JointCommandPublisher FromVRJointController;
     private List<ArticulationBody> targetjoints;
     private List<string> targetjointNames;
     public List<double> JointTargets;
-    double targetPos;
     public enum JointContorollerModeOption { Velocity, Position }
     public JointContorollerModeOption JointContorollerMode;
-
-    GameObject targetPlayerObject;
-    OVRPlayerController OVRPlayerControllerScript;
     GameObject targetObject;
-
     ModeSelector mode;
 
     void Start()
     {
         targetObject = this.gameObject;
-        targetPlayerObject = GameObject.Find("OVRPlayerController");
-        OVRPlayerControllerScript = targetPlayerObject.GetComponent<OVRPlayerController>();
-        FromVRJointController = GetComponent<JointAnglePublisher>();
+        FromVRJointController = GetComponent<JointCommandPublisher>();
         VRManager = FindObjectOfType<ControllerManager>();
         mode = FindObjectOfType<ModeSelector>();
     }
@@ -38,12 +28,6 @@ public class JointControler : MonoBehaviour
         {
             if (VRManager.GetOnMachine == ControllerManager.RideOption.GetOn)
             {  
-                if (OVRPlayerControllerScript != null)
-                {
-                    OVRPlayerControllerScript.RotationRatchet = 0;
-                    OVRPlayerControllerScript.RotationAmount = 0;
-                }
-              
                 targetjoints = new List<ArticulationBody>();
                 targetjointNames = new List<string>();
                 //
@@ -60,19 +44,18 @@ public class JointControler : MonoBehaviour
                             //
                             if (FromVRJointController.listOfJointVelocityCmdList.Count - 1 >= 0)
                             {
-                                targetPos = FromVRJointController.listOfJointVelocityCmdList[FromVRJointController.listOfJointVelocityCmdList.Count - 1][j];
                                 var drive = joint.xDrive;//targetjoints[i].xDrive;
 
                                 if (JointContorollerMode == JointContorollerModeOption.Velocity)
                                 {
                                     drive.driveType = ArticulationDriveType.Velocity;// = targetVelocity;
-                                    drive.targetVelocity = (float)targetPos;
+                                    drive.targetVelocity = (float)JointTargets[j];
                                     joint.xDrive = drive;
                                 }
                                 else if (JointContorollerMode == JointContorollerModeOption.Position)
                                 {
                                     drive.driveType = ArticulationDriveType.Force;
-                                    drive.target = (float)(targetPos * Mathf.Rad2Deg);
+                                    drive.target = (float)(JointTargets[j] * Mathf.Rad2Deg);
                                     joint.xDrive = drive;//targetjoints[i].xDrive = drive;
                                 }
                                 j += 1;

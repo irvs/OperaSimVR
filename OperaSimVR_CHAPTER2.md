@@ -8,14 +8,14 @@ In this system, real construction machinery can be remotely operated. By using a
 0. Specify the topic name, speed, acceleration/deceleration, and the topic publishing interval before play. Start playback after completing the settings.
 1. Switch to normal mode. 
 2. Get into the model of the construction machine you want to operate. 
-3. Turn on the controller. When using a VR headset, press the X button (Button.Three) on the VR controller. If not using VR, press the X key on the keyboard. Alternatively, you can set "OnOffSw" to "On" in the "VRCrawlerOp" script attached to each construction machine from the Inspector. 
-4. Uncheck "UseRos2Topic" in the "VRCrawlerOp" script (unchecking this will prevent the machine from receiving topics from external sources). If operating with the keyboard, check the "Key" checkbox. 
+3. Turn on the controller. When using a VR headset, press the X button (Button.Three) on the VR controller. If not using VR, press the X key on the keyboard. Alternatively, you can set "OnOffSw" to "On" in the "DrivingCommandPublisher" script attached to each construction machine from the Inspector. 
+4. Uncheck "UseRos2Topic" in the "DrivingCommandPublisher" script (unchecking this will prevent the machine from receiving topics from external sources). If operating with the keyboard, check the "Key" checkbox. 
 
 From this point on, the construction machine you are in will respond to inputs from either the VR controller or the keyboard.
 
-5. To end the operation, press the B button to dismount. (The controller (VRCrawlerOp) will be turned off.)
+5. To end the operation, press the B button to dismount. (The controller (DrivingCommandPublisher) will be turned off.)
 
-6. If you want to control it using an external topic, uncheck "UseRos2Topic" in "VRCrawlerOp".
+6. If you want to control it using an external topic, uncheck "UseRos2Topic" in "DrivingCommandPublisher".
 
 
 
@@ -23,15 +23,15 @@ From this point on, the construction machine you are in will respond to inputs f
 0. Specify the topic name, speed, acceleration/deceleration, and the topic publishing interval before play. Start playback after completing the settings.
 1. Switch to normal mode. 
 2. Get into the model of the construction machine you want to operate. 
-3. Turn on the controller. When using a VR headset, press the X button (Button.Three) on the VR controller. If not using VR, press the X key on the keyboard. Alternatively, you can set "OnOffSw" to "On" in the "VRCrawlerOp" script attached to each construction machine from the Inspector. 
+3. Turn on the controller. When using a VR headset, press the X button (Button.Three) on the VR controller. If not using VR, press the X key on the keyboard. Alternatively, you can set "OnOffSw" to "On" in the "DrivingCommandPublisher" script attached to each construction machine from the Inspector. 
 
 Note: From this point on, operating the VR controller or the keyboard will send command topics. Double-check in the Inspector that the values for movement commands such as forward motion and turning, as well as acceleration, are set appropriately.
 
 4. To perform an emergency stop during operation, press the Y button on the left VR controller when using VR, or press the C key when using a keyboard. If a collision with the "geofence" occurs, the "emergency_sw" will also be set to true, triggering an emergency stop.
-5. To end the operation, press the B button to dismount. (The controller (VRCrawlerOp) will be turned off.)
+5. To end the operation, press the B button to dismount. (The controller (DrivingCommandPublisher) will be turned off.)
 
 
-<img src=images/OperaSimVR/VRCrawlerOp.png width="500px">
+<img src=images/OperaSimVR/DrivingCommandPublisher.png width="500px">
 
 **explanation of parameter**
 | parameter name | Units and message types | description |
@@ -40,9 +40,7 @@ Note: From this point on, operating the VR controller or the keyboard will send 
 |Emergency | - | Setting this to true will trigger an emergency stop of the actual machine. It sends a command to the emergency stop topic with motion instructions set to 0 [m/s] or 0 [rad/s]. Make sure to properly configure both the "EmergencyTopicName" and "RealPublishTopicName" before operating the actual machine.
 |Key | - | Set to "false" when using a VR headset. Set to "true" when not using one.
 |Use Ros2 Topic| - | Set to "false" if you want to operate the construction equipment model in "normal mode." Set to "true" if you want it to operate based on external commands without manual control within the system.
-| SimPhysX Publish TopicName | geometry_msgs/msg/Twist [m/s][rad/s] | Set this option if you want to connect to PhysX and verify the operation (for testing purposes).
-| SimAGX Publish TopicName | Geometry_msg/msg/Twist [m/s][rad/s] | Set this option if you want to connect to AGX and verify the operation (for testing purposes).
-|Real Publish TopicName| Geometry_msg/msg/Twist [m/s][rad/s] | Set the topic name for sending motion commands to the actual machine.
+|Twist Publish TopicName| Geometry_msg/msg/Twist [m/s][rad/s] | Set the topic name for sending motion commands to the actual machine.
 |Emergncy TopicName| std_msgs/msg/Bool | The topic name for sending emergency stop commands.
 |LinearSpeed| [m/s] | Specifies the maximum value [m/s] for forward and backward (linear) motion commands sent to the actual machine. When the VR D-pad (Axis2D.SecondaryThumbstick) is fully tilted or the arrow keys are pressed, the machine will accelerate up to this speed.
 |RotSpeed| [rad/s] | Specifies the maximum value [rad/s] for rotational (angular) motion commands sent to the actual machine. When the VR D-pad (Axis2D.SecondaryThumbstick) is fully tilted or the arrow keys are pressed, the machine will accelerate up to this turning speed.

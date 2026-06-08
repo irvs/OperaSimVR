@@ -8,8 +8,6 @@ public class PoseChanger : MonoBehaviour
     public GameObject SubscriberObject;
     GameObject targetObject;
     public float HeightOffset = 100.0f;
-    GameObject PlayerObject;
-    ControllerManager ControllerManager;
 
     // Start is called before the first frame update
     void Start()

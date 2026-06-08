@@ -4,7 +4,6 @@ using System;///for evaluate///
 
 public class PrevForBackhoe : MonoBehaviour
 {
-    ModelIdentifier ModelIdentifier;
     FieldMainManager FieldManager;
     PathJointSubscriber JointPathPlanSubscriber;
     private List<(List<double> joints, double time)> PlanPosition = new List<(List<double>, double)>();
@@ -30,7 +29,6 @@ public class PrevForBackhoe : MonoBehaviour
     private double playbackStartTime = -1;
 
 
-
     void Start()
     {
         Excavator = this.gameObject;
@@ -41,7 +39,6 @@ public class PrevForBackhoe : MonoBehaviour
 
         var selector = GameObject.Find("FieldManager");
         JointPathPlanSubscriber = SubscriberObject.GetComponent<PathJointSubscriber>();
-        ModelIdentifier = GetComponent<ModelIdentifier>();
         FieldManager = selector.GetComponent<FieldMainManager>();   
 
         PlanJointAngle = new List<(DateTime, float[])>();
@@ -81,8 +78,6 @@ public class PrevForBackhoe : MonoBehaviour
         ApplyJointAngles(pt.joints);
     }
 
-
-
     void ApplyJointAngles(List<double> joints)
     {
         // ラジアン→度に変換
@@ -96,10 +91,7 @@ public class PrevForBackhoe : MonoBehaviour
         ArmObject.localRotation = Quaternion.Euler(armDeg, 0, 0);
         BucketObject.localRotation = Quaternion.Euler(bucketDeg, 0, 0);
 
-        // PlanJointAngle = new List<(DateTime, float[])>();
-        PlanJointAngle.Add(
-           (DateTime.UtcNow, new float[] { (float)joints[0], (float)joints[1] - OffsetSwing * (Mathf.PI / 180), (float)joints[2], (float)joints[3] })
-       );
+        PlanJointAngle.Add((DateTime.UtcNow, new float[] { (float)joints[0], (float)joints[1] - OffsetSwing * (Mathf.PI / 180), (float)joints[2], (float)joints[3] }));
     }
 
     int FindPreviewIndex(double previewTime)
@@ -109,10 +101,6 @@ public class PrevForBackhoe : MonoBehaviour
             if (PlanPosition[i].time >= previewTime)
                 return i;
         }
-
         return PlanPosition.Count - 1;  // 最後のフレーム
     }
-
-
-
 }

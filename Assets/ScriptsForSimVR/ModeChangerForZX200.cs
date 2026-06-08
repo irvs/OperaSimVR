@@ -2,9 +2,6 @@
 
 public class ModeChangerForZX200 : MonoBehaviour
 {
-    string WhichModePrev;
-    private int prev_mode;
-    private int mode_return;
     public float HeightOffset;
     GameObject Excavator;
     DiffDriveController DiffDriveController;
@@ -65,17 +62,15 @@ public class ModeChangerForZX200 : MonoBehaviour
     }
     void Update()
     {
-        if (mode.WhichMode.ToString() != WhichModePrev)
+        if (CurrentMode == ModeSelector.ModeOption.PreviewAndPlay || CurrentMode == ModeSelector.ModeOption.PreviewAR)
         {
-            WhichModePrev = mode.WhichMode.ToString();
+            if(CurrentMode != mode.WhichMode)
+            {
+                Destroy(PrevObject);
+            }
         }
-
         if (mode.WhichMode == ModeSelector.ModeOption.NormalModeSimulator) //simlator
         {
-            if (mode.WhichMode.ToString() != WhichModePrev)
-            {
-                WhichModePrev = mode.WhichMode.ToString();
-            }
             //crawler&position
             DiffDriveController.enabled = true;
             PoseStampedPublisher.enabled = true;
@@ -108,10 +103,6 @@ public class ModeChangerForZX200 : MonoBehaviour
         }
         if (mode.WhichMode == ModeSelector.ModeOption.PlayMode || mode.WhichMode == ModeSelector.ModeOption.PreviewAndPlay)//visualization
         {
-            if (mode.WhichMode.ToString() != WhichModePrev)
-            {
-                WhichModePrev = mode.WhichMode.ToString();
-            }
             //crawler&position
             DiffDriveController.enabled = false;
             PoseStampedPublisher.enabled = false;
@@ -153,15 +144,6 @@ public class ModeChangerForZX200 : MonoBehaviour
 
         if (mode.WhichMode == ModeSelector.ModeOption.PreviewModeForTeleop) //simlator+controller
         {
-            if (mode.WhichMode.ToString() != WhichModePrev)
-            {
-                if (WhichModePrev != "NormalModeSimulator")
-                {
-                    //   mode = 0;
-                    //  mode_return = 2;
-                }
-                WhichModePrev = mode.WhichMode.ToString();
-            }
             //crawler&position
             DiffDriveController.enabled = false;
             PoseStampedPublisher.enabled = false;
@@ -195,10 +177,6 @@ public class ModeChangerForZX200 : MonoBehaviour
 
         if (mode.WhichMode == ModeSelector.ModeOption.PreviewAR)//visualization
         {
-            if (mode.WhichMode.ToString() != WhichModePrev)
-            {
-                WhichModePrev = mode.WhichMode.ToString();
-            }
             //crawler&position
             DiffDriveController.enabled = false;
             PoseStampedPublisher.enabled = false;
@@ -238,14 +216,6 @@ public class ModeChangerForZX200 : MonoBehaviour
                     HeightOffset = 0.0f;
                 }     
             }
-        }
-
-        if (CurrentMode == ModeSelector.ModeOption.PreviewAndPlay || CurrentMode == ModeSelector.ModeOption.PreviewAR)
-        {
-            if(CurrentMode != mode.WhichMode)
-                {
-                    Destroy(PrevObject);
-                }
         }
         CurrentMode = mode.WhichMode;
     }

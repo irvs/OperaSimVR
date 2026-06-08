@@ -48,16 +48,16 @@ public class Geofence : MonoBehaviour
                 Debug.Log("衝突したオブジェクト: " + parentObjectName);
                 //
                 targetObject = GameObject.Find(parentObjectName);
-                VRCrawlerOp scriptA = targetObject.GetComponent<VRCrawlerOp>();
+                DrivingCommandPublisher scriptA = targetObject.GetComponent<DrivingCommandPublisher>();
                 if (scriptA != null)
                 {
                     scriptA.emergency = true;
                     Debug.Log("emergency");
                 }
-                ModelIdentifier scriptB = targetObject.GetComponent<ModelIdentifier>();
-                if (scriptB != null && scriptB.ObjectTypeIsPaperMachine == true) 
+                PreviewForCruise scriptB = targetObject.GetComponent<PreviewForCruise>();
+                if (scriptB != null) 
                 {
-                    VRCrawlerOp scriptC = GameObject.Find(scriptB.ParentMachine).GetComponent<VRCrawlerOp>();
+                    DrivingCommandPublisher scriptC = scriptB.SubscriberObject.GetComponent<DrivingCommandPublisher>();
                     if (scriptC != null)
                     {
                         scriptC.emergency = true;

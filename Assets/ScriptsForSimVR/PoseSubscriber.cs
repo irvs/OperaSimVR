@@ -4,15 +4,29 @@ using RosMessageTypes.Geometry;
 using RosMessageTypes.Nav;
 public class PoseSubscriber : MonoBehaviour
 {
-    public bool ChengePosition_sw;
-    public bool ViaDB;
-    public bool WorldToMap;
+    [Tooltip("実際にオブジェクトの位置を変化させるかどうか")]
+    public bool ChengePositionSW;
+
     public enum PoseMessageType { OdometryMsg, PoseStampedMsg }
+    [Tooltip("位置情報のROSトピック型")]
     public PoseMessageType PoseMsgType;
     GameObject targetObject;
+
+    [Tooltip("位置情報のROSトピック名")]
     public string PoseSubscribeTopicName;
     public string ViaDBSubscribeTopicName;
     private string SubscribeTopicName;
+
+    [Tooltip("位置情報をデータベース経由で取得するかどうか")]
+    public bool ViaDB;
+
+    public enum CoordinateSelect { JapaneseGeodeticSystem, ROS }
+    [Tooltip("位置情報が左手系か右手系か")]
+    public CoordinateSelect Coordinate;
+
+    [Tooltip("座標をmap座標に変換するどうか")]
+    public bool WorldToMap;
+
     private Vector3 rot_offset;
     private Vector3 chenged_orientation;
     private ModeSelector mode;
@@ -22,12 +36,15 @@ public class PoseSubscriber : MonoBehaviour
     GameObject SelectorObject;
     ModelIdentifier MachineManager;
     GameObject Reference;
-    public enum CoordinateSelect { JapaneseGeodeticSystem, ROS }
-    public CoordinateSelect Coordinate;
     FieldMainManager FieldManager;
+
+    [Tooltip("高さはトピックで取得したものを使うかunityの地形に合わせるか")]
     public bool UseHeightFromTopic;
+
+    [Tooltip("ダンプの上部旋回を補正するか")]
     public bool DumpUpperCorrection;
     public float DumpUpperDiff;
+    
     public Vector3 MapMachinePosition;
     public Quaternion MapMachineRotation;
     DumpVesselSubscriber MachineUpperJoints;
@@ -101,9 +118,9 @@ public class PoseSubscriber : MonoBehaviour
         }
         rot_offset = new Vector3(RotOffsetX, RotOffsetY, RotOffsetZ);
         chenged_orientation = NewRotation.eulerAngles - rot_offset;      
-        if (mode.WhichMode == ModeSelector.ModeOption.PlayMode || mode.WhichMode == ModeSelector.ModeOption.PreviewAndPlay || (MachineManager.ObjectTypeIsPaperMachine = true && mode.WhichMode == ModeSelector.ModeOption.PreviewModeForTeleop)) //Visual tool
+        if (mode.WhichMode == ModeSelector.ModeOption.PlayMode || mode.WhichMode == ModeSelector.ModeOption.PreviewAndPlay) //Visual tool
         {
-            if (ChengePosition_sw == true)
+            if (ChengePositionSW == true)
             {
                 Vector3 MapPosition = ModifyPosition + new Vector3(Reference.transform.position.x, 0, Reference.transform.position.z);
                 if (UseHeightFromTopic == false)
@@ -111,8 +128,8 @@ public class PoseSubscriber : MonoBehaviour
                     MapPosition.y = (FieldManager.terrain).SampleHeight(new Vector3(MapPosition.x, MapPosition.y, MapPosition.z)) + (FieldManager.terrain).transform.position.y + OffsetY;
                 }
                 targetObject.transform.position = MapPosition;
+                targetObject.transform.eulerAngles = chenged_orientation;
             }
-            targetObject.transform.eulerAngles = chenged_orientation;
         }
         MapMachinePosition = new Vector3(NewPosition.x - OffsetX, NewPosition.y - OffsetY, NewPosition.z - OffsetZ) + new Vector3(Reference.transform.position.x, 0, Reference.transform.position.z);
         MapMachineRotation = Quaternion.Euler(chenged_orientation);

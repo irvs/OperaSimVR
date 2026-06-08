@@ -6,7 +6,7 @@ using TMPro;
 
 public class ControllerManager : MonoBehaviour
 {
-    ControllerLay From_VRcont;
+    ControllerLaser From_VRcont;
     public bool DesignateVehicleFromInspector;
     bool outside_sw = false;
     public string Machine_name;
@@ -33,8 +33,8 @@ public class ControllerManager : MonoBehaviour
     GameObject ScreenObject;
     PoseChanger PoseChanger;
     bool CreatedScreen;
-    VRCrawlerOp VRCrawlerOp;
-    JointAnglePublisher JointAnglePublisher;
+    DrivingCommandPublisher DrivingCommandPublisher;
+    JointCommandPublisher JointCommandPublisher;
     private Camera centerEyeCamera;
     PillarCameraNamespace PillarCameraNamespace;
     private float OriginFOV;
@@ -42,7 +42,7 @@ public class ControllerManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        From_VRcont = FindObjectOfType<ControllerLay>();
+        From_VRcont = FindObjectOfType<ControllerLaser>();
         PlayertargetObject = GameObject.Find("OVRPlayerController");
         PlayerControllScript = PlayertargetObject.GetComponent<OVRPlayerController>();
         Machine_Name_List.Add("zero");
@@ -94,14 +94,14 @@ public class ControllerManager : MonoBehaviour
                 }
                 if (ObjectType == ObjectOption.Behicle && ((OVRInput.GetDown(OVRInput.RawButton.X) && OVRInput.Get(OVRInput.RawButton.LIndexTrigger) == true) || Input.GetKeyDown(KeyCode.X)))
                 {
-                    if (VRCrawlerOp != null)
+                    if (DrivingCommandPublisher != null)
                     {
-                        VRCrawlerOp.OnOffSw = VRCrawlerOp.ONOFF.On; ;
+                        DrivingCommandPublisher.OnOffSw = DrivingCommandPublisher.ONOFF.On; ;
                         Debug.Log("controller on");
                     }
-                    if (JointAnglePublisher != null)
+                    if (JointCommandPublisher != null)
                     {
-                        JointAnglePublisher.OnOffSw = JointAnglePublisher.ONOFF.On;
+                        JointCommandPublisher.OnOffSw = JointCommandPublisher.ONOFF.On;
                         Debug.Log("controller on");
                     }
                 }
@@ -160,8 +160,8 @@ public class ControllerManager : MonoBehaviour
             PlayertargetObject.GetComponent<Collider>().enabled = false;
             PlayertargetObject.transform.rotation = MachineCameraPosition.transform.rotation;
             PlayertargetObject.transform.SetParent(MachineCameraPosition.transform);
-            VRCrawlerOp = VehicletargetObject.GetComponent<VRCrawlerOp>();
-            JointAnglePublisher = VehicletargetObject.GetComponent<JointAnglePublisher>();
+            DrivingCommandPublisher = VehicletargetObject.GetComponent<DrivingCommandPublisher>();
+            JointCommandPublisher = VehicletargetObject.GetComponent<JointCommandPublisher>();
             UpdateTextWithMarkup(Machine_name, "#ff000055");
         } 
         else if (SensorCamerasImageSubscriber != null)
@@ -194,13 +194,13 @@ public class ControllerManager : MonoBehaviour
 
         if (ObjectType == ObjectOption.SensorCamera) { SensorCamerasImageSubscriber.isImageReceived = true; }
 
-        if (VRCrawlerOp != null)
+        if (DrivingCommandPublisher != null)
         {
-            VRCrawlerOp.OnOffSw = VRCrawlerOp.ONOFF.Off;
+            DrivingCommandPublisher.OnOffSw = DrivingCommandPublisher.ONOFF.Off;
         }
-        if (JointAnglePublisher != null)
+        if (JointCommandPublisher != null)
         {
-            JointAnglePublisher.OnOffSw = JointAnglePublisher.ONOFF.Off;
+            JointCommandPublisher.OnOffSw = JointCommandPublisher.ONOFF.Off;
         }
         if (outside_sw == false)
         {
@@ -249,7 +249,7 @@ public class ControllerManager : MonoBehaviour
     }
     public void Emergency(bool Bool)
     {
-        if (VRCrawlerOp != null){VRCrawlerOp.emergency = Bool;}
+        if (DrivingCommandPublisher != null){DrivingCommandPublisher.emergency = Bool;}
     }
 
     public void WriteForBD()
