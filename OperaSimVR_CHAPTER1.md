@@ -8,7 +8,7 @@ In this system, two PCs are used: one for launching OperaSimVR (PC_A), and anoth
 
 ## Install
 #### OPERASimVR(PC_A)
-Clone from ~~~~~~~~~ on PC_A.
+Clone from https://github.com/irvs/OperaSimVR on PC_A.
 
 #### Unity(PC_A)
 If a Unity environment is not available, set up the Unity environment on PC_A. The operating system should preferably be either Windows or macOS. Install Unity Hub from https://unity.com/ja/download, and install Unity Editor version 2022.3.4f1 from https://unity.com/ja/releases/editor/archive.
@@ -85,14 +85,13 @@ Set from the "PoseSubscriber" attached to the construction machine.
 **explanation of parameter**
 | parameter name | description |
 |--------|---------|
+|ChengePosition_sw | Check if you want to change the position of the construction machine model(You can switch it on and off even while playing).
 |ViaDB | Check this box if you want to retrieve information via a database. 
 |WorldToMap | Check this box to convert the acquired coordinate values ​​from the world coordinate system to the map coordinate system.
 |PoseMsgType | Select the topic type of the topic you want to subscribe to.
-|SimPhysXSubscribeTopicName | Specify the topic name of PhysX location information (for operation test).
-|SimAGXSubscribeTopicName | Specify the topic name of AGX location information (for operation test).
-|RealSubscribeTopicName | Specify the topic name that publishes the position and joint information of the actual machine.
+|PoseSubscribeTopicName | Specify the topic name that publishes the position and joint information of the actual machine.
 |ViaDBSubscribeTopicName | Specifies the topic name when going through a database.
-|ChengePosition_sw | Check if you want to change the position of the construction machine model(You can switch it on and off even while playing).
+|ViaDBSubscribeTopicName | Select a right-handed or left-handed coordinate system.
 |MapMachinePosition | Don't change.
 |MapMachineRotation | Don't change.
 
@@ -112,7 +111,7 @@ The origin of the map coordinates in the world coordinate system is specified by
 
 
 
-<img src=images/OperaSimVR/ModelName.png width="500px">
+<img src=images/OperaSimVR/ModelIdentifer.png width="500px">
 
 
 ***
@@ -124,11 +123,10 @@ Set from the "JointSubscriber" attached to the construction machine.
 |--------|---------|
 |ViaDB | Check this box if you want to retrieve information via a database. 
 |JointChangeSw | Check if you want to change the joint angles of the construction machine model(You can switch it on and off even while playing).
-|SimPhysXSubscribeTopicName | Specify the topic name of PhysX location information (for operation test).
-|SimAGXSubscribeTopicName | Specify the topic name of AGX location information (for operation test).
 |RealSubscribeTopicName | Specify the topic name that publishes the position and joint information of the actual machine.
 |ViaDBSubscribeTopicName | Specifies the topic name when going through a database.
 |JointPositions | Don't change.
+|Offsets | Correct the offset of each joint angle.
 
 ![](images/OperaSimVR/JointSubscriber.png)
 
@@ -141,16 +139,13 @@ The above describes the configuration required for each piece of construction eq
 ### §1.2 The configuration required in the environment to use Play Mode
 The following explains the configuration required in the environment to use Play Mode.
 
-### §1.2.1 configuration of the connection target (simulator or actual machine)
-When using it with the real heavy machinery, set the parameter "ForSimOrReal" of the script "FieldMainManager" attached to "FieldManager" to "ForReal". For operation testing with PhysX or AGX, set SimOrReal to ForSimPhysX or ForSimAGX instead. By changing this, the topic name, topic type, and the type of information transmitted and received will be altered. Avoid changing it during play.
-![](images/OperaSimVR/FieldManeger.png)
 
-### §1.2.2 configuration of using mode
+### §1.2.1 configuration of using mode
 If you want to change the mode, modify the parameter "WhichMode" of script "ModeSelector" attached to "FieldManager": set it to "NomalModeSimulator" for "NomalMode", "PlayMode" for "PlayMode", and "PrevievMode" for "PrevievMode". When you use PlayMode, set "WhichMode" to "PlayMode".
 
 ![](images/OperaSimVR/ModeSelector.png)
 
-### §1.2.3 Setting the origin of the map coordinate system in the cyber space.
+### §1.2.2 Setting the origin of the map coordinate system in the cyber space.
 Move the object's "MapReferencePoint" to the same position in the cyberspace field as the origin of the map coordinate system of the actual field.
 
 ***

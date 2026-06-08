@@ -40,9 +40,7 @@ Note: From this point on, operating the VR controller or the keyboard will send 
 |Emergency | - | Setting this to true will trigger an emergency stop of the actual machine. It sends a command to the emergency stop topic with motion instructions set to 0 [m/s] or 0 [rad/s]. Make sure to properly configure both the "EmergencyTopicName" and "RealPublishTopicName" before operating the actual machine.
 |Key | - | Set to "false" when using a VR headset. Set to "true" when not using one.
 |Use Ros2 Topic| - | Set to "false" if you want to operate the construction equipment model in "normal mode." Set to "true" if you want it to operate based on external commands without manual control within the system.
-| SimPhysX Publish TopicName | geometry_msgs/msg/Twist [m/s][rad/s] | Set this option if you want to connect to PhysX and verify the operation (for testing purposes).
-| SimAGX Publish TopicName | Geometry_msg/msg/Twist [m/s][rad/s] | Set this option if you want to connect to AGX and verify the operation (for testing purposes).
-|Real Publish TopicName| Geometry_msg/msg/Twist [m/s][rad/s] | Set the topic name for sending motion commands to the actual machine.
+|Twist Publish TopicName| Geometry_msg/msg/Twist [m/s][rad/s] | Set the topic name for sending motion commands to the actual machine.
 |Emergncy TopicName| std_msgs/msg/Bool | The topic name for sending emergency stop commands.
 |LinearSpeed| [m/s] | Specifies the maximum value [m/s] for forward and backward (linear) motion commands sent to the actual machine. When the VR D-pad (Axis2D.SecondaryThumbstick) is fully tilted or the arrow keys are pressed, the machine will accelerate up to this speed.
 |RotSpeed| [rad/s] | Specifies the maximum value [rad/s] for rotational (angular) motion commands sent to the actual machine. When the VR D-pad (Axis2D.SecondaryThumbstick) is fully tilted or the arrow keys are pressed, the machine will accelerate up to this turning speed.
