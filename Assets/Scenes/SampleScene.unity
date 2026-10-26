@@ -11393,9 +11393,15 @@ MonoBehaviour:
   blockLabelHeight: 0.25
   blockParent: {fileID: 101640063}
   machineryParent: {fileID: 198349695}
+  geoFenceTopic: /geo_fence_params_json
+  showGeoFence: 1
+  geoFenceColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  geoFenceLineWidth: 0.2
   convertRosToUnity: 1
   blockColor: {r: 0.2, g: 0.7, b: 0.3, a: 0.8}
   machineryColor: {r: 1, g: 0, b: 0, a: 1}
+  targetTerrain: {fileID: 1392124484}
+  terrainHeightOffset: 0.05
 --- !u!43 &1767056671
 Mesh:
   m_ObjectHideFlags: 0

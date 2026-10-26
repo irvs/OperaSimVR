@@ -29,6 +29,15 @@ public class TmsParameterJsonVisualizer : MonoBehaviour
     [SerializeField] private Transform blockParent;
     [SerializeField] private Transform machineryParent;
 
+    [Header("GeoFence Visualization")]
+    [SerializeField] private string geoFenceTopic = "/geo_fence_params_json";
+    [SerializeField] private bool showGeoFence = true;
+    [SerializeField] private Color geoFenceColor = Color.yellow;
+    [SerializeField] private float geoFenceLineWidth = 0.2f;
+
+    private readonly List<GameObject> geoFenceObjects =
+        new List<GameObject>();
+
     [Header("ROS map -> Unity coordinate conversion")]
     [Tooltip("Typical ROS map (X forward, Y left, Z up) to Unity (X right, Y up, Z forward): Unity=(-ROS Y, ROS Z, ROS X).")]
     [SerializeField] private bool convertRosToUnity = true;
@@ -50,6 +59,61 @@ public class TmsParameterJsonVisualizer : MonoBehaviour
         public string record_name;
         public JObject data;
     }
+
+    [SerializeField] private Terrain targetTerrain;
+
+    // Terrain表面から少し浮かせる距離
+    [SerializeField] private float terrainHeightOffset = 0.05f;
+
+    /// <summary>
+    /// Unityのワールド座標(X, Z)に対応するTerrain表面の高さを取得する。
+    /// Terrainの範囲外、またはTerrain未設定の場合は元の高さを維持する。
+    /// </summary>
+
+    private float GetTerrainHeight(float worldX, float worldZ, float fallbackY)
+    {
+        if (targetTerrain == null || targetTerrain.terrainData == null)
+            return fallbackY;
+
+        Vector3 terrainPos = targetTerrain.transform.position;
+        Vector3 terrainSize = targetTerrain.terrainData.size;
+
+        float localX = worldX - terrainPos.x;
+        float localZ = worldZ - terrainPos.z;
+
+        // Terrainの範囲外なら従来の高さを使う
+        if (localX < 0f || localX > terrainSize.x ||
+            localZ < 0f || localZ > terrainSize.z)
+        {
+            return fallbackY;
+        }
+
+        float height = targetTerrain.SampleHeight(
+            new Vector3(worldX, terrainPos.y, worldZ)
+        );
+
+        return height + terrainPos.y + terrainHeightOffset;
+    }
+
+    private Vector3 RosPositionToTerrain(Vector3 rosPosition)
+    {
+        // 既存のROS -> Unity変換とMapReferencePointの補正を維持
+        Vector3 unityPosition = RosPositionToUnity(
+            rosPosition.x,
+            rosPosition.y,
+            rosPosition.z
+        );
+
+        // Y座標だけTerrain表面の高さに置き換える
+        unityPosition.y = GetTerrainHeight(
+            unityPosition.x,
+            unityPosition.z,
+            unityPosition.y
+        );
+
+        return unityPosition;
+    }
+
 
     /// <summary>
     /// 表示用オブジェクトの Collider を無効化する
@@ -83,6 +147,7 @@ public class TmsParameterJsonVisualizer : MonoBehaviour
         ros.Subscribe<RosString>(blockTopic, OnBlockJson);
         ros.Subscribe<RosString>(machineryTopic, OnMachineryJson);
         ros.Subscribe<RosString>(jointTopic, OnJointJson);
+        ros.Subscribe<RosString>(geoFenceTopic, OnGeoFenceJson);
 
         Debug.Log($"[TmsParameterJsonVisualizer] Subscribed: {blockTopic}, {machineryTopic}, {jointTopic}");
     }
@@ -293,7 +358,8 @@ public class TmsParameterJsonVisualizer : MonoBehaviour
                 for (int i = 0; i < count; i++)
                 {
                     float z = i < zs.Count ? zs[i] : 0f;
-                    Vector3 position = RosPositionToUnity(xs[i], ys[i], z);
+                    // Vector3 position = RosPositionToUnity(xs[i], ys[i], z);
+                    Vector3 position = RosPositionToTerrain(new Vector3(xs[i], ys[i], z));
 
                     GameObject marker = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                     // 表示用オブジェクトなので衝突判定を無効化
@@ -357,10 +423,263 @@ public class TmsParameterJsonVisualizer : MonoBehaviour
         }
     }
 
-    // private Vector3 RosPositionToUnity(float x, float y, float z)
-    // {
-    //     return convertRosToUnity ? new Vector3(-y, z, x) : new Vector3(x, y, z);
-    // }
+    /// <summary>
+    /// GeoFenceのJSONを受信して、Unity上に境界線を描画する。
+    /// Marker / MarkerArrayは使用しない。
+    /// </summary>
+    private void OnGeoFenceJson(RosString message)
+    {
+        if (!showGeoFence ||
+            message == null ||
+            string.IsNullOrWhiteSpace(message.data))
+        {
+            return;
+        }
+
+        try
+        {
+            JArray records = JArray.Parse(message.data);
+
+            if (clearAndRebuildOnMessage)
+            {
+                ClearObjects(geoFenceObjects);
+            }
+
+            int created = 0;
+
+            foreach (JToken token in records)
+            {
+                JObject record = token as JObject;
+                JObject data = record?["data"] as JObject;
+
+                string recordName =
+                    (string)record?["record_name"] ?? "geo_fence";
+
+                if (data == null || data["coordinates"] == null)
+                {
+                    Debug.LogWarning(
+                        $"[TmsParameterJsonVisualizer] " +
+                        $"GeoFence '{recordName}' skipped: coordinates missing."
+                    );
+                    continue;
+                }
+
+                JToken coordinates = data["coordinates"];
+
+                // 外側の配列をたどり、境界線の座標列を取得する。
+                // 例：
+                // coordinates = [[{x:..., y:...}, ...]]
+                // coordinates = [[[x, y], [x, y], ...]]
+                JArray points = GetGeoFenceRing(coordinates);
+
+                if (points == null || points.Count < 2)
+                {
+                    Debug.LogWarning(
+                        $"[TmsParameterJsonVisualizer] " +
+                        $"GeoFence '{recordName}' skipped: " +
+                        "at least two points are required."
+                    );
+                    continue;
+                }
+
+                List<Vector3> positions = new List<Vector3>();
+
+                foreach (JToken point in points)
+                {
+                    float x;
+                    float y;
+                    float z;
+
+                    if (point is JObject pointObject)
+                    {
+                        // { "x": ..., "y": ..., "z": ... } 形式
+                        x = GetFloat(pointObject, "x", float.NaN);
+                        y = GetFloat(pointObject, "y", float.NaN);
+                        z = GetFloat(pointObject, "z", 0f);
+                    }
+                    else if (point is JArray coordinateArray &&
+                            coordinateArray.Count >= 2)
+                    {
+                        // GeoJSON形式 [x, y] または [x, y, z]
+                        if (!TryGetCoordinate(coordinateArray[0], out x) ||
+                            !TryGetCoordinate(coordinateArray[1], out y))
+                        {
+                            Debug.LogWarning(
+                                $"[TmsParameterJsonVisualizer] " +
+                                $"GeoFence '{recordName}' contains invalid coordinates."
+                            );
+                            continue;
+                        }
+
+                        z = 0f;
+
+                        if (coordinateArray.Count >= 3)
+                        {
+                            if (!TryGetCoordinate(coordinateArray[2], out z))
+                            {
+                                Debug.LogWarning(
+                                    $"[TmsParameterJsonVisualizer] " +
+                                    $"GeoFence '{recordName}' contains invalid Z coordinate."
+                                );
+                                continue;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Debug.LogWarning(
+                            $"[TmsParameterJsonVisualizer] " +
+                            $"GeoFence '{recordName}' contains an unsupported point format."
+                        );
+                        continue;
+                    }
+
+                    if (float.IsNaN(x) || float.IsInfinity(x) ||
+                        float.IsNaN(y) || float.IsInfinity(y) ||
+                        float.IsNaN(z) || float.IsInfinity(z))
+                    {
+                        Debug.LogWarning(
+                            $"[TmsParameterJsonVisualizer] " +
+                            $"GeoFence '{recordName}' contains non-finite coordinates."
+                        );
+                        continue;
+                    }
+
+                    // 既存のブロック・建機表示と同じ座標変換を使用
+                    positions.Add(RosPositionToUnity(x, y, z));
+                }
+
+                if (positions.Count < 2)
+                {
+                    Debug.LogWarning(
+                        $"[TmsParameterJsonVisualizer] " +
+                        $"GeoFence '{recordName}' skipped: " +
+                        "not enough valid points."
+                    );
+                    continue;
+                }
+
+                GameObject lineObject =
+                    new GameObject($"GeoFence_{recordName}");
+
+                if (machineryParent != null)
+                {
+                    lineObject.transform.SetParent(machineryParent, true);
+                }
+
+                LineRenderer line =
+                    lineObject.AddComponent<LineRenderer>();
+
+                line.useWorldSpace = true;
+                line.positionCount = positions.Count;
+                line.SetPositions(positions.ToArray());
+
+                line.startWidth = geoFenceLineWidth;
+                line.endWidth = geoFenceLineWidth;
+
+                line.startColor = geoFenceColor;
+                line.endColor = geoFenceColor;
+
+                line.material = new Material(
+                    Shader.Find("Sprites/Default")
+                );
+
+                line.numCapVertices = 2;
+                line.numCornerVertices = 2;
+
+                // 表示専用なのでColliderは追加しない
+                geoFenceObjects.Add(lineObject);
+
+                created++;
+
+                Debug.Log(
+                    $"[TmsParameterJsonVisualizer] " +
+                    $"GeoFence '{recordName}': " +
+                    $"{positions.Count} points created."
+                );
+            }
+
+            Debug.Log(
+                $"[TmsParameterJsonVisualizer] " +
+                $"GeoFence objects created: {created}"
+            );
+        }
+        catch (Exception e)
+        {
+            Debug.LogError(
+                $"[TmsParameterJsonVisualizer] " +
+                $"Failed to parse GeoFence JSON: {e.Message}"
+            );
+        }
+    }
+
+    /// <summary>
+    /// GeoFenceの座標列を取得する。
+    /// Python側のcoordinates[0]という構造と、
+    /// GeoJSONのPolygon/MultiLineStringの一般的な構造に対応する。
+    /// </summary>
+    private static JArray GetGeoFenceRing(JToken coordinates)
+    {
+        JToken current = coordinates;
+
+        while (current is JArray array)
+        {
+            if (array.Count == 0)
+            {
+                return null;
+            }
+
+            // 先頭要素が座標オブジェクトなら、この配列が座標列
+            if (array[0] is JObject)
+            {
+                return array;
+            }
+
+            // 先頭要素が数値配列 [x, y] なら、
+            // 現在の配列が座標列
+            if (array[0] is JArray firstArray &&
+                firstArray.Count >= 2 &&
+                firstArray[0].Type == JTokenType.Float ||
+                array[0] is JArray firstNumericArray &&
+                firstNumericArray.Count >= 2 &&
+                firstNumericArray[0].Type == JTokenType.Integer)
+            {
+                return array;
+            }
+
+            // さらに内側の配列へ進む
+            current = array[0];
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// JSONの数値をfloatに変換する。
+    /// </summary>
+    private static bool TryGetCoordinate(
+        JToken token,
+        out float value)
+    {
+        value = 0f;
+
+        if (token == null)
+        {
+            return false;
+        }
+
+        return float.TryParse(
+            token.ToString(),
+            System.Globalization.NumberStyles.Float,
+            System.Globalization.CultureInfo.InvariantCulture,
+            out value
+        );
+    }
+
+        // private Vector3 RosPositionToUnity(float x, float y, float z)
+        // {
+        //     return convertRosToUnity ? new Vector3(-y, z, x) : new Vector3(x, y, z);
+        // }
 
     private Vector3 RosPositionToUnity(float x, float y, float z)
     {
