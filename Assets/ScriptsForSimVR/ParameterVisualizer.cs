@@ -694,7 +694,8 @@ public class TmsParameterJsonVisualizer : MonoBehaviour
         {
             modifyPosition += new Vector3(
                 reference.transform.position.x,
-                0f,
+                reference.transform.position.y,
+                // 0f,
                 reference.transform.position.z
             );
         }
