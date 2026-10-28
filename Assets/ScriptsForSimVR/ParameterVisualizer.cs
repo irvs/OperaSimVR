@@ -76,6 +76,22 @@ public class TmsParameterJsonVisualizer : MonoBehaviour
     // Terrain表面から少し浮かせる距離
     [SerializeField] private float terrainHeightOffset = 0.05f;
 
+
+    [Header("Machinery Route Visualization")]
+    [SerializeField] private string machineryConnectionTopic =
+        "/machinery_connection_params_json";
+
+    [SerializeField] private bool showMachineryConnections = true;
+
+    // 建機位置の赤色と区別するため、オレンジ色にする
+    [SerializeField] private Color machineryConnectionColor =
+        new Color(1f, 0.25f, 0f, 1f);
+
+    [SerializeField] private float machineryConnectionWidth = 0.15f;
+
+    private readonly List<GameObject> machineryConnectionObjects =
+        new List<GameObject>();
+
     /// <summary>
     /// Unityのワールド座標(X, Z)に対応するTerrain表面の高さを取得する。
     /// Terrainの範囲外、またはTerrain未設定の場合は元の高さを維持する。
@@ -159,6 +175,7 @@ public class TmsParameterJsonVisualizer : MonoBehaviour
         ros.Subscribe<RosString>(machineryTopic, OnMachineryJson);
         ros.Subscribe<RosString>(jointTopic, OnJointJson);
         ros.Subscribe<RosString>(geoFenceTopic, OnGeoFenceJson);
+        ros.Subscribe<RosString>(machineryConnectionTopic, OnMachineryConnectionJson);
 
         Debug.Log($"[TmsParameterJsonVisualizer] Subscribed: {blockTopic}, {machineryTopic}, {jointTopic}");
     }
@@ -788,6 +805,170 @@ public class TmsParameterJsonVisualizer : MonoBehaviour
             System.Globalization.CultureInfo.InvariantCulture,
             out value
         );
+    }
+
+    private void OnMachineryConnectionJson(RosString message)
+    {
+        if (!showMachineryConnections ||
+            message == null ||
+            string.IsNullOrWhiteSpace(message.data))
+        {
+            return;
+        }
+
+        try
+        {
+            JArray records = JArray.Parse(message.data);
+
+            if (clearAndRebuildOnMessage)
+            {
+                ClearObjects(machineryConnectionObjects);
+            }
+
+            // node_id と Unity上の座標の対応表
+            Dictionary<string, Vector3> nodePositions =
+                new Dictionary<string, Vector3>();
+
+            // 1. 全ノードの位置を取得
+            foreach (JToken token in records)
+            {
+                JObject record = token as JObject;
+                JObject data = record?["data"] as JObject;
+
+                if (data == null ||
+                    data["node_id"] == null ||
+                    !(data["position"] is JObject position))
+                {
+                    continue;
+                }
+
+                string nodeId = data["node_id"].ToString();
+
+                float x = GetFloat(position, "x", float.NaN);
+                float y = GetFloat(position, "y", float.NaN);
+                float z = GetFloat(position, "z", 0f);
+
+                if (float.IsNaN(x) || float.IsNaN(y) ||
+                    float.IsInfinity(x) || float.IsInfinity(y) ||
+                    float.IsNaN(z) || float.IsInfinity(z))
+                {
+                    Debug.LogWarning(
+                        $"[TmsParameterJsonVisualizer] " +
+                        $"Invalid route node position: {nodeId}"
+                    );
+                    continue;
+                }
+
+                // 建機位置と同じ座標変換を行い、
+                // Terrainが設定されていれば地表の高さに合わせる
+                Vector3 unityPosition =
+                    RosPositionToTerrain(new Vector3(x, y, z));
+
+                nodePositions[nodeId] = unityPosition;
+            }
+
+            // 同じ接続を重複描画しないための集合
+            HashSet<string> drawnEdges = new HashSet<string>();
+
+            int created = 0;
+
+            // 2. connect_node に従ってノード間に線を描画
+            foreach (JToken token in records)
+            {
+                JObject record = token as JObject;
+                JObject data = record?["data"] as JObject;
+
+                if (data == null || data["node_id"] == null)
+                {
+                    continue;
+                }
+
+                string sourceId = data["node_id"].ToString();
+
+                if (!nodePositions.ContainsKey(sourceId) ||
+                    !(data["connect_node"] is JArray connectNodes))
+                {
+                    continue;
+                }
+
+                foreach (JToken targetToken in connectNodes)
+                {
+                    if (targetToken == null)
+                    {
+                        continue;
+                    }
+
+                    string targetId = targetToken.ToString();
+
+                    if (sourceId == targetId ||
+                        !nodePositions.ContainsKey(targetId))
+                    {
+                        continue;
+                    }
+
+                    // A -> B と B -> A を同じ接続として扱う
+                    string edgeKey = string.CompareOrdinal(
+                        sourceId, targetId) < 0
+                        ? sourceId + "|" + targetId
+                        : targetId + "|" + sourceId;
+
+                    if (!drawnEdges.Add(edgeKey))
+                    {
+                        continue;
+                    }
+
+                    GameObject routeObject = new GameObject(
+                        $"MachineryConnection_{sourceId}_{targetId}"
+                    );
+
+                    Transform parent = geoFenceParent != null
+                        ? geoFenceParent
+                        : machineryParent;
+
+                    if (parent != null)
+                    {
+                        routeObject.transform.SetParent(parent, true);
+                    }
+
+                    LineRenderer line =
+                        routeObject.AddComponent<LineRenderer>();
+
+                    line.useWorldSpace = true;
+                    line.positionCount = 2;
+
+                    line.SetPosition(0, nodePositions[sourceId]);
+                    line.SetPosition(1, nodePositions[targetId]);
+
+                    line.startWidth = machineryConnectionWidth;
+                    line.endWidth = machineryConnectionWidth;
+
+                    line.startColor = machineryConnectionColor;
+                    line.endColor = machineryConnectionColor;
+
+                    line.material = new Material(
+                        Shader.Find("Sprites/Default")
+                    );
+
+                    line.numCapVertices = 2;
+
+                    machineryConnectionObjects.Add(routeObject);
+                    created++;
+                }
+            }
+
+            Debug.Log(
+                $"[TmsParameterJsonVisualizer] " +
+                $"Machinery connections created: {created}, " +
+                $"nodes: {nodePositions.Count}"
+            );
+        }
+        catch (Exception e)
+        {
+            Debug.LogError(
+                $"[TmsParameterJsonVisualizer] " +
+                $"Failed to parse machinery connection JSON: {e.Message}"
+            );
+        }
     }
 
         // private Vector3 RosPositionToUnity(float x, float y, float z)
