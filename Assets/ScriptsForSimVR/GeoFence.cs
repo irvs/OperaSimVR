@@ -9,6 +9,10 @@ public class Geofence : MonoBehaviour
     string parentObjectName;
     private GameObject targetObject;
 
+    [Header("Collision Detection")]
+    [Tooltip("接触判定の半径（メートル）")]
+    public float collisionRadius = 0.5f;
+
     void Start()
     {
         // LineRendererコンポーネントを取得
@@ -36,7 +40,8 @@ public class Geofence : MonoBehaviour
         RaycastHit hit;
 
         // 直線（レイキャスト）を行い、衝突した場合の処理
-        if (Physics.Raycast(objectA.position, direction.normalized, out hit, direction.magnitude, collisionLayer))
+        // if (Physics.Raycast(objectA.position, direction.normalized, out hit, direction.magnitude, collisionLayer))
+        if (Physics.SphereCast(objectA.position, collisionRadius, direction.normalized, out hit, direction.magnitude, collisionLayer))
         {
             // 衝突した場合の処理
             Debug.DrawLine(objectA.position, hit.point, Color.red);

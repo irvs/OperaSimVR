@@ -35,6 +35,17 @@ public class TmsParameterJsonVisualizer : MonoBehaviour
     [SerializeField] private Color geoFenceColor = Color.yellow;
     [SerializeField] private float geoFenceLineWidth = 0.2f;
 
+    // 頂点Cylinderの設定
+    [SerializeField] private float geoFenceVertexDiameter = 0.15f;
+    [SerializeField] private float geoFenceVertexHeight = 1.5f;
+    [SerializeField] private Color geoFenceVertexColor = Color.red;
+
+    // GeofenceのRaycastで検出する対象のLayer
+    [SerializeField] private LayerMask geoFenceCollisionLayer;
+
+    // Cylinderや境界線の親オブジェクト
+    [SerializeField] private Transform geoFenceParent;
+
     private readonly List<GameObject> geoFenceObjects =
         new List<GameObject>();
 
@@ -559,12 +570,21 @@ public class TmsParameterJsonVisualizer : MonoBehaviour
                     continue;
                 }
 
+                // GeoFenceの親オブジェクト
+                Transform parent = geoFenceParent != null
+                    ? geoFenceParent
+                    : machineryParent;
+
+                // ============================================================
+                // 1. 既存のGeoFence境界線を描画
+                // ============================================================
+
                 GameObject lineObject =
                     new GameObject($"GeoFence_{recordName}");
 
-                if (machineryParent != null)
+                if (parent != null)
                 {
-                    lineObject.transform.SetParent(machineryParent, true);
+                    lineObject.transform.SetParent(parent, true);
                 }
 
                 LineRenderer line =
@@ -587,8 +607,102 @@ public class TmsParameterJsonVisualizer : MonoBehaviour
                 line.numCapVertices = 2;
                 line.numCornerVertices = 2;
 
-                // 表示専用なのでColliderは追加しない
+                // 境界線を閉じる
+                line.loop = true;
+
                 geoFenceObjects.Add(lineObject);
+
+
+                // ============================================================
+                // 2. 各頂点にCylinderを生成
+                // ============================================================
+
+                List<GameObject> vertexObjects = new List<GameObject>();
+
+                for (int i = 0; i < positions.Count; i++)
+                {
+                    GameObject vertex = GameObject.CreatePrimitive(
+                        PrimitiveType.Cylinder
+                    );
+
+                    vertex.name = $"GeoFenceVertex_{recordName}_{i}";
+
+                    if (parent != null)
+                    {
+                        vertex.transform.SetParent(parent, true);
+                    }
+
+                    // GeoFenceの頂点位置に配置
+                    vertex.transform.position = positions[i];
+
+                    // Cylinderの標準高さは2なので、Yスケールを高さの半分にする
+                    vertex.transform.localScale = new Vector3(
+                        geoFenceVertexDiameter,
+                        geoFenceVertexHeight * 0.5f,
+                        geoFenceVertexDiameter
+                    );
+
+                    // 表示用CylinderのColliderは無効化
+                    // Raycastの検出対象にはしない
+                    Collider vertexCollider = vertex.GetComponent<Collider>();
+
+                    if (vertexCollider != null)
+                    {
+                        vertexCollider.enabled = false;
+                    }
+
+                    Renderer vertexRenderer = vertex.GetComponent<Renderer>();
+
+                    if (vertexRenderer != null)
+                    {
+                        vertexRenderer.material = new Material(
+                            Shader.Find("Standard")
+                        );
+
+                        vertexRenderer.material.color = geoFenceVertexColor;
+                    }
+
+                    vertexObjects.Add(vertex);
+                    geoFenceObjects.Add(vertex);
+                }
+
+
+                // ============================================================
+                // 3. 各頂点にGeofenceコンポーネントを追加
+                //    EndpointObjを次の頂点に設定
+                // ============================================================
+
+                for (int i = 0; i < vertexObjects.Count; i++)
+                {
+                    GameObject vertex = vertexObjects[i];
+
+                    // 次の頂点。最後の頂点は最初の頂点につなぐ
+                    int nextIndex = (i + 1) % vertexObjects.Count;
+
+                    GameObject nextVertex = vertexObjects[nextIndex];
+
+                    Geofence geofence = vertex.AddComponent<Geofence>();
+
+                    // 次の頂点を設定
+                    geofence.EndpointObj = nextVertex.transform;
+
+                    // 衝突判定対象のLayerを設定
+                    geofence.collisionLayer = geoFenceCollisionLayer;
+                }
+
+
+                // ============================================================
+                // 4. ログ
+                // ============================================================
+
+                created++;
+
+                Debug.Log(
+                    $"[TmsParameterJsonVisualizer] " +
+                    $"GeoFence '{recordName}': " +
+                    $"{positions.Count} vertices and " +
+                    $"{positions.Count} collision segments created."
+                );
 
                 created++;
 

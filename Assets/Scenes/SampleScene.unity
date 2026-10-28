@@ -11397,6 +11397,13 @@ MonoBehaviour:
   showGeoFence: 1
   geoFenceColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   geoFenceLineWidth: 0.2
+  geoFenceVertexDiameter: 0.15
+  geoFenceVertexHeight: 1.5
+  geoFenceVertexColor: {r: 1, g: 0, b: 0, a: 1}
+  geoFenceCollisionLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  geoFenceParent: {fileID: 2131396832}
   convertRosToUnity: 1
   blockColor: {r: 0.2, g: 0.7, b: 0.3, a: 0.8}
   machineryColor: {r: 1, g: 0, b: 0, a: 1}
@@ -13825,6 +13832,37 @@ Mesh:
     offset: 0
     size: 0
     path: 
+--- !u!1 &2131396831
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2131396832}
+  m_Layer: 0
+  m_Name: GeoFence
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2131396832
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2131396831}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -20.655437, y: 9.828024, z: -59.94108}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 23
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &454268462110116560
 PrefabInstance:
   m_ObjectHideFlags: 0
