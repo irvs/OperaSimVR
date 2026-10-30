@@ -23,6 +23,11 @@ public class TmsParameterJsonVisualizer : MonoBehaviour
     [SerializeField] private bool showMachineryPositions = true;
     [SerializeField] private bool logJointAngleRecords = true;
     [SerializeField] private bool clearAndRebuildOnMessage = true;
+
+    [Header("Label Visibility")]
+    [SerializeField] private bool showBlockLabels = true;
+    [SerializeField] private bool showMachineryLabels = true;
+
     [SerializeField] private float defaultBlockHeight = 0.1f;
     [SerializeField] private float machineryMarkerDiameter = 0.8f;
     [SerializeField] private float blockLabelHeight = 0.25f;
@@ -404,18 +409,30 @@ public class TmsParameterJsonVisualizer : MonoBehaviour
                     }
                     machineryObjects.Add(marker);
 
-                    GameObject label = new GameObject($"Label_Machinery_{recordName}_{i}");
-                    label.transform.SetParent(machineryParent, false);
-                    label.transform.position = position + Vector3.up * (machineryMarkerDiameter * 0.75f);
-                    TextMesh text = label.AddComponent<TextMesh>();
-                    text.text = $"{recordName}[{i}]";
-                    text.characterSize = 0.12f;
-                    text.fontSize = 64;
-                    text.anchor = TextAnchor.MiddleCenter;
-                    text.alignment = TextAlignment.Center;
-                    text.color = Color.yellow;
-                    label.AddComponent<BillboardToCamera>();
-                    machineryObjects.Add(label);
+                    // 建機ラベル
+                    if (showMachineryLabels)
+                    {
+                        GameObject label = new GameObject(
+                            $"Label_Machinery_{recordName}_{i}"
+                        );
+
+                        label.transform.SetParent(machineryParent, false);
+
+                        label.transform.position =
+                            position + Vector3.up * (machineryMarkerDiameter * 0.75f);
+
+                        TextMesh text = label.AddComponent<TextMesh>();
+                        text.text = $"{recordName}[{i}]";
+                        text.characterSize = 0.12f;
+                        text.fontSize = 64;
+                        text.anchor = TextAnchor.MiddleCenter;
+                        text.alignment = TextAlignment.Center;
+                        text.color = Color.yellow;
+
+                        label.AddComponent<BillboardToCamera>();
+
+                        machineryObjects.Add(label);
+                    }
                     created++;
                 }
             }
@@ -1151,23 +1168,29 @@ public class TmsParameterJsonVisualizer : MonoBehaviour
         blockObjects.Add(block);
 
         // ラベル
-        GameObject label = new GameObject($"Label_{objectName}");
+        // ブロックラベル
+        if (showBlockLabels)
+        {
+            GameObject label = new GameObject($"Label_{objectName}");
 
-        label.transform.SetParent(blockParent, false);
-        label.transform.position = RosPositionToUnity(
-            x, y, z + sizeZ + blockLabelHeight);
+            label.transform.SetParent(blockParent, false);
 
-        TextMesh text = label.AddComponent<TextMesh>();
-        text.text = objectName;
-        text.characterSize = 0.15f;
-        text.fontSize = 64;
-        text.anchor = TextAnchor.MiddleCenter;
-        text.alignment = TextAlignment.Center;
-        text.color = Color.white;
+            label.transform.position = RosPositionToUnity(
+                x, y, z + sizeZ + blockLabelHeight
+            );
 
-        label.AddComponent<BillboardToCamera>();
+            TextMesh text = label.AddComponent<TextMesh>();
+            text.text = objectName;
+            text.characterSize = 0.15f;
+            text.fontSize = 64;
+            text.anchor = TextAnchor.MiddleCenter;
+            text.alignment = TextAlignment.Center;
+            text.color = Color.white;
 
-        blockObjects.Add(label);
+            label.AddComponent<BillboardToCamera>();
+
+            blockObjects.Add(label);
+        }
     }
 
     private static List<float> GetFloatList(JToken token)
