@@ -70,6 +70,11 @@ public class RosTerrainDeformer : MonoBehaviour
 
     private bool initialized;
 
+    [Header("Map Reference")]
+    [SerializeField] private string referenceObjectName = "MapReferencePoint";
+
+    private Transform mapReference;
+
     private void Start()
     {
         InitializeTerrain();
@@ -94,6 +99,24 @@ public class RosTerrainDeformer : MonoBehaviour
             $"TerrainPosition={targetTerrain.transform.position}, " +
             $"TerrainSize={terrainData.size}"
         );
+
+        GameObject referenceObject = GameObject.Find(referenceObjectName);
+
+        if (referenceObject != null)
+        {
+            mapReference = referenceObject.transform;
+
+            Debug.Log(
+                $"[RosTerrainDeformer] MapReferencePoint found: " +
+                $"Position={mapReference.position}"
+            );
+        }
+        else
+        {
+            Debug.LogError(
+                $"[RosTerrainDeformer] Reference object '{referenceObjectName}' not found."
+            );
+        }
     }
 
     /// <summary>
@@ -341,6 +364,12 @@ public class RosTerrainDeformer : MonoBehaviour
             rosZ + heightOffset,
             rosY
         );
+
+        // MapReferencePointの位置を加算
+        if (mapReference != null)
+        {
+            unityWorldPosition += mapReference.position;
+        }
 
         // Unityワールド座標 -> Terrainローカル座標
         local = targetTerrain.transform.InverseTransformPoint(
