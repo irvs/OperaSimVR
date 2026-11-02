@@ -75,8 +75,21 @@ public class RosTerrainDeformer : MonoBehaviour
 
     private Transform mapReference;
 
+    [Header("Terrain Restore")]
+    [SerializeField]
+    [Tooltip("Playモード終了時にTerrainを起動前の状態に戻す")]
+    private bool restoreTerrainOnStop = true;
+
+    // Play開始時のTerrainの高さを保存
+    private float[,] originalTerrainHeights;
+
+    // Terrainの初期状態を保存したか
+    private bool originalTerrainSaved = false;
+
     private void Start()
     {
+        SaveOriginalTerrain();
+
         InitializeTerrain();
 
         if (!initialized)
@@ -117,6 +130,52 @@ public class RosTerrainDeformer : MonoBehaviour
                 $"[RosTerrainDeformer] Reference object '{referenceObjectName}' not found."
             );
         }
+    }
+
+    private void SaveOriginalTerrain()
+    {
+        if (targetTerrain == null || targetTerrain.terrainData == null)
+        {
+            Debug.LogError("[RosTerrainDeformer] Target Terrain is not assigned.");
+            return;
+        }
+
+        TerrainData terrainData = targetTerrain.terrainData;
+
+        int resolution = terrainData.heightmapResolution;
+
+        originalTerrainHeights = terrainData.GetHeights(
+            0, 0, resolution, resolution
+        );
+
+        originalTerrainSaved = true;
+
+        Debug.Log("[RosTerrainDeformer] Original Terrain saved.");
+    }
+
+    private void RestoreOriginalTerrain()
+    {
+        if (!restoreTerrainOnStop)
+        {
+            Debug.Log("[RosTerrainDeformer] Terrain restore disabled.");
+            return;
+        }
+
+        if (!originalTerrainSaved ||
+            originalTerrainHeights == null ||
+            targetTerrain == null ||
+            targetTerrain.terrainData == null)
+        {
+            return;
+        }
+
+        targetTerrain.terrainData.SetHeights(
+            0,
+            0,
+            originalTerrainHeights
+        );
+
+        Debug.Log("[RosTerrainDeformer] Terrain restored to original state.");
     }
 
     /// <summary>
@@ -739,5 +798,10 @@ public class RosTerrainDeformer : MonoBehaviour
         return
             !float.IsNaN(value) &&
             !float.IsInfinity(value);
+    }
+
+    private void OnDisable()
+    {
+        RestoreOriginalTerrain();
     }
 }
