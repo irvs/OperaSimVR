@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using Unity.Robotics.ROSTCPConnector;
 
@@ -6,10 +8,11 @@ using RosPointCloud2 = RosMessageTypes.Sensor.PointCloud2Msg;
 using RosPointField = RosMessageTypes.Sensor.PointFieldMsg;
 
 /// <summary>
-/// PointCloud2に格納された三角形メッシュをUnity Terrainに反映する。
+/// PointCloud2に格納された三角形メッシュを、TerrainTilerが生成した
+/// 複数のUnity Terrainへ反映する。
 ///
-/// PointCloud2の頂点を3点ずつ取り出し、
-/// 三角形内部の高さを補間してTerrain Heightmapを更新する。
+/// PointCloud2の頂点を3点ずつ取り出し、各Terrainタイルの範囲内で
+/// 三角形内部の高さを補間してHeightmapを更新する。
 ///
 /// ROS座標 -> Unity座標:
 /// Unity X = ROS X
@@ -21,21 +24,21 @@ using RosPointField = RosMessageTypes.Sensor.PointFieldMsg;
 /// </summary>
 public class RosTerrainDeformer : MonoBehaviour
 {
-    [Header("Terrain")]
+    [Header("Terrain Tiler")]
+    [Tooltip("TerrainTilerが付いている元のTerrainオブジェクト")]
     [SerializeField]
-    private Terrain targetTerrain;
+    private TerrainTiler terrainTiler;
 
     [Header("ROS 2")]
     [SerializeField]
-    private string pointCloudTopic =
-        "/merged_pointcloud_filtered/points";
+    private string pointCloudTopic = "/merged_pointcloud_filtered/points";
 
     [Header("Processing")]
     [Tooltip("処理結果をログに表示する")]
     [SerializeField]
     private bool logStatistics = true;
 
-    [Tooltip("Terrainの範囲外を無視する")]
+    [Tooltip("各Terrainタイルの範囲外を無視する")]
     [SerializeField]
     private bool ignoreOutsideTerrain = true;
 
@@ -48,184 +51,141 @@ public class RosTerrainDeformer : MonoBehaviour
     [SerializeField]
     private float heightOffset = 0f;
 
+    [Header("Map Reference")]
+    [SerializeField]
+    private string referenceObjectName = "MapReferencePoint";
+
+    [Header("Terrain Restore")]
+    [Tooltip("RosTerrainDeformerが無効化されたとき、各タイルを初期高さに戻す")]
+    [SerializeField]
+    private bool restoreTerrainOnStop = true;
+
     private ROSConnection ros;
-    private TerrainData terrainData;
-
-    private int resolution;
-
-    // 元のTerrainの高さ
-    private float[,] originalHeights;
-
-    // Terrainに適用する高さ
-    private float[,] heights;
-
-    // 三角形が重なった場合の高さ集計
-    private float[,] heightSums;
-    private int[,] heightCounts;
+    private Transform mapReference;
+    private bool initialized;
 
     private int receivedPointCount;
     private int validTriangleCount;
     private int appliedTriangleCount;
     private int updatedCellCount;
 
-    private bool initialized;
-
-    [Header("Map Reference")]
-    [SerializeField] private string referenceObjectName = "MapReferencePoint";
-
-    private Transform mapReference;
-
-    [Header("Terrain Restore")]
-    [SerializeField]
-    [Tooltip("Playモード終了時にTerrainを起動前の状態に戻す")]
-    private bool restoreTerrainOnStop = true;
-
-    // Play開始時のTerrainの高さを保存
-    private float[,] originalTerrainHeights;
-
-    // Terrainの初期状態を保存したか
-    private bool originalTerrainSaved = false;
-
-    private void Start()
+    private sealed class TileData
     {
-        SaveOriginalTerrain();
+        public Terrain terrain;
+        public TerrainData terrainData;
+        public int resolution;
 
-        InitializeTerrain();
+        public float[,] originalHeights;
+        public float[,] heights;
+        public float[,] heightSums;
+        public int[,] heightCounts;
+    }
 
-        if (!initialized)
+    private readonly List<TileData> tileDataList = new List<TileData>();
+
+    private IEnumerator Start()
+    {
+        // TerrainTiler.Start()でタイル生成が完了するまで待機する。
+        if (terrainTiler == null)
+            terrainTiler = FindObjectOfType<TerrainTiler>();
+
+        while (terrainTiler != null && !terrainTiler.IsInitialized)
+            yield return null;
+
+        if (terrainTiler == null)
         {
+            Debug.LogError(
+                "[RosTerrainDeformer] TerrainTilerが見つかりません。");
             enabled = false;
-            return;
+            yield break;
         }
 
-        ros = ROSConnection.GetOrCreateInstance();
-
-        ros.Subscribe<RosPointCloud2>(
-            pointCloudTopic,
-            OnPointCloudReceived
-        );
-
-        Debug.Log(
-            "[RosTerrainDeformer] Initialized. " +
-            $"Topic={pointCloudTopic}, " +
-            $"Resolution={resolution}, " +
-            $"TerrainPosition={targetTerrain.transform.position}, " +
-            $"TerrainSize={terrainData.size}"
-        );
+        if (!InitializeTiles())
+        {
+            enabled = false;
+            yield break;
+        }
 
         GameObject referenceObject = GameObject.Find(referenceObjectName);
-
         if (referenceObject != null)
         {
             mapReference = referenceObject.transform;
-
             Debug.Log(
                 $"[RosTerrainDeformer] MapReferencePoint found: " +
-                $"Position={mapReference.position}"
-            );
+                $"Position={mapReference.position}");
         }
         else
         {
-            Debug.LogError(
-                $"[RosTerrainDeformer] Reference object '{referenceObjectName}' not found."
-            );
-        }
-    }
-
-    private void SaveOriginalTerrain()
-    {
-        if (targetTerrain == null || targetTerrain.terrainData == null)
-        {
-            Debug.LogError("[RosTerrainDeformer] Target Terrain is not assigned.");
-            return;
+            Debug.LogWarning(
+                $"[RosTerrainDeformer] Reference object '{referenceObjectName}' " +
+                "が見つかりません。MapReferencePointなしで座標変換します。");
         }
 
-        TerrainData terrainData = targetTerrain.terrainData;
+        ros = ROSConnection.GetOrCreateInstance();
+        ros.Subscribe<RosPointCloud2>(pointCloudTopic, OnPointCloudReceived);
 
-        int resolution = terrainData.heightmapResolution;
+        initialized = true;
 
-        originalTerrainHeights = terrainData.GetHeights(
-            0, 0, resolution, resolution
-        );
-
-        originalTerrainSaved = true;
-
-        Debug.Log("[RosTerrainDeformer] Original Terrain saved.");
-    }
-
-    private void RestoreOriginalTerrain()
-    {
-        if (!restoreTerrainOnStop)
-        {
-            Debug.Log("[RosTerrainDeformer] Terrain restore disabled.");
-            return;
-        }
-
-        if (!originalTerrainSaved ||
-            originalTerrainHeights == null ||
-            targetTerrain == null ||
-            targetTerrain.terrainData == null)
-        {
-            return;
-        }
-
-        targetTerrain.terrainData.SetHeights(
-            0,
-            0,
-            originalTerrainHeights
-        );
-
-        Debug.Log("[RosTerrainDeformer] Terrain restored to original state.");
+        Debug.Log(
+            "[RosTerrainDeformer] Initialized. " +
+            $"Topic={pointCloudTopic}, Tiles={tileDataList.Count}");
     }
 
     /// <summary>
-    /// Terrainの初期化
+    /// TerrainTilerが生成した各タイルを初期化し、初期Heightmapを保存する。
     /// </summary>
-    private void InitializeTerrain()
+    private bool InitializeTiles()
     {
-        if (targetTerrain == null)
-        {
-            targetTerrain = GetComponent<Terrain>();
-        }
+        tileDataList.Clear();
 
-        if (targetTerrain == null)
+        if (terrainTiler == null || terrainTiler.terrains == null)
         {
             Debug.LogError(
-                "[RosTerrainDeformer] Terrainが設定されていません。"
-            );
-            return;
+                "[RosTerrainDeformer] TerrainTilerまたはterrainsがnullです。");
+            return false;
         }
 
-        terrainData = targetTerrain.terrainData;
+        foreach (GameObject tileObject in terrainTiler.terrains)
+        {
+            if (tileObject == null)
+                continue;
 
-        if (terrainData == null)
+            Terrain terrain = tileObject.GetComponent<Terrain>();
+            if (terrain == null || terrain.terrainData == null)
+                continue;
+
+            TerrainData data = terrain.terrainData;
+            int res = data.heightmapResolution;
+
+            if (res < 2)
+                continue;
+
+            TileData tile = new TileData
+            {
+                terrain = terrain,
+                terrainData = data,
+                resolution = res,
+                originalHeights = data.GetHeights(0, 0, res, res)
+            };
+
+            tile.heights = (float[,])tile.originalHeights.Clone();
+            tile.heightSums = new float[res, res];
+            tile.heightCounts = new int[res, res];
+
+            tileDataList.Add(tile);
+        }
+
+        if (tileDataList.Count == 0)
         {
             Debug.LogError(
-                "[RosTerrainDeformer] TerrainDataがありません。"
-            );
-            return;
+                "[RosTerrainDeformer] 有効なTerrainタイルがありません。");
+            return false;
         }
 
-        resolution = terrainData.heightmapResolution;
+        Debug.Log(
+            $"[RosTerrainDeformer] Initialized {tileDataList.Count} terrain tiles.");
 
-        if (resolution < 2)
-        {
-            Debug.LogError(
-                "[RosTerrainDeformer] Heightmap resolutionが不正です。"
-            );
-            return;
-        }
-
-        originalHeights = terrainData.GetHeights(
-            0, 0, resolution, resolution
-        );
-
-        heights = (float[,])originalHeights.Clone();
-
-        heightSums = new float[resolution, resolution];
-        heightCounts = new int[resolution, resolution];
-
-        initialized = true;
+        return true;
     }
 
     /// <summary>
@@ -234,15 +194,12 @@ public class RosTerrainDeformer : MonoBehaviour
     private void OnPointCloudReceived(RosPointCloud2 msg)
     {
         if (!initialized || msg == null)
-        {
             return;
-        }
 
         if (msg.data == null || msg.data.Length == 0)
         {
             Debug.LogWarning(
-                "[RosTerrainDeformer] PointCloud2のdataが空です。"
-            );
+                "[RosTerrainDeformer] PointCloud2のdataが空です。");
             return;
         }
 
@@ -254,21 +211,17 @@ public class RosTerrainDeformer : MonoBehaviour
         if (pointStep <= 0 || width <= 0 || height <= 0)
         {
             Debug.LogWarning(
-                "[RosTerrainDeformer] PointCloud2の寸法が不正です。"
-            );
+                "[RosTerrainDeformer] PointCloud2の寸法が不正です。");
             return;
         }
 
         if (rowStep <= 0)
-        {
             rowStep = width * pointStep;
-        }
 
         if (rowStep < width * pointStep)
         {
             Debug.LogError(
-                "[RosTerrainDeformer] row_stepが不正です。"
-            );
+                "[RosTerrainDeformer] row_stepが不正です。");
             return;
         }
 
@@ -277,15 +230,11 @@ public class RosTerrainDeformer : MonoBehaviour
         int zOffset;
 
         if (!TryGetFieldOffsets(
-            msg.fields,
-            pointStep,
-            out xOffset,
-            out yOffset,
-            out zOffset))
+            msg.fields, pointStep,
+            out xOffset, out yOffset, out zOffset))
         {
             Debug.LogError(
-                "[RosTerrainDeformer] XYZフィールドが取得できません。"
-            );
+                "[RosTerrainDeformer] XYZフィールドが取得できません。");
             return;
         }
 
@@ -296,22 +245,21 @@ public class RosTerrainDeformer : MonoBehaviour
         if (requiredBytes > msg.data.Length)
         {
             Debug.LogError(
-                "[RosTerrainDeformer] PointCloud2のdata長が不足しています。"
-            );
+                "[RosTerrainDeformer] PointCloud2のdata長が不足しています。");
             return;
         }
 
-        ResetHeightmap();
+        ResetAllTileHeightmaps();
 
         receivedPointCount = 0;
         validTriangleCount = 0;
         appliedTriangleCount = 0;
         updatedCellCount = 0;
 
-        // 3頂点ずつ三角形を構成する
-        Vector3[] triangle = new Vector3[3];
+        // 3頂点ずつ三角形を構成する。座標変換はワールド座標まで行い、
+        // タイルごとのローカル座標変換はRasterizeTriangleForTile内で行う。
+        Vector3[] triangleWorld = new Vector3[3];
         bool[] valid = new bool[3];
-
         int vertexIndex = 0;
 
         for (int row = 0; row < height; row++)
@@ -320,26 +268,16 @@ public class RosTerrainDeformer : MonoBehaviour
 
             for (int col = 0; col < width; col++)
             {
-                int pointOffset =
-                    rowOffset + col * pointStep;
+                int pointOffset = rowOffset + col * pointStep;
 
                 float rosX = ReadFloat32(
-                    msg.data,
-                    pointOffset + xOffset,
-                    msg.is_bigendian
-                );
+                    msg.data, pointOffset + xOffset, msg.is_bigendian);
 
                 float rosY = ReadFloat32(
-                    msg.data,
-                    pointOffset + yOffset,
-                    msg.is_bigendian
-                );
+                    msg.data, pointOffset + yOffset, msg.is_bigendian);
 
                 float rosZ = ReadFloat32(
-                    msg.data,
-                    pointOffset + zOffset,
-                    msg.is_bigendian
-                );
+                    msg.data, pointOffset + zOffset, msg.is_bigendian);
 
                 receivedPointCount++;
 
@@ -348,21 +286,13 @@ public class RosTerrainDeformer : MonoBehaviour
                     IsFinite(rosY) &&
                     IsFinite(rosZ);
 
-                Vector3 localPoint = Vector3.zero;
+                Vector3 worldPoint = Vector3.zero;
 
                 if (pointValid)
-                {
-                    pointValid = TryConvertToTerrainLocal(
-                        rosX,
-                        rosY,
-                        rosZ,
-                        out localPoint
-                    );
-                }
+                    pointValid = TryConvertToUnityWorld(rosX, rosY, rosZ, out worldPoint);
 
-                triangle[vertexIndex] = localPoint;
+                triangleWorld[vertexIndex] = worldPoint;
                 valid[vertexIndex] = pointValid;
-
                 vertexIndex++;
 
                 if (vertexIndex == 3)
@@ -371,10 +301,10 @@ public class RosTerrainDeformer : MonoBehaviour
                     {
                         validTriangleCount++;
 
-                        if (RasterizeTriangle(
-                            triangle[0],
-                            triangle[1],
-                            triangle[2]))
+                        if (RasterizeTriangleToAllTiles(
+                            triangleWorld[0],
+                            triangleWorld[1],
+                            triangleWorld[2]))
                         {
                             appliedTriangleCount++;
                         }
@@ -385,16 +315,14 @@ public class RosTerrainDeformer : MonoBehaviour
             }
         }
 
-        // 3点に満たない端数は三角形として扱わない
         if (vertexIndex != 0 && logStatistics)
         {
             Debug.LogWarning(
                 "[RosTerrainDeformer] " +
-                $"三角形にならない頂点が{vertexIndex}点あります。"
-            );
+                $"三角形にならない頂点が{vertexIndex}点あります。");
         }
 
-        ApplyHeightmap();
+        ApplyAllTileHeightmaps();
 
         if (logStatistics)
         {
@@ -403,165 +331,143 @@ public class RosTerrainDeformer : MonoBehaviour
                 $"ReceivedPoints={receivedPointCount}, " +
                 $"ValidTriangles={validTriangleCount}, " +
                 $"AppliedTriangles={appliedTriangleCount}, " +
-                $"UpdatedCells={updatedCellCount}"
-            );
+                $"UpdatedCells={updatedCellCount}, " +
+                $"Tiles={tileDataList.Count}");
         }
     }
 
     /// <summary>
-    /// ROS座標をTerrainローカル座標に変換する
+    /// ROS座標をUnityワールド座標に変換する。
+    /// 各Terrainのローカル座標変換は後段で行う。
     /// </summary>
-    private bool TryConvertToTerrainLocal(
+    private bool TryConvertToUnityWorld(
         float rosX,
         float rosY,
         float rosZ,
-        out Vector3 local)
+        out Vector3 world)
     {
-        // ROS座標 -> Unityワールド座標
-        Vector3 unityWorldPosition = new Vector3(
+        world = new Vector3(
             rosX,
             rosZ + heightOffset,
-            rosY
-        );
+            rosY);
 
-        // MapReferencePointの位置を加算
         if (mapReference != null)
-        {
-            unityWorldPosition += mapReference.position;
-        }
+            world += mapReference.position;
 
-        // Unityワールド座標 -> Terrainローカル座標
-        local = targetTerrain.transform.InverseTransformPoint(
-            unityWorldPosition
-        );
-
-        return
-            IsFinite(local.x) &&
-            IsFinite(local.y) &&
-            IsFinite(local.z);
+        return IsFinite(world.x) && IsFinite(world.y) && IsFinite(world.z);
     }
 
     /// <summary>
-    /// 三角形内部を走査し、Terrain Heightmapに高さを設定する。
+    /// 三角形を全タイルに対して処理する。
+    /// タイル境界をまたぐ三角形も、各タイル側で個別にラスタライズする。
     /// </summary>
-    private bool RasterizeTriangle(
+    private bool RasterizeTriangleToAllTiles(
+        Vector3 worldA,
+        Vector3 worldB,
+        Vector3 worldC)
+    {
+        bool applied = false;
+
+        foreach (TileData tile in tileDataList)
+        {
+            Vector3 a = tile.terrain.transform.InverseTransformPoint(worldA);
+            Vector3 b = tile.terrain.transform.InverseTransformPoint(worldB);
+            Vector3 c = tile.terrain.transform.InverseTransformPoint(worldC);
+
+            if (RasterizeTriangleForTile(tile, a, b, c))
+                applied = true;
+        }
+
+        return applied;
+    }
+
+    /// <summary>
+    /// 指定タイルのローカル座標で三角形をラスタライズする。
+    /// </summary>
+    private bool RasterizeTriangleForTile(
+        TileData tile,
         Vector3 a,
         Vector3 b,
         Vector3 c)
     {
-        Vector3 size = terrainData.size;
+        TerrainData data = tile.terrainData;
+        Vector3 size = data.size;
+        int resolution = tile.resolution;
 
         if (size.x <= 0f || size.y <= 0f || size.z <= 0f)
-        {
             return false;
-        }
 
-        // XZ平面上の三角形の面積を判定
         float denominator =
             (b.z - c.z) * (a.x - c.x) +
             (c.x - b.x) * (a.z - c.z);
 
         if (Mathf.Abs(denominator) < 0.0000001f)
-        {
-            // XZ平面に投影したときに面積がない三角形
             return false;
-        }
 
-        // 三角形のXZ方向の範囲
         float minX = Mathf.Min(a.x, Mathf.Min(b.x, c.x));
         float maxX = Mathf.Max(a.x, Mathf.Max(b.x, c.x));
-
         float minZ = Mathf.Min(a.z, Mathf.Min(b.z, c.z));
         float maxZ = Mathf.Max(a.z, Mathf.Max(b.z, c.z));
 
-        // Terrain範囲との交差判定
         if (ignoreOutsideTerrain)
         {
             if (maxX < 0f || minX > size.x ||
                 maxZ < 0f || minZ > size.z)
-            {
                 return false;
-            }
         }
 
-        // Heightmap上のインデックスに変換
+        // 三角形のXZ範囲をHeightmapのインデックス範囲に変換する。
+        // タイル外の頂点があっても、タイル内に入る部分を処理する。
         int minIX = Mathf.Clamp(
             Mathf.CeilToInt(minX / size.x * (resolution - 1)),
-            0,
-            resolution - 1
-        );
+            0, resolution - 1);
 
         int maxIX = Mathf.Clamp(
             Mathf.FloorToInt(maxX / size.x * (resolution - 1)),
-            0,
-            resolution - 1
-        );
+            0, resolution - 1);
 
         int minIZ = Mathf.Clamp(
             Mathf.CeilToInt(minZ / size.z * (resolution - 1)),
-            0,
-            resolution - 1
-        );
+            0, resolution - 1);
 
         int maxIZ = Mathf.Clamp(
             Mathf.FloorToInt(maxZ / size.z * (resolution - 1)),
-            0,
-            resolution - 1
-        );
+            0, resolution - 1);
+
+        if (minIX > maxIX || minIZ > maxIZ)
+            return false;
 
         bool applied = false;
 
-        // 三角形のBounding Box内を走査
         for (int iz = minIZ; iz <= maxIZ; iz++)
         {
             for (int ix = minIX; ix <= maxIX; ix++)
             {
-                // Heightmap上の位置をTerrainローカル座標に変換
-                float px =
-                    (float)ix / (resolution - 1) * size.x;
+                float px = (float)ix / (resolution - 1) * size.x;
+                float pz = (float)iz / (resolution - 1) * size.z;
 
-                float pz =
-                    (float)iz / (resolution - 1) * size.z;
-
-                float w1;
-                float w2;
-                float w3;
+                float w1, w2, w3;
 
                 if (!TryGetBarycentricCoordinates(
-                    px,
-                    pz,
-                    a,
-                    b,
-                    c,
-                    denominator,
-                    out w1,
-                    out w2,
-                    out w3))
-                {
+                    px, pz, a, b, c, denominator,
+                    out w1, out w2, out w3))
                     continue;
-                }
 
-                // 三角形の外側なら無視
                 if (w1 < -barycentricTolerance ||
                     w2 < -barycentricTolerance ||
                     w3 < -barycentricTolerance)
-                {
                     continue;
-                }
 
-                // 三角形内部の高さを補間
                 float localHeight =
                     w1 * a.y +
                     w2 * b.y +
                     w3 * c.y;
 
-                // Terrain Heightmapは0～1の正規化値
                 float normalizedHeight =
                     Mathf.Clamp01(localHeight / size.y);
 
-                heightSums[iz, ix] += normalizedHeight;
-                heightCounts[iz, ix]++;
-
+                tile.heightSums[iz, ix] += normalizedHeight;
+                tile.heightCounts[iz, ix]++;
                 applied = true;
             }
         }
@@ -569,9 +475,6 @@ public class RosTerrainDeformer : MonoBehaviour
         return applied;
     }
 
-    /// <summary>
-    /// XZ平面上の重心座標を計算する。
-    /// </summary>
     private bool TryGetBarycentricCoordinates(
         float px,
         float pz,
@@ -595,121 +498,106 @@ public class RosTerrainDeformer : MonoBehaviour
 
         w3 = 1f - w1 - w2;
 
-        return
-            IsFinite(w1) &&
-            IsFinite(w2) &&
-            IsFinite(w3);
+        return IsFinite(w1) && IsFinite(w2) && IsFinite(w3);
     }
 
     /// <summary>
-    /// 集計した高さをTerrainに反映する。
+    /// 全タイルの集計配列を初期化する。
+    /// 毎回、Play開始時に保存した初期Heightmapを基準に更新する。
     /// </summary>
-    private void ApplyHeightmap()
+    private void ResetAllTileHeightmaps()
     {
+        foreach (TileData tile in tileDataList)
+        {
+            tile.heights = (float[,])tile.originalHeights.Clone();
+
+            Array.Clear(tile.heightSums, 0, tile.heightSums.Length);
+            Array.Clear(tile.heightCounts, 0, tile.heightCounts.Length);
+        }
+    }
+
+    /// <summary>
+    /// 全タイルの高さを計算してTerrainへ反映する。
+    /// </summary>
+    private void ApplyAllTileHeightmaps()
+    {
+        foreach (TileData tile in tileDataList)
+            ApplyTileHeightmap(tile);
+    }
+
+    private void ApplyTileHeightmap(TileData tile)
+    {
+        int resolution = tile.resolution;
+
         float minHeight = float.MaxValue;
         float maxHeight = float.MinValue;
-
         float originalMin = float.MaxValue;
         float originalMax = float.MinValue;
-
         float actualMin = float.MaxValue;
         float actualMax = float.MinValue;
 
         int changedCells = 0;
-        updatedCellCount = 0;
+        int tileUpdatedCells = 0;
 
         for (int z = 0; z < resolution; z++)
         {
             for (int x = 0; x < resolution; x++)
             {
-                float original = originalHeights[z, x];
+                float original = tile.originalHeights[z, x];
 
                 originalMin = Mathf.Min(originalMin, original);
                 originalMax = Mathf.Max(originalMax, original);
 
-                int count = heightCounts[z, x];
+                int count = tile.heightCounts[z, x];
 
                 if (count == 0)
                 {
-                    heights[z, x] = original;
+                    tile.heights[z, x] = original;
                     actualMin = Mathf.Min(actualMin, original);
                     actualMax = Mathf.Max(actualMax, original);
                     continue;
                 }
 
-                float h = heightSums[z, x] / count;
-
-                h = Mathf.Clamp01(h);
-
-                heights[z, x] = h;
+                float h = Mathf.Clamp01(tile.heightSums[z, x] / count);
+                tile.heights[z, x] = h;
 
                 minHeight = Mathf.Min(minHeight, h);
                 maxHeight = Mathf.Max(maxHeight, h);
-
                 actualMin = Mathf.Min(actualMin, h);
                 actualMax = Mathf.Max(actualMax, h);
 
-                updatedCellCount++;
-
+                tileUpdatedCells++;
                 if (Mathf.Abs(h - original) > 0.0001f)
-                {
                     changedCells++;
-                }
             }
         }
 
-        Debug.Log(
-            "[RosTerrainDeformer] Heightmap statistics\n" +
-            $"UpdatedCells={updatedCellCount}\n" +
-            $"ChangedCells={changedCells}\n" +
-            $"TriangleHeightMin={minHeight:F6}\n" +
-            $"TriangleHeightMax={maxHeight:F6}\n" +
-            $"OriginalTerrainMin={originalMin:F6}\n" +
-            $"OriginalTerrainMax={originalMax:F6}\n" +
-            $"FinalTerrainMin={actualMin:F6}\n" +
-            $"FinalTerrainMax={actualMax:F6}\n" +
-            $"TerrainHeight={terrainData.size.y:F3}m"
-        );
+        updatedCellCount += tileUpdatedCells;
 
-        if (updatedCellCount == 0)
+        if (logStatistics)
         {
-            Debug.LogWarning(
-                "[RosTerrainDeformer] 更新対象のセルがありません。"
-            );
-            return;
+            string minText = tileUpdatedCells > 0 ? minHeight.ToString("F6") : "N/A";
+            string maxText = tileUpdatedCells > 0 ? maxHeight.ToString("F6") : "N/A";
+
+            Debug.Log(
+                $"[RosTerrainDeformer] Tile={tile.terrain.name} statistics\n" +
+                $"UpdatedCells={tileUpdatedCells}\n" +
+                $"ChangedCells={changedCells}\n" +
+                $"TriangleHeightMin={minText}\n" +
+                $"TriangleHeightMax={maxText}\n" +
+                $"OriginalTerrainMin={originalMin:F6}\n" +
+                $"OriginalTerrainMax={originalMax:F6}\n" +
+                $"FinalTerrainMin={actualMin:F6}\n" +
+                $"FinalTerrainMax={actualMax:F6}\n" +
+                $"TerrainHeight={tile.terrainData.size.y:F3}m");
         }
 
-        terrainData.SetHeights(0, 0, heights);
+        if (tileUpdatedCells == 0)
+            return;
 
-        Debug.Log(
-            "[RosTerrainDeformer] SetHeights completed."
-        );
+        tile.terrainData.SetHeights(0, 0, tile.heights);
     }
 
-    /// <summary>
-    /// Heightmapの集計値を初期化する。
-    /// </summary>
-    private void ResetHeightmap()
-    {
-        heights = (float[,])originalHeights.Clone();
-
-        Array.Clear(
-            heightSums,
-            0,
-            heightSums.Length
-        );
-
-        Array.Clear(
-            heightCounts,
-            0,
-            heightCounts.Length
-        );
-    }
-
-    /// <summary>
-    /// PointCloud2のXYZフィールドのオフセットを取得する。
-    /// FLOAT32 datatype = 7
-    /// </summary>
     private bool TryGetFieldOffsets(
         RosPointField[] fields,
         int pointStep,
@@ -722,16 +610,12 @@ public class RosTerrainDeformer : MonoBehaviour
         zOffset = -1;
 
         if (fields == null)
-        {
             return false;
-        }
 
         foreach (RosPointField field in fields)
         {
             if (field == null)
-            {
                 continue;
-            }
 
             int offset = (int)field.offset;
 
@@ -739,52 +623,30 @@ public class RosTerrainDeformer : MonoBehaviour
                 offset + 4 > pointStep ||
                 (int)field.datatype != 7 ||
                 (int)field.count < 1)
-            {
                 continue;
-            }
 
             if (field.name == "x")
-            {
                 xOffset = offset;
-            }
             else if (field.name == "y")
-            {
                 yOffset = offset;
-            }
             else if (field.name == "z")
-            {
                 zOffset = offset;
-            }
         }
 
-        return
-            xOffset >= 0 &&
-            yOffset >= 0 &&
-            zOffset >= 0;
+        return xOffset >= 0 && yOffset >= 0 && zOffset >= 0;
     }
 
-    /// <summary>
-    /// PointCloud2からFLOAT32を読み取る。
-    /// </summary>
-    private float ReadFloat32(
-        byte[] data,
-        int offset,
-        bool isBigEndian)
+    private float ReadFloat32(byte[] data, int offset, bool isBigEndian)
     {
         if (offset < 0 || offset + 4 > data.Length)
-        {
             return float.NaN;
-        }
 
         bool dataIsBigEndian = !BitConverter.IsLittleEndian;
 
         if (dataIsBigEndian == isBigEndian)
-        {
             return BitConverter.ToSingle(data, offset);
-        }
 
         byte[] temp = new byte[4];
-
         temp[0] = data[offset + 3];
         temp[1] = data[offset + 2];
         temp[2] = data[offset + 1];
@@ -795,13 +657,30 @@ public class RosTerrainDeformer : MonoBehaviour
 
     private bool IsFinite(float value)
     {
-        return
-            !float.IsNaN(value) &&
-            !float.IsInfinity(value);
+        return !float.IsNaN(value) && !float.IsInfinity(value);
+    }
+
+    private void RestoreOriginalTerrainTiles()
+    {
+        if (!restoreTerrainOnStop)
+            return;
+
+        foreach (TileData tile in tileDataList)
+        {
+            if (tile == null ||
+                tile.terrainData == null ||
+                tile.originalHeights == null)
+                continue;
+
+            tile.terrainData.SetHeights(0, 0, tile.originalHeights);
+        }
+
+        if (tileDataList.Count > 0)
+            Debug.Log("[RosTerrainDeformer] All terrain tiles restored.");
     }
 
     private void OnDisable()
     {
-        RestoreOriginalTerrain();
+        RestoreOriginalTerrainTiles();
     }
 }

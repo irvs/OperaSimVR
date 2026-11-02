@@ -14,6 +14,8 @@ public class TerrainTiler : MonoBehaviour
     [HideInInspector]
     public List<GameObject> terrains;
 
+    public bool IsInitialized { get; private set; } = false;
+
     private static TerrainTiler instance = null;
     public void Awake()
     {
@@ -109,6 +111,9 @@ public class TerrainTiler : MonoBehaviour
                 terrain.terrainData.SetHeights(0, 0, heightData);
             }
         }
+
+        IsInitialized = true;
+        Debug.Log($"[TerrainTiler] Initialized. Tiles={terrains.Count}");
     }
 
     private GameObject CreateTile()

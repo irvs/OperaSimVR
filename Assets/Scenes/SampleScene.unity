@@ -9616,6 +9616,7 @@ GameObject:
   - component: {fileID: 1392124487}
   - component: {fileID: 1392124488}
   - component: {fileID: 1392124489}
+  - component: {fileID: 1392124490}
   m_Layer: 0
   m_Name: Terrain
   m_TagString: Untagged
@@ -9763,13 +9764,33 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1392124482}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 55f7ed91e640fcd4eb96bbb879c0c9fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   topicName: /tms_ur_dynamic_terrain
   terrainPrefab: {fileID: 0}
+--- !u!114 &1392124490
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1392124482}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 868c5b0626c23de4eb9f2b69578e8a8c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  terrainTiler: {fileID: 0}
+  pointCloudTopic: /merged_pointcloud_filtered/points
+  logStatistics: 1
+  ignoreOutsideTerrain: 1
+  barycentricTolerance: 0.00001
+  heightOffset: 0
+  referenceObjectName: MapReferencePoint
+  restoreTerrainOnStop: 1
 --- !u!1 &1411419048
 GameObject:
   m_ObjectHideFlags: 0
