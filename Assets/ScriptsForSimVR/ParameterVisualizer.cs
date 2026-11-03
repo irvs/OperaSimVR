@@ -309,11 +309,15 @@ public class TmsParameterJsonVisualizer : MonoBehaviour
                     vy /= vectorLength;
 
                     // block_angle はラジアンとして扱う
-                    float blockAngle = GetFloat(
-                        data,
-                        "block_angle",
-                        Mathf.PI / 2f
-                    );
+                    // block_angle がDBに存在するかどうかを判定
+                    bool hasBlockAngle =
+                        data["block_angle"] != null &&
+                        data["block_angle"].Type != JTokenType.Null;
+
+                    // block_angle がない場合は垂直面として扱う
+                    float blockAngle = hasBlockAngle
+                        ? GetFloat(data, "block_angle", Mathf.PI / 2f)
+                        : Mathf.PI / 2f;
 
                     if (blockAngle <= 0f || blockAngle > Mathf.PI / 2f)
                     {
@@ -333,7 +337,8 @@ public class TmsParameterJsonVisualizer : MonoBehaviour
                         x, y, z,
                         sx, sy, sz,
                         vx, vy,
-                        blockAngle
+                        blockAngle,
+                        hasBlockAngle
                     );
 
                     created++;
@@ -1033,16 +1038,24 @@ public class TmsParameterJsonVisualizer : MonoBehaviour
         float x, float y, float z,
         float sizeX, float sizeY, float sizeZ,
         float vectorX, float vectorY,
-        float blockAngle)
+        float blockAngle,
+        bool hasBlockAngle)
     {
         // block_vector を正規化
         Vector2 direction = new Vector2(vectorX, vectorY).normalized;
 
-        // block_vector と直交する幅方向
+        // block_angleがある場合は、block_vectorと反対方向に伸ばす
+        // block_angleがない場合は、block_vector方向に伸ばす
+        Vector2 lengthDirection = hasBlockAngle
+            ? -direction
+            : direction;
+
+        // 幅方向
         Vector2 perpendicular = new Vector2(
-            -direction.y,
-            direction.x
+            -lengthDirection.y,
+            lengthDirection.x
         );
+
 
         // 斜面の水平オフセット
         float tanAngle = Mathf.Tan(blockAngle);
@@ -1060,49 +1073,40 @@ public class TmsParameterJsonVisualizer : MonoBehaviour
         // block_center を底面の基準点とする
         Vector2 center = new Vector2(x, y);
 
-        Vector2 start = center - direction * sizeX;
+        // block_centerは辺の中央
+        Vector2 edgeLeft  = center - perpendicular * (sizeY * 0.5f);
+        Vector2 edgeRight = center + perpendicular * (sizeY * 0.5f);
+
+        // block_vector方向へsizeXだけ進んだ反対側の辺
+        Vector2 farLeft = edgeLeft + lengthDirection * sizeX;
+        Vector2 farRight = edgeRight + lengthDirection * sizeX;
 
         // 底面の4頂点
-        Vector3 p0 = RosPositionToUnity(
-            start.x, start.y, z);
-
-        Vector3 p1 = RosPositionToUnity(
-            center.x, center.y, z);
-
-        Vector3 p2 = RosPositionToUnity(
-            start.x + perpendicular.x * sizeY,
-            start.y + perpendicular.y * sizeY,
-            z);
-
-        Vector3 p3 = RosPositionToUnity(
-            center.x + perpendicular.x * sizeY,
-            center.y + perpendicular.y * sizeY,
-            z);
+        Vector3 p0 = RosPositionToUnity(edgeLeft.x, edgeLeft.y, z);
+        Vector3 p1 = RosPositionToUnity(edgeRight.x, edgeRight.y, z);
+        Vector3 p2 = RosPositionToUnity(farLeft.x, farLeft.y, z);
+        Vector3 p3 = RosPositionToUnity(farRight.x, farRight.y, z);
 
         // 上面の4頂点
         // 上面全体を斜面方向と反対側へ水平移動させる
         Vector3 p4 = RosPositionToUnity(
-            start.x + direction.x * offset,
-            start.y + direction.y * offset,
+            edgeLeft.x + direction.x * offset,
+            edgeLeft.y + direction.y * offset,
             z + sizeZ);
 
         Vector3 p5 = RosPositionToUnity(
-            center.x + direction.x * offset,
-            center.y + direction.y * offset,
+            edgeRight.x + direction.x * offset,
+            edgeRight.y + direction.y * offset,
             z + sizeZ);
 
         Vector3 p6 = RosPositionToUnity(
-            start.x + direction.x * offset
-                + perpendicular.x * sizeY,
-            start.y + direction.y * offset
-                + perpendicular.y * sizeY,
+            farLeft.x + direction.x * offset,
+            farLeft.y + direction.y * offset,
             z + sizeZ);
 
         Vector3 p7 = RosPositionToUnity(
-            center.x + direction.x * offset
-                + perpendicular.x * sizeY,
-            center.y + direction.y * offset
-                + perpendicular.y * sizeY,
+            farRight.x + direction.x * offset,
+            farRight.y + direction.y * offset,
             z + sizeZ);
 
         Vector3[] vertices =
