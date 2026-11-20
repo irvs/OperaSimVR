@@ -20,6 +20,13 @@ public class BirdsEyeBiew : MonoBehaviour
     
     void Update()
     {
+<<<<<<< Updated upstream
+=======
+        if (OperaSimVR.ConePlacement.ConePlacementController.BlocksWorldInput) return;
+        bool desktop = OperaSimVRDesktopInput.IsActive;
+        bool enterDesktop = desktop && birdseyeview == 0 && Input.GetKeyDown(KeyCode.F6);
+        bool exitDesktop = desktop && birdseyeview == 1 && Input.GetKeyDown(KeyCode.F6);
+>>>>>>> Stashed changes
         Vector3 posiplayer = PlayerObject.transform.position;
         Quaternion rotplayer = PlayerObject.transform.rotation;
         if (OVRInput.Get(OVRInput.RawButton.X) && OVRInput.Get(OVRInput.RawButton.Y) && birdseyeview == 0)

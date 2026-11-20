@@ -22,6 +22,11 @@ public class PlayerKeyMover : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (OperaSimVR.ConePlacement.ConePlacementController.BlocksWorldInput)
+        {
+            Playerlinear = PlayerUpper = PlayerSide = 0f;
+            return;
+        }
         if (VRManager.GetOnMachine == ControllerManager.RideOption.GetOff)
         {
             Collider.enabled = false;

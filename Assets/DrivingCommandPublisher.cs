@@ -540,7 +540,7 @@ public class DrivingCommandPublisher : MonoBehaviour
         frontback = LinearSpeed * stick.y;
         rotation = -RotSpeed * stick.x;
 
-        if (!key) return;
+        if (!key || OperaSimVR.ConePlacement.ConePlacementController.BlocksWorldInput) return;
 
         if (Input.GetKey(KeyCode.UpArrow))
             frontback = LinearSpeed;

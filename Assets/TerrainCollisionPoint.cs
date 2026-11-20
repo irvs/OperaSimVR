@@ -37,6 +37,8 @@ public class TerrainCollisionPoint : MonoBehaviour
     }
     void Update()
     {
+        if (OperaSimVR.ConePlacement.ConePlacementController.BlocksWorldInput
+            || OperaSimVR.ConePlacement.ConePlacementController.PointerOverPanel) return;
         // 手の位置（HandAnchor）をRayの始点として使用
         Vector3 rayOrigin = handAnchor.position;  // HandAnchorの位置
         // Rayの方向は手の向き（handAnchor.forward）を使用

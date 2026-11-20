@@ -52,6 +52,7 @@ public class ControllerManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (OperaSimVR.ConePlacement.ConePlacementController.BlocksWorldInput) return;
         if (DesignateVehicleFromInspector == false)
         {
             Machine_name = From_VRcont.GetOnVehicle;

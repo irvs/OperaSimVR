@@ -265,6 +265,7 @@ public class JointCommandPublisher : MonoBehaviour
 
     private float GetAxis(KeyCode positive, KeyCode negative)
     {
+        if (OperaSimVR.ConePlacement.ConePlacementController.BlocksWorldInput) return 0f;
         if (Input.GetKey(positive)) return 1f;
         if (Input.GetKey(negative)) return -1f;
         return 0f;
