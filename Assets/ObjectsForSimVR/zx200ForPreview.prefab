@@ -2356,17 +2356,7 @@ MonoBehaviour:
   FilePath: 
   chosenAxis: 0
   currentOrientation: 0
-  collisionExceptions:
-  - Link1: {fileID: 0}
-    Link2: {fileID: 0}
-  - Link1: {fileID: 0}
-    Link2: {fileID: 0}
-  - Link1: {fileID: 0}
-    Link2: {fileID: 0}
-  - Link1: {fileID: 0}
-    Link2: {fileID: 0}
-  - Link1: {fileID: 0}
-    Link2: {fileID: 0}
+  collisionExceptions: []
 --- !u!114 &395888849389791985
 MonoBehaviour:
   m_ObjectHideFlags: 0

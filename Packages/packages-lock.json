@@ -8,7 +8,7 @@
       "url": "https://packages.unity.com"
     },
     "com.frj.unity-sensors": {
-      "version": "https://github.com/Field-Robotics-Japan/UnitySensors.git?path=/Assets/UnitySensors#master",
+      "version": "https://github.com/Field-Robotics-Japan/UnitySensors.git?path=/Assets/UnitySensors#b1a50503bb38017f902cb232b489de2de334d62b",
       "depth": 0,
       "source": "git",
       "dependencies": {
@@ -17,7 +17,7 @@
       "hash": "b1a50503bb38017f902cb232b489de2de334d62b"
     },
     "com.frj.unity-sensors-ros": {
-      "version": "https://github.com/Field-Robotics-Japan/UnitySensors.git?path=/Assets/UnitySensorsROS#master",
+      "version": "https://github.com/Field-Robotics-Japan/UnitySensors.git?path=/Assets/UnitySensorsROS#b1a50503bb38017f902cb232b489de2de334d62b",
       "depth": 0,
       "source": "git",
       "dependencies": {

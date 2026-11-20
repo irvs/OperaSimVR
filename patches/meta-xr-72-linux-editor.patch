@@ -1,0 +1,30 @@
+--- a/Scripts/Editor/OVRManagerEditor.cs
++++ b/Scripts/Editor/OVRManagerEditor.cs
+@@ -67,8 +67,9 @@
+ 
+         bool modified = false;
+ 
++        // OperaSimVR Ubuntu: keep the shared Inspector reference available on Linux.
++        OVRManager manager = (OVRManager)target;
+ #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX || UNITY_ANDROID
+-        OVRManager manager = (OVRManager)target;
+ 
+         EditorGUILayout.Space();
+         EditorGUILayout.LabelField("Display", EditorStyles.boldLabel);
+--- a/Editor/UnityADBToolSingleton.cs
++++ b/Editor/UnityADBToolSingleton.cs
+@@ -24,7 +24,14 @@
+ 
+     static UnityADBToolSingleton()
+     {
++#if UNITY_EDITOR_LINUX
++        // OperaSimVR Ubuntu: desktop viewing does not require the Android module.
++        bool androidAvailable = UnityEditor.BuildPipeline.IsBuildTargetSupported(
++            UnityEditor.BuildTargetGroup.Android, UnityEditor.BuildTarget.Android);
++        _adbTool = new OVRADBTool(androidAvailable ? OVRConfig.GetAndroidSDKPathLocation(false) : string.Empty);
++#else
+         _adbTool = new OVRADBTool(OVRConfig.GetAndroidSDKPathLocation());
++#endif
+     }
+ 
+     public static OVRADBTool GetUnityADBTool()

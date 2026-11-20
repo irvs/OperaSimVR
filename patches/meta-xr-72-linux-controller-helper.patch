@@ -1,0 +1,53 @@
+--- a/Scripts/Util/OVRControllerHelper.cs
++++ b/Scripts/Util/OVRControllerHelper.cs
+@@ -154,9 +154,36 @@
+ 
+     private OVRInput.ControllerInHandState m_prevControllerInHandState = OVRInput.ControllerInHandState.NoHand;
+ 
++#if UNITY_EDITOR_LINUX || (UNITY_STANDALONE_LINUX && !UNITY_EDITOR)
++    private static readonly System.Collections.Generic.List<UnityEngine.XR.XRDisplaySubsystem>
++        linuxOpenVRDisplays = new System.Collections.Generic.List<UnityEngine.XR.XRDisplaySubsystem>();
++
++    private static bool IsLinuxOpenVRReady()
++    {
++        if (OVRManager.loadedXRDevice != OVRManager.XRDevice.OpenVR)
++            return false;
++        // The Linux bridge owns OpenVR instead of initializing the native Oculus
++        // manager. Require the real OpenVR display and a Unity XR headset device
++        // before allowing the existing model/UI helper to initialize.
++        if (!UnityEngine.XR.InputDevices.GetDeviceAtXRNode(UnityEngine.XR.XRNode.Head).isValid &&
++            !UnityEngine.XR.InputDevices.GetDeviceAtXRNode(UnityEngine.XR.XRNode.CenterEye).isValid)
++            return false;
++        linuxOpenVRDisplays.Clear();
++        SubsystemManager.GetInstances(linuxOpenVRDisplays);
++        foreach (var display in linuxOpenVRDisplays)
++            if (display.running && display.SubsystemDescriptor.id == "OpenVR Display")
++                return true;
++        return false;
++    }
++#endif
++
+     void Start()
+     {
+-        if (OVRManager.OVRManagerinitialized)
++        if (OVRManager.OVRManagerinitialized
++#if UNITY_EDITOR_LINUX || (UNITY_STANDALONE_LINUX && !UNITY_EDITOR)
++            || IsLinuxOpenVRReady()
++#endif
++            )
+         {
+             InitializeControllerModels();
+         }
+@@ -277,7 +304,11 @@
+         m_isActive = false;
+         if (!m_controllerModelsInitialized)
+         {
+-            if (OVRManager.OVRManagerinitialized)
++            if (OVRManager.OVRManagerinitialized
++#if UNITY_EDITOR_LINUX || (UNITY_STANDALONE_LINUX && !UNITY_EDITOR)
++                || IsLinuxOpenVRReady()
++#endif
++                )
+             {
+                 InitializeControllerModels();
+             }

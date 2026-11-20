@@ -1,0 +1,116 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+launcher_root=$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)
+vr=false
+software_rendering=false
+player_args=()
+while (($#)); do
+    case "$1" in
+        --software-rendering) software_rendering=true ;;
+        --vr) vr=true ;;
+        --help|-h)
+            printf '%s\n' \
+                'Usage: ./operasimvr-player-ubuntu [--vr | --software-rendering] [-- Unity Player arguments...]' \
+                '  Build first with ./operasimvr-unity-ubuntu --build.' \
+                '  --vr                 Launch the separate Linux VR build using Vulkan and SteamVR.' \
+                '  OPERASIMVR_MODE      scene (default), viewer, simulator, preview, preview-and-play, preview-ar.' \
+                '  OPERASIMVR_ROS_IP    Optional ROS TCP endpoint host override.' \
+                '  OPERASIMVR_ROS_PORT  Optional ROS TCP endpoint port override.' \
+                '  OPERASIMVR_PLAYER    Override the built Linux x86_64 executable path.' \
+                '  ARM64 requires the experimental Box64 runtime described in docs/UNITY_UBUNTU.md.'
+            exit 0
+            ;;
+        --) shift; player_args+=("$@"); break ;;
+        *) player_args+=("$1") ;;
+    esac
+    shift
+done
+if [[ "${OPERASIMVR_XR:-desktop}" == steamvr ]]; then vr=true; fi
+case "${OPERASIMVR_XR:-desktop}" in
+    desktop|steamvr) ;;
+    *) printf 'Unknown OPERASIMVR_XR value: %s\n' "$OPERASIMVR_XR" >&2; exit 2 ;;
+esac
+if "$vr"; then
+    if "$software_rendering" || [[ "${LIBGL_ALWAYS_SOFTWARE:-0}" == 1 ]]; then
+        printf '%s\n' 'The Linux VR build requires a Vulkan-capable GPU; software OpenGL rendering cannot be selected with --vr.' >&2
+        exit 2
+    fi
+    export OPERASIMVR_XR=steamvr
+    player=${OPERASIMVR_PLAYER:-"$launcher_root/Build/LinuxVR/OperaSimVR.x86_64"}
+else
+    export OPERASIMVR_XR=desktop
+    player=${OPERASIMVR_PLAYER:-"$launcher_root/Build/Linux/OperaSimVR.x86_64"}
+fi
+export OPERASIMVR_MODE="${OPERASIMVR_MODE:-scene}"
+case "$OPERASIMVR_MODE" in
+    scene|viewer|simulator|preview|preview-and-play|preview-ar) ;;
+    *) printf 'Unknown OperaSimVR mode: %s\n' "$OPERASIMVR_MODE" >&2; exit 2 ;;
+esac
+if [[ -n "${OPERASIMVR_ROS_PORT:-}" ]]; then
+    if [[ ! "$OPERASIMVR_ROS_PORT" =~ ^[0-9]{1,5}$ ]] || ((10#$OPERASIMVR_ROS_PORT < 1 || 10#$OPERASIMVR_ROS_PORT > 65535)); then
+        printf '%s\n' 'ROS port must be an integer between 1 and 65535.' >&2
+        exit 2
+    fi
+fi
+if [[ ! -x "$player" ]]; then
+    printf 'Linux Player was not found or is not executable: %s\nBuild it with ./operasimvr-unity-ubuntu --build.\n' "$player" >&2
+    exit 1
+fi
+has_arg() {
+    local value
+    for value in "${player_args[@]}"; do
+        [[ "$value" == "$1" ]] && return 0
+    done
+    return 1
+}
+if "$vr"; then
+    for argument in "${player_args[@]}"; do
+        case "$argument" in
+            -force-glcore*|-force-gles*|-force-opengl|-force-d3d*|-force-metal|-nographics|-batchmode|-no-stereo-rendering)
+                printf 'The Linux VR build requires graphical Vulkan stereo rendering; remove %s.\n' "$argument" >&2
+                exit 2
+                ;;
+        esac
+    done
+    if ! has_arg -force-vulkan; then player_args=(-force-vulkan "${player_args[@]}"); fi
+fi
+if ! "$software_rendering" && ! has_arg -nographics && ! has_arg -force-vulkan && command -v glxinfo >/dev/null 2>&1; then
+    if glx_info=$(timeout 5s glxinfo 2>/dev/null); then
+        glx_version_pattern='OpenGL core profile version string: ([0-9]+)\.([0-9]+)'
+        if [[ "$glx_info" =~ $glx_version_pattern ]]; then
+            glx_major=${BASH_REMATCH[1]}
+            glx_minor=${BASH_REMATCH[2]}
+            if ((glx_major < 4 || (glx_major == 4 && glx_minor < 3))) && [[ "$glx_info" != *GL_ARB_compute_shader* ]]; then
+                software_rendering=true
+                printf '%s\n' 'The GPU OpenGL driver lacks Compute Shader support; selecting Mesa software rendering to retain excavation and erosion.'
+            fi
+        fi
+    fi
+fi
+if "$software_rendering"; then export LIBGL_ALWAYS_SOFTWARE=1; fi
+if ! has_arg -force-vulkan && ! has_arg -force-glcore; then player_args=(-force-glcore "${player_args[@]}"); fi
+
+runner=()
+case "$(uname -m)" in
+    x86_64) ;;
+    aarch64|arm64)
+        runtime="$HOME/.local/opt/operasimvr-unity"
+        box64=${OPERASIMVR_BOX64:-"$runtime/bin/box64-candidate-6f0df3e"}
+        if [[ ! -x "$box64" ]]; then
+            printf '%s\n' 'The experimental ARM64 Box64 runtime is missing. See docs/UNITY_UBUNTU.md, or set OPERASIMVR_BOX64 to an explicitly selected runtime.' >&2
+            exit 1
+        fi
+        export BOX64_LD_LIBRARY_PATH="$runtime/lib/box64-x86_64-linux-gnu${BOX64_LD_LIBRARY_PATH:+:$BOX64_LD_LIBRARY_PATH}"
+        export LD_LIBRARY_PATH="$runtime/native-libs/usr/lib/aarch64-linux-gnu${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+        export BOX64_RCFILE="$runtime/box64.box64rc"
+        export BOX64_DYNAREC_BIGBLOCK=0 BOX64_DYNAREC_STRONGMEM=1 BOX64_DYNAREC_SAFEFLAGS=1
+        export BOX64_DYNAREC_FORWARD=0 BOX64_DYNAREC_CALLRET=0 BOX64_DYNAREC_WAIT=0
+        export BOX64_DYNAREC_INTERP_SIGNAL=0 BOX64_DYNAREC_NOHOSTEXT=lrcpc,lrcpc2,lrcpc3
+        export MONO_DEBUG=no-gdb-backtrace MONO_CRASH_NO_HANDLER=1 GC_DISABLE_INCREMENTAL=1
+        if ! has_arg -job-worker-count; then player_args+=(-job-worker-count 2); fi
+        runner=("$box64")
+        ;;
+    *) printf '%s\n' 'This Linux Player requires x86_64, or the experimental ARM64 Box64 configuration.' >&2; exit 1 ;;
+esac
+exec "${runner[@]}" "$player" "${player_args[@]}"

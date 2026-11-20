@@ -1,6 +1,13 @@
 # OperaSimVR(PhysX)
 Simulator on Unity + PhysX communicating with ROS
 
+## Ubuntu
+
+With Unity 2022.3.4f1 installed, run `./operasimvr-unity-ubuntu` to start the original scene with its saved mode, topics, and ROS settings. Use `--mode viewer` for the ZX200 ROS viewer, or `--mode simulator`, `--mode preview`, `--mode preview-and-play`, and `--mode preview-ar` for the existing modes. `--ros-ip` and `--ros-port` provide optional connection overrides. `--build` builds a Linux x86_64 player; launch it with `./operasimvr-player-ubuntu`. See [the Ubuntu setup and verification notes](docs/UNITY_UBUNTU.md) for controls, setup, and the experimental ARM64 configuration.
+The Linux x86_64 player builds with Burst enabled. On the current ARM64 machine, the original terrain and machines render and the ZX200 follows loopback pose/joint data, using experimental Box64 and slow software rendering. Quest 3 Wi-Fi support uses an opt-in SteamVR/OpenVR backend (`--build --vr`, then `./operasimvr-player-ubuntu --vr`) with ALVR; headset operation and native Intel/AMD hardware still require device testing. See the verification limits in the notes.
+Actual OperaSimPhysX integration was also verified: simulator drive/turn commands changed its ROS state, and the Ubuntu viewer followed that state through `tools/ros-viewer-bridge.py`. This optional observation bridge forwards the original ROS bytes and discards Player publications; it generates no pose/joint states. See the notes for the separate ports, real integration recording, and first-pose camera framing.
+After building, `python3 tools/verify-ubuntu-player.py --output Logs/player-check` exercises rendering, two ROS TCP pose/joint states, and normal Player shutdown. It requires a graphical desktop and the ROS 2 Python message packages plus Pillow. See the notes for the known unconfigured LiDAR error, software rendering, and the November 20 verification results.
+
 ## Explanation
 - This system serves as the cyber component of ros2-tms for construction(https://github.com/irvs/ros2_tms_for_construction), a cyber-physical system (CPS) designed for earthwork construction sites.
 - This system is an enhanced version of OperaSim-PhysX(https://github.com/pwri-opera/OperaSim-PhysX), the official simulator of the autonomous construction technology development platform OPERA (Open Platform for Earth work with Robotics and Autonomy).

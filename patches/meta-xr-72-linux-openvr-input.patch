@@ -1,0 +1,175 @@
+--- a/Scripts/OVRInput.cs
++++ b/Scripts/OVRInput.cs
+@@ -384,6 +384,10 @@
+             new OVRControllerHands(),
+             new OVRControllerLHand(),
+             new OVRControllerRHand(),
++#elif UNITY_EDITOR_LINUX || (UNITY_STANDALONE_LINUX && !UNITY_EDITOR)
++            new OVRControllerTouch(),
++            new OVRControllerLTouch(),
++            new OVRControllerRTouch(),
+ #elif UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN || UNITY_STANDALONE_OSX || UNITY_EDITOR_OSX
+             new OVRControllerGamepadPC(),
+             new OVRControllerTouch(),
+@@ -519,6 +523,10 @@
+     /// </summary>
+     public static bool GetControllerOrientationTracked(OVRInput.Controller controllerType)
+     {
++#if UNITY_EDITOR_LINUX || (UNITY_STANDALONE_LINUX && !UNITY_EDITOR)
++        if (OVRManager.loadedXRDevice == OVRManager.XRDevice.OpenVR)
++            return GetLinuxOpenVRTracking(controllerType, UnityEngine.XR.InputTrackingState.Rotation);
++#endif
+         switch (controllerType)
+         {
+             case Controller.LTouch:
+@@ -540,6 +548,10 @@
+     /// </summary>
+     public static bool GetControllerOrientationValid(OVRInput.Controller controllerType)
+     {
++#if UNITY_EDITOR_LINUX || (UNITY_STANDALONE_LINUX && !UNITY_EDITOR)
++        if (OVRManager.loadedXRDevice == OVRManager.XRDevice.OpenVR)
++            return GetLinuxOpenVRTracking(controllerType, UnityEngine.XR.InputTrackingState.Rotation);
++#endif
+         switch (controllerType)
+         {
+             case Controller.LTouch:
+@@ -562,6 +574,10 @@
+     /// </summary>
+     public static bool GetControllerPositionTracked(OVRInput.Controller controllerType)
+     {
++#if UNITY_EDITOR_LINUX || (UNITY_STANDALONE_LINUX && !UNITY_EDITOR)
++        if (OVRManager.loadedXRDevice == OVRManager.XRDevice.OpenVR)
++            return GetLinuxOpenVRTracking(controllerType, UnityEngine.XR.InputTrackingState.Position);
++#endif
+         switch (controllerType)
+         {
+             case Controller.LTouch:
+@@ -583,6 +599,10 @@
+     /// </summary>
+     public static bool GetControllerPositionValid(OVRInput.Controller controllerType)
+     {
++#if UNITY_EDITOR_LINUX || (UNITY_STANDALONE_LINUX && !UNITY_EDITOR)
++        if (OVRManager.loadedXRDevice == OVRManager.XRDevice.OpenVR)
++            return GetLinuxOpenVRTracking(controllerType, UnityEngine.XR.InputTrackingState.Position);
++#endif
+         switch (controllerType)
+         {
+             case Controller.LTouch:
+@@ -1753,6 +1773,21 @@
+     /// <summary>
+     /// Returns a mask of all currently connected controller types.
+     /// </summary>
++#if UNITY_EDITOR_LINUX || (UNITY_STANDALONE_LINUX && !UNITY_EDITOR)
++    private static bool GetLinuxOpenVRTracking(Controller controller, UnityEngine.XR.InputTrackingState required)
++    {
++        if (controller != Controller.LTouch && controller != Controller.LHand &&
++            controller != Controller.RTouch && controller != Controller.RHand)
++            return false;
++        var node = (controller == Controller.LTouch || controller == Controller.LHand)
++            ? UnityEngine.XR.XRNode.LeftHand : UnityEngine.XR.XRNode.RightHand;
++        var device = UnityEngine.XR.InputDevices.GetDeviceAtXRNode(node);
++        UnityEngine.XR.InputTrackingState tracking;
++        return device.isValid && device.TryGetFeatureValue(UnityEngine.XR.CommonUsages.trackingState, out tracking)
++            && (tracking & required) == required;
++    }
++#endif
++
+     public static Controller GetConnectedControllers()
+     {
+         return connectedControllerTypes;
+@@ -1939,16 +1974,28 @@
+                         OVR.OpenVR.ETrackedControllerRole role = system.GetControllerRoleForTrackedDeviceIndex(id);
+                         if (role == OVR.OpenVR.ETrackedControllerRole.LeftHand)
+                         {
++#if UNITY_EDITOR_LINUX || (UNITY_STANDALONE_LINUX && !UNITY_EDITOR)
++                            if (!system.GetControllerState(id, ref openVRControllerDetails[0].state,
++                                    (uint)Marshal.SizeOf(typeof(OVR.OpenVR.VRControllerState_t))))
++                                openVRControllerDetails[0].state = default(OVR.OpenVR.VRControllerState_t);
++#else
+                             system.GetControllerState(id, ref openVRControllerDetails[0].state,
+                                 (uint)Marshal.SizeOf(typeof(OVR.OpenVR.VRControllerState_t)));
++#endif
+                             openVRControllerDetails[0].deviceID = id;
+                             openVRControllerDetails[0].controllerType = controllerType;
+                             connectedControllerTypes |= Controller.LTouch;
+                         }
+                         else if (role == OVR.OpenVR.ETrackedControllerRole.RightHand)
+                         {
++#if UNITY_EDITOR_LINUX || (UNITY_STANDALONE_LINUX && !UNITY_EDITOR)
++                            if (!system.GetControllerState(id, ref openVRControllerDetails[1].state,
++                                    (uint)Marshal.SizeOf(typeof(OVR.OpenVR.VRControllerState_t))))
++                                openVRControllerDetails[1].state = default(OVR.OpenVR.VRControllerState_t);
++#else
+                             system.GetControllerState(id, ref openVRControllerDetails[1].state,
+                                 (uint)Marshal.SizeOf(typeof(OVR.OpenVR.VRControllerState_t)));
++#endif
+                             openVRControllerDetails[1].deviceID = id;
+                             openVRControllerDetails[1].controllerType = controllerType;
+                             connectedControllerTypes |= Controller.RTouch;
+@@ -2035,11 +2082,20 @@
+         }
+         else if (OVRManager.loadedXRDevice == OVRManager.XRDevice.OpenVR)
+         {
++#if UNITY_EDITOR_LINUX || (UNITY_STANDALONE_LINUX && !UNITY_EDITOR)
++            if ((controllerMask & Controller.Active) != 0)
++                controllerMask |= activeControllerType;
++            if ((controllerMask & Controller.LTouch) != 0)
++                StartVibration(Mathf.Clamp01(amplitude), HAPTIC_VIBRATION_DURATION_SECONDS, Node.LeftHand);
++            if ((controllerMask & Controller.RTouch) != 0)
++                StartVibration(Mathf.Clamp01(amplitude), HAPTIC_VIBRATION_DURATION_SECONDS, Node.RightHand);
++#else
+             if (controllerMask == Controller.LTouch || controllerMask == Controller.RTouch)
+             {
+                 Node controllerNode = (controllerMask == Controller.LTouch) ? Node.LeftHand : Node.RightHand;
+                 StartVibration(amplitude, HAPTIC_VIBRATION_DURATION_SECONDS, controllerNode);
+             }
++#endif
+         }
+     }
+ 
+@@ -3192,6 +3248,22 @@
+                 IsValidOpenVRDevice(openVRControllerDetails[0].deviceID))
+             {
+                 OVR.OpenVR.VRControllerState_t leftControllerState = openVRControllerDetails[0].state;
++#if UNITY_EDITOR_LINUX || (UNITY_STANDALONE_LINUX && !UNITY_EDITOR)
++                state.ConnectedControllers |= (uint)Controller.LTouch;
++                if (openVRControllerDetails[0].controllerType == OpenVRController.OculusTouch)
++                {
++                    if ((leftControllerState.ulButtonPressed & (1UL << 7)) != 0)
++                        state.Buttons |= (uint)RawButton.X;
++                    if ((leftControllerState.ulButtonTouched & (1UL << 7)) != 0)
++                        state.Touches |= (uint)RawTouch.X;
++                    if ((leftControllerState.ulButtonTouched & (1UL << 1)) != 0)
++                        state.Touches |= (uint)RawTouch.Y;
++                    if ((leftControllerState.ulButtonTouched & (1UL << 32)) != 0)
++                        state.Touches |= (uint)RawTouch.LThumbstick;
++                    if ((leftControllerState.ulButtonTouched & (1UL << 33)) != 0)
++                        state.Touches |= (uint)RawTouch.LIndexTrigger;
++                }
++#endif
+                 if ((leftControllerState.ulButtonPressed & ((ulong)OpenVRButton.Two)) == (ulong)OpenVRButton.Two)
+                     state.Buttons |= (uint)RawButton.Y;
+                 if ((leftControllerState.ulButtonPressed & ((ulong)OpenVRButton.Thumbstick)) ==
+@@ -3226,6 +3298,22 @@
+                 IsValidOpenVRDevice(openVRControllerDetails[1].deviceID))
+             {
+                 OVR.OpenVR.VRControllerState_t rightControllerState = openVRControllerDetails[1].state;
++#if UNITY_EDITOR_LINUX || (UNITY_STANDALONE_LINUX && !UNITY_EDITOR)
++                state.ConnectedControllers |= (uint)Controller.RTouch;
++                if (openVRControllerDetails[1].controllerType == OpenVRController.OculusTouch)
++                {
++                    if ((rightControllerState.ulButtonPressed & (1UL << 7)) != 0)
++                        state.Buttons |= (uint)RawButton.A;
++                    if ((rightControllerState.ulButtonTouched & (1UL << 7)) != 0)
++                        state.Touches |= (uint)RawTouch.A;
++                    if ((rightControllerState.ulButtonTouched & (1UL << 1)) != 0)
++                        state.Touches |= (uint)RawTouch.B;
++                    if ((rightControllerState.ulButtonTouched & (1UL << 32)) != 0)
++                        state.Touches |= (uint)RawTouch.RThumbstick;
++                    if ((rightControllerState.ulButtonTouched & (1UL << 33)) != 0)
++                        state.Touches |= (uint)RawTouch.RIndexTrigger;
++                }
++#endif
+                 if ((rightControllerState.ulButtonPressed & ((ulong)OpenVRButton.Two)) == (ulong)OpenVRButton.Two)
+                     state.Buttons |= (uint)RawButton.B;
+                 if ((rightControllerState.ulButtonPressed & ((ulong)OpenVRButton.Thumbstick)) ==

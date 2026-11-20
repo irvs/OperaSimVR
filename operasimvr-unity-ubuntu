@@ -1,0 +1,206 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+project_root=$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)
+host_arch=$(uname -m)
+open_only=false
+software_rendering=false
+build=false
+vr=false
+launch_mode=${OPERASIMVR_MODE:-scene}
+ros_ip=${OPERASIMVR_ROS_IP:-}
+ros_port=${OPERASIMVR_ROS_PORT:-}
+editor_args=()
+
+require_value() {
+    if (($# < 2)) || [[ -z "$2" || "$2" == --* ]]; then
+        printf 'A value is required after %s.\n' "$1" >&2
+        exit 2
+    fi
+}
+
+while (($#)); do
+    case "$1" in
+        --open-only) open_only=true ;;
+        --software-rendering) software_rendering=true ;;
+        --mode) require_value "$@"; launch_mode=$2; shift ;;
+        --ros-ip) require_value "$@"; ros_ip=$2; shift ;;
+        --ros-port) require_value "$@"; ros_port=$2; shift ;;
+        --build) build=true ;;
+        --vr) vr=true ;;
+        --help|-h)
+            printf '%s\n' \
+                'Usage: ./operasimvr-unity-ubuntu [options] [-- Unity arguments...]' \
+                '  --mode MODE           scene (default), viewer, simulator, preview, preview-and-play, preview-ar.' \
+                '                        scene preserves the original mode, topics, and ROS settings.' \
+                '  --ros-ip HOST         Override the ROS TCP endpoint host for this launch.' \
+                '  --ros-port PORT       Override the ROS TCP endpoint port for this launch.' \
+                '  --open-only           Open the project without entering Play Mode.' \
+                '  --build               Build the original scenes as a Linux x86_64 player and exit.' \
+                '  --vr                  With --build, include the pinned SteamVR/OpenVR backend (Vulkan).' \
+                '  --software-rendering  Use Mesa software rendering for this launch.' \
+                '  UNITY_EDITOR          Override the Unity Editor executable path.'
+            exit 0
+            ;;
+        --) shift; editor_args+=("$@"); break ;;
+        *) editor_args+=("$1") ;;
+    esac
+    shift
+done
+
+case "$launch_mode" in
+    scene|viewer|simulator|preview|preview-and-play|preview-ar) ;;
+    *) printf 'Unknown OperaSimVR mode: %s\n' "$launch_mode" >&2; exit 2 ;;
+esac
+if [[ -n "$ros_port" ]]; then
+    if [[ ! "$ros_port" =~ ^[0-9]{1,5}$ ]] || ((10#$ros_port < 1 || 10#$ros_port > 65535)); then
+        printf '%s\n' 'ROS port must be an integer between 1 and 65535.' >&2
+        exit 2
+    fi
+    ros_port=$((10#$ros_port))
+fi
+if "$build" && "$open_only"; then
+    printf '%s\n' '--build and --open-only cannot be combined.' >&2
+    exit 2
+fi
+if [[ "${OPERASIMVR_XR:-desktop}" == steamvr ]]; then vr=true; fi
+case "${OPERASIMVR_XR:-desktop}" in
+    desktop|steamvr) ;;
+    *) printf 'Unknown OPERASIMVR_XR value: %s\n' "$OPERASIMVR_XR" >&2; exit 2 ;;
+esac
+if "$vr" && ! "$build"; then
+    printf '%s\n' 'VR is configured for the Linux Player. Build with --build --vr, then launch ./operasimvr-player-ubuntu --vr.' >&2
+    exit 2
+fi
+if "$vr"; then export OPERASIMVR_XR=steamvr; else export OPERASIMVR_XR=desktop; fi
+export OPERASIMVR_MODE="$launch_mode" OPERASIMVR_ROS_IP="$ros_ip" OPERASIMVR_ROS_PORT="$ros_port"
+
+# A leftover lockfile does not mean that an Editor is still running.
+editor_is_running() {
+    local lockfile="$project_root/Temp/UnityLockfile"
+    local fd
+    [[ -e "$lockfile" ]] || return 1
+    if command -v fuser >/dev/null 2>&1 && fuser -s -- "$lockfile" 2>/dev/null; then
+        return 0
+    fi
+    for fd in /proc/[0-9]*/fd/*; do
+        if [[ "$fd" -ef "$lockfile" ]]; then
+            return 0
+        fi
+    done
+    return 1
+}
+
+prepare_packages() {
+    mkdir -p -- "$project_root/Logs"
+    command -v python3 >/dev/null 2>&1 || { printf '%s\n' 'Python 3 is required to apply the verified Ubuntu package fixes.' >&2; return 1; }
+    if "$vr"; then
+        local openvr_args=()
+        if [[ -n "${OPERASIMVR_OPENVR_ARCHIVE:-}" ]]; then openvr_args+=(--archive "$OPERASIMVR_OPENVR_ARCHIVE"); fi
+        python3 "$project_root/tools/install-openvr-linux.py" "${openvr_args[@]}"
+    fi
+    python3 "$project_root/tools/patch-meta-xr-linux.py"
+    python3 "$project_root/tools/patch-unity-sensors.py"
+    if [[ ! -f "$project_root/Packages/com.meta.xr.sdk.core/Scripts/Editor/OVRManagerEditor.cs" ]]; then
+        python3 "$project_root/tools/patch-meta-xr-linux.py" --wait 1200 > "$project_root/Logs/meta-xr-linux-patch.log" 2>&1 &
+        printf 'Waiting for Meta XR package download; patch log: %s\n' "$project_root/Logs/meta-xr-linux-patch.log"
+    fi
+    if [[ ! -f "$project_root/Packages/com.frj.unity-sensors/Editor/UnitySensorsEditor.asmdef" ]]; then
+        python3 "$project_root/tools/patch-unity-sensors.py" --wait 1200 > "$project_root/Logs/unity-sensors-patch.log" 2>&1 &
+        printf 'Waiting for UnitySensors package download; patch log: %s\n' "$project_root/Logs/unity-sensors-patch.log"
+    fi
+}
+
+if editor_is_running; then
+    if "$build"; then
+        printf '%s\n' 'Close this project in Unity before starting a command-line build, or use OperaSimVR/Ubuntu/Build Linux x86_64 player in the Editor.' >&2
+        exit 1
+    fi
+    prepare_packages
+    if "$open_only"; then
+        printf '%s\n' 'OperaSimVR is already open in Unity.'
+    else
+        python3 - "$project_root/Temp/OperaSimVRUbuntu.command" <<'PY'
+import json, os, pathlib, sys
+path = pathlib.Path(sys.argv[1])
+settings = {"mode": os.environ["OPERASIMVR_MODE"], "rosIp": os.environ["OPERASIMVR_ROS_IP"],
+            "rosPort": int(os.environ["OPERASIMVR_ROS_PORT"] or 0)}
+temporary = path.with_suffix(".tmp")
+temporary.write_text(json.dumps(settings), encoding="utf-8")
+temporary.replace(path)
+PY
+        printf '%s\n' 'Requested scene startup in the running Unity Editor.'
+    fi
+    if "$software_rendering"; then
+        printf '%s\n' 'Software rendering takes effect after closing Unity and launching it again.'
+    fi
+    exit 0
+fi
+
+if [[ -n "${UNITY_EDITOR:-}" ]]; then
+    editor="$UNITY_EDITOR"
+elif [[ ( "$host_arch" == aarch64 || "$host_arch" == arm64 ) && -x "$HOME/.local/opt/operasimvr-unity/bin/unity-editor-candidate-6f0df3e" ]]; then
+    editor="$HOME/.local/opt/operasimvr-unity/bin/unity-editor-candidate-6f0df3e"
+elif [[ -x "$HOME/.local/bin/unity-editor-2022.3.4" ]]; then
+    editor="$HOME/.local/bin/unity-editor-2022.3.4"
+else
+    editor="$HOME/Unity/Hub/Editor/2022.3.4f1/Editor/Unity"
+fi
+if [[ ! -x "$editor" ]]; then
+    printf 'Unity Editor was not found or is not executable: %s\n' "$editor" >&2
+    printf '%s\n' 'Set UNITY_EDITOR to the Unity 2022.3.4f1 executable path.' >&2
+    exit 1
+fi
+
+prepare_packages
+args=(-projectPath "$project_root")
+has_arg() {
+    local value
+    for value in "${editor_args[@]}"; do
+        [[ "$value" == "$1" ]] && return 0
+    done
+    return 1
+}
+if ! has_arg -force-vulkan && ! has_arg -force-glcore; then args+=(-force-glcore); fi
+if "$build"; then
+    args+=(-batchmode -quit -buildTarget Linux64 -executeMethod OperaSimVRLinuxBuild.Build)
+elif ! "$open_only" && ! has_arg -executeMethod; then
+    args+=(-executeMethod OperaSimVRUbuntu.StartConfigured)
+fi
+if ! has_arg -logFile; then
+    args+=(-logFile "$project_root/Logs/ubuntu-unity-editor.log")
+fi
+if ! "$software_rendering" && ! "$build" && ! has_arg -nographics && ! has_arg -force-vulkan && command -v glxinfo >/dev/null 2>&1; then
+    if glx_info=$(timeout 5s glxinfo 2>/dev/null); then
+        glx_version_pattern='OpenGL core profile version string: ([0-9]+)\.([0-9]+)'
+        if [[ "$glx_info" =~ $glx_version_pattern ]]; then
+            glx_major=${BASH_REMATCH[1]}
+            glx_minor=${BASH_REMATCH[2]}
+            if ((glx_major < 4 || (glx_major == 4 && glx_minor < 3))) && [[ "$glx_info" != *GL_ARB_compute_shader* ]]; then
+                software_rendering=true
+                printf '%s\n' 'The GPU OpenGL driver lacks Compute Shader support; selecting Mesa software rendering to retain excavation and erosion.'
+            fi
+        fi
+    fi
+fi
+if "$software_rendering"; then
+    export LIBGL_ALWAYS_SOFTWARE=1
+fi
+# Tested Mono defaults for the experimental Box64/ARM64 setup.
+case "$host_arch" in
+    aarch64|arm64)
+        if ! has_arg -job-worker-count; then args+=(-job-worker-count 2); fi
+        export BOX64_DYNAREC_INTERP_SIGNAL="${BOX64_DYNAREC_INTERP_SIGNAL:-0}"
+        export BOX64_DYNAREC_NOHOSTEXT="${BOX64_DYNAREC_NOHOSTEXT:-lrcpc,lrcpc2,lrcpc3}"
+        export GC_DISABLE_INCREMENTAL=1
+        # Burst's x86_64 command-line Mono JIT crashes under Box64. Interpret
+        # only the compiler host; Burst still emits optimized x86_64 native jobs.
+        if "$build"; then
+            case " ${MONO_ENV_OPTIONS:-} " in
+                *" --interp "*|*" --interpreter "*) ;;
+                *) export MONO_ENV_OPTIONS="${MONO_ENV_OPTIONS:+$MONO_ENV_OPTIONS }--interp" ;;
+            esac
+        fi
+        ;;
+esac
+exec "$editor" "${args[@]}" "${editor_args[@]}"
