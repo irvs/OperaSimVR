@@ -1,0 +1,6 @@
+{
+    "name": "OperaSimVR.ConePlacement",
+    "rootNamespace": "OperaSimVR.ConePlacement",
+    "references": ["Unity.ugui"],
+    "autoReferenced": true
+}

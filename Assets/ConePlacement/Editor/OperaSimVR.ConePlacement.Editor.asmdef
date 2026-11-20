@@ -1,0 +1,6 @@
+{
+    "name": "OperaSimVR.ConePlacement.Editor",
+    "references": ["OperaSimVR.ConePlacement"],
+    "includePlatforms": ["Editor"],
+    "autoReferenced": true
+}

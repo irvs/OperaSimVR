@@ -1,0 +1,7 @@
+{
+    "name": "OperaSimVR.ConePlacement.Tests",
+    "references": ["OperaSimVR.ConePlacement"],
+    "includePlatforms": ["Editor"],
+    "optionalUnityReferences": ["TestAssemblies"],
+    "autoReferenced": false
+}
