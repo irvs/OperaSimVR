@@ -4,6 +4,8 @@ using RosMessageTypes.Geometry;
 using RosMessageTypes.Nav;
 public class PoseSubscriber : MonoBehaviour
 {
+    public bool HasReceivedPose { get; private set; }
+
     [Tooltip("実際にオブジェクトの位置を変化させるかどうか")]
     public bool ChengePositionSW;
 
@@ -84,6 +86,7 @@ public class PoseSubscriber : MonoBehaviour
         newPosition = new Vector3((float)msg.pose.position.x, (float)msg.pose.position.z, (float)msg.pose.position.y);
         newRotation = new((float)msg.pose.orientation.y * (-1), (float)msg.pose.orientation.z, (float)msg.pose.orientation.x, (float)msg.pose.orientation.w * (-1));
         PoseCheanger(newPosition, newRotation, MachineManager.Offset_z, MachineManager.Offset_y, MachineManager.Offset_x, MachineManager.OffsetRotation_x, MachineManager.OffsetRotation_y, MachineManager.OffsetRotation_z);
+        HasReceivedPose = true;
     }
 
     void CallbackOd(OdometryMsg msg)
@@ -91,6 +94,7 @@ public class PoseSubscriber : MonoBehaviour
         newPosition = new Vector3((float)msg.pose.pose.position.x, (float)msg.pose.pose.position.z, (float)msg.pose.pose.position.y);
         newRotation = new((float)msg.pose.pose.orientation.y * (-1), (float)msg.pose.pose.orientation.z, (float)msg.pose.pose.orientation.x, (float)msg.pose.pose.orientation.w * (-1));
         PoseCheanger(newPosition, newRotation, MachineManager.Offset_z, MachineManager.Offset_y, MachineManager.Offset_x, MachineManager.OffsetRotation_x, MachineManager.OffsetRotation_y, MachineManager.OffsetRotation_z);
+        HasReceivedPose = true;
     }
 
     void PoseCheanger(Vector3 NewPosition, Quaternion NewRotation, float OffsetX, float OffsetY, float OffsetZ, float RotOffsetX, float RotOffsetY, float RotOffsetZ)

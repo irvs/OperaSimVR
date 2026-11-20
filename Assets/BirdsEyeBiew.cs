@@ -20,16 +20,13 @@ public class BirdsEyeBiew : MonoBehaviour
     
     void Update()
     {
-<<<<<<< Updated upstream
-=======
         if (OperaSimVR.ConePlacement.ConePlacementController.BlocksWorldInput) return;
         bool desktop = OperaSimVRDesktopInput.IsActive;
         bool enterDesktop = desktop && birdseyeview == 0 && Input.GetKeyDown(KeyCode.F6);
         bool exitDesktop = desktop && birdseyeview == 1 && Input.GetKeyDown(KeyCode.F6);
->>>>>>> Stashed changes
         Vector3 posiplayer = PlayerObject.transform.position;
         Quaternion rotplayer = PlayerObject.transform.rotation;
-        if (OVRInput.Get(OVRInput.RawButton.X) && OVRInput.Get(OVRInput.RawButton.Y) && birdseyeview == 0)
+        if ((OVRInput.Get(OVRInput.RawButton.X) && OVRInput.Get(OVRInput.RawButton.Y) || enterDesktop) && birdseyeview == 0)
         {
             CharacterController.enabled = false;
             birdseyeview = 1;
@@ -49,6 +46,16 @@ public class BirdsEyeBiew : MonoBehaviour
         //position
         if (birdseyeview == 1)
         {
+            if (desktop)
+            {
+                float forward = (Input.GetKey(KeyCode.W) ? 1 : 0) - (Input.GetKey(KeyCode.S) ? 1 : 0);
+                float side = (Input.GetKey(KeyCode.D) ? 1 : 0) - (Input.GetKey(KeyCode.A) ? 1 : 0);
+                float up = (Input.GetKey(KeyCode.PageUp) ? 1 : 0) - (Input.GetKey(KeyCode.PageDown) ? 1 : 0);
+                PlayerObject.transform.position += PlayerObject.transform.rotation * new Vector3(side, 0, forward) * movespeed * 60f * Time.deltaTime;
+                PlayerObject.transform.position += Vector3.up * up * updownspeed * Time.deltaTime;
+                float turn = (Input.GetKey(KeyCode.E) ? 1 : 0) - (Input.GetKey(KeyCode.Q) ? 1 : 0);
+                PlayerObject.transform.Rotate(0, turn * rotspeed * Time.deltaTime, 0);
+            }
             //get input from left joystick
             Vector2 stickL = movespeed * OVRInput.Get(OVRInput.RawAxis2D.LThumbstick);
             PlayerObject.transform.position += PlayerObject.transform.rotation * new Vector3(stickL.x, 0, stickL.y);
@@ -82,7 +89,7 @@ public class BirdsEyeBiew : MonoBehaviour
             }
         }
         //end of bev
-        if (OVRInput.GetDown(OVRInput.RawButton.B) && birdseyeview == 1)
+        if ((OVRInput.GetDown(OVRInput.RawButton.B) || exitDesktop) && birdseyeview == 1)
         {
             birdseyeview = 0;
             PlayerObject.transform.position = posiorigin + new Vector3(0,5,0);

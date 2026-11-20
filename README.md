@@ -1,11 +1,31 @@
 # OperaSimVR(PhysX)
 Simulator on Unity + PhysX communicating with ROS
 
-<<<<<<< Updated upstream
-=======
 ## コーン自動配置
 
 フィールド上で頂点と接続を指定し、線や閉じたエリアの境界にコーンを配置できます。内周・外周を別グループにすると、二重の囲いも作れます。
+
+### Unity Editor（下部にProjectがある画面）で編集・保存
+
+OperaSimPhysXと同じように、Unity Editorで地形や物体、コーン配置を編集できます。プロジェクトのルートで次を実行すると、Playを開始せずにEditorを開きます。
+
+```bash
+./operasimvr-unity-ubuntu --open-only
+```
+
+1. 下部の **Project → Assets → Scenes** から **SampleScene** をダブルクリックします。
+2. 左の **Hierarchy** でシーン内の物体を選び、中央の **Scene** で位置などを編集し、右の **Inspector** で設定を変更します。下部の **Project** はファイル構成（Assets / Packages）を表示します。
+3. コーンを編集するには、上部メニューの **OperaSimVR → Cone Placement → 配置線を編集** を開きます。配置データがない場合は **このシーンにコーン配置機能を追加** を押します。
+4. **Sceneビューでクリック編集を有効にする** を有効にし、Sceneビューの地面クリックで頂点を追加します。P番号のそばの丸いハンドルをクリックして頂点を選び、隣接IDを指定します。グループごとの間隔を入力して **コーンを配置 / 更新** を押します。詳しい接続方法は以下の操作説明と同じです。
+5. **Playを停止した状態で編集し、Ctrl+Sでシーンを保存** すると、配置データも保存されます。このUbuntuでは **Ctrl+Z** でUndo、**Ctrl+Shift+Z** でRedoできます。シーンを開き直した後は、コーン配置ウィンドウを開くと配置が再表示されます。
+
+Terrainはそのまま地面として使えます。Planeやメッシュの地面にはColliderと **ConePlacementSurface** を追加してください。
+
+このUbuntuでは、`--open-only`を既存のデスクトップ起動と同じGPU・Box64設定に合わせています。SampleSceneと上記の各パネルの表示、メニュー操作、Editorの更新処理を確認しました（2026-11-20）。検証記録は `Logs/unity-editor-workspace/verification.json` にあります。この編集起動のままPlayボタンを押しても描画方式は切り替わらないため、Compute Shaderを必要とする掘削・侵食などの実行には、下記のPlayer起動を使ってください。
+
+![Unity Editorでのコーン編集検証。下部にProject、右側にコーン編集ウィンドウを配置。](docs/images/unity-editor-workspace.png)
+
+この画面で地面クリックによる頂点追加、87本から69本への間隔変更、Undo / Redo、シーン保存とEditor再起動後の配置復元を確認しました。画像は検証用の配置です。
 
 ### Gameビュー / Linux Playerでの操作
 
@@ -30,24 +50,26 @@ Simulator on Unity + PhysX communicating with ROS
 - **配置データ (JSON)** 欄で保存先のパスを指定し、**保存** を押すと頂点・接続・グループ間隔を保存できます。**読込** で復元した後は、**コーンを配置 / 更新** を押してください。
 - **Play中の変更は停止すると戻るため、必要な配置は停止前にJSON保存してください。**
 
-すぐに試す場合は、[二重の囲い＋折れ線のサンプルJSON](docs/examples/cone-layout-double-boundary.json) の絶対パスをJSON欄に入力し、**読込 → コーンを配置 / 更新 → 配置線の全体を表示** の順に操作します。
-
-### Sceneビューで編集・シーンに保存
-
-Unityの **OperaSimVR → Cone Placement → 配置線を編集** を開き、**このシーンにコーン配置機能を追加** を押します。**Sceneビューでクリック編集を有効にする** を有効にすると、Sceneビューでも頂点・接続・間隔を編集できます。シーンを保存すると配置データも保存されます。Undo / Redoに対応します。
-
-Terrainはそのまま地面として使えます。Planeやメッシュの地面にはColliderと **ConePlacementSurface** を追加してください。
+Gameビュー／Playerですぐに試す場合は、[二重の囲い＋折れ線のサンプルJSON](docs/examples/cone-layout-double-boundary.json) の絶対パスをJSON欄に入力し、**読込 → コーンを配置 / 更新 → 配置線の全体を表示** の順に操作します。
 
 詳細な仕様、動作画面、検証手順は [コーン自動配置の操作方法と検証結果](docs/CONE_PLACEMENT.md) を参照してください。
 
 ## Ubuntu
 
+Linux版をビルドして起動する場合は、プロジェクトのルートで次を実行します。
+
+```bash
+./operasimvr-unity-ubuntu --build
+./operasimvr-player-ubuntu
+```
+
+`SampleScene` と `SimpleScene` のTerrainに残っていた、ScanPattern未設定のLiDARコンポーネントは除去しました。LiDARを使う場合はセンサーを追加し、実際のScanPatternを設定してからPlayしてください。
+
 With Unity 2022.3.4f1 installed, run `./operasimvr-unity-ubuntu` to start the original scene with its saved mode, topics, and ROS settings. Use `--mode viewer` for the ZX200 ROS viewer, or `--mode simulator`, `--mode preview`, `--mode preview-and-play`, and `--mode preview-ar` for the existing modes. `--ros-ip` and `--ros-port` provide optional connection overrides. `--build` builds a Linux x86_64 player; launch it with `./operasimvr-player-ubuntu`. See [the Ubuntu setup and verification notes](docs/UNITY_UBUNTU.md) for controls, setup, and the experimental ARM64 configuration.
 The Linux x86_64 player builds with Burst enabled. On the current ARM64 machine, the original terrain and machines render and the ZX200 follows loopback pose/joint data, using experimental Box64 and slow software rendering. Quest 3 Wi-Fi support uses an opt-in SteamVR/OpenVR backend (`--build --vr`, then `./operasimvr-player-ubuntu --vr`) with ALVR; headset operation and native Intel/AMD hardware still require device testing. See the verification limits in the notes.
 Actual OperaSimPhysX integration was also verified: simulator drive/turn commands changed its ROS state, and the Ubuntu viewer followed that state through `tools/ros-viewer-bridge.py`. This optional observation bridge forwards the original ROS bytes and discards Player publications; it generates no pose/joint states. See the notes for the separate ports, real integration recording, and first-pose camera framing.
-After building, `python3 tools/verify-ubuntu-player.py --output Logs/player-check` exercises rendering, two ROS TCP pose/joint states, and normal Player shutdown. It requires a graphical desktop and the ROS 2 Python message packages plus Pillow. See the notes for the known unconfigured LiDAR error, software rendering, and the November 20 verification results.
+After building, `python3 tools/verify-ubuntu-player.py --output Logs/player-check` exercises rendering, two ROS TCP pose/joint states, and normal Player shutdown. It requires a graphical desktop and the ROS 2 Python message packages plus Pillow. See the notes for software rendering and the November 20 verification results.
 
->>>>>>> Stashed changes
 ## Explanation
 - This system serves as the cyber component of ros2-tms for construction(https://github.com/irvs/ros2_tms_for_construction), a cyber-physical system (CPS) designed for earthwork construction sites.
 - This system is an enhanced version of OperaSim-PhysX(https://github.com/pwri-opera/OperaSim-PhysX), the official simulator of the autonomous construction technology development platform OPERA (Open Platform for Earth work with Robotics and Autonomy).

@@ -1295,7 +1295,6 @@ GameObject:
   - component: {fileID: 1392124484}
   - component: {fileID: 1392124483}
   - component: {fileID: 1392124486}
-  - component: {fileID: 1392124487}
   m_Layer: 0
   m_Name: Terrain
   m_TagString: Untagged
@@ -1398,25 +1397,6 @@ MonoBehaviour:
   m_ReposeJitter: 0
   syncPeriod: 1
   rockPrefab: {fileID: 1796672309}
---- !u!114 &1392124487
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1392124482}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 42c1d58c3c2fee7459d766d2a82ea877, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _frequency: 10
-  _scanPattern: {fileID: 0}
-  _pointsNumPerScan: 1
-  _minRange: 0.5
-  _maxRange: 100
-  _gaussianNoiseSigma: 0
-  _maxIntensity: 255
 --- !u!1 &1517611408
 GameObject:
   m_ObjectHideFlags: 0

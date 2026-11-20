@@ -23,6 +23,8 @@ public class ControllerLaser : MonoBehaviour
 
     void OnTriggerStay(Collider other)
     {
+        // Desktop selection uses the camera pointer instead of an untracked VR hand.
+        if (OperaSimVRDesktopInput.IsActive) return;
         // トリガーに触れたオブジェクトの親オブジェクトを取得 
         GameObject hitObject = other.gameObject;
         GameObject parentObject = other.gameObject.transform.root.gameObject;

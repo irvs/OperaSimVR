@@ -45,12 +45,14 @@ public class TerrainCollisionPoint : MonoBehaviour
         Vector3 rayDirection = handAnchor.forward; // HandAnchorの前方向を使う
         // Rayを作成
         Ray ray = new Ray(rayOrigin, rayDirection);
+        bool desktopRay = OperaSimVRDesktopInput.TryGetPointerRay(out Ray pointerRay);
+        if (desktopRay) ray = pointerRay;
         RaycastHit hit;
         // Raycastを飛ばしてTerrainと衝突した場合
-        if (Physics.Raycast(ray, out hit, rayLength))
+        if (Physics.Raycast(ray, out hit, desktopRay ? 1000f : rayLength))
         {
             // 衝突対象がTerrainかどうかを確認
-            if (hit.collider.CompareTag("Terrain"))
+            if (hit.collider is TerrainCollider || hit.collider.CompareTag("Terrain"))
             {
                 // 衝突位置の座標を表示
                 collisionPoint = hit.point;

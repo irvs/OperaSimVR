@@ -10,6 +10,11 @@
 /[Ll]ogs/
 /[Uu]ser[Ss]ettings/
 
+# Generated from pinned upstream packages by tools/.
+/Packages/com.meta.xr.sdk.core/
+/Packages/com.frj.unity-sensors/
+/Packages/com.valvesoftware.unity.openvr/
+
 # MemoryCaptures can get excessive in size.
 # They also could contain extremely sensitive data
 /[Mm]emoryCaptures/

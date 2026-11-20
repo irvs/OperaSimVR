@@ -90,4 +90,15 @@ OPERASIMVR_MODE=viewer OPERASIMVR_ROS_IP=127.0.0.1 OPERASIMVR_ROS_PORT=19999 \
 
 ![二重の囲いと折れ線に87個のコーンを配置したLinux Playerの画面](images/cone-placement-demo.png)
 
-Player起動時には、機能追加前のログにもある既存の `UnitySensors.Sensor.LiDAR.LiDARSensor.Init` の `NullReferenceException` が出ています。上記のコーン編集・配置・保存・読込は、この状態で動作を確認しました。
+初回のPlayer検証では、既存の `UnitySensors.Sensor.LiDAR.LiDARSensor.Init` の `NullReferenceException` が出ていました。今回、`SampleScene` と `SimpleScene` のTerrainから、原因となったScanPattern未設定・参照なしのLiDARコンポーネントを除去しました。LiDARを使用する場合はセンサーを追加し、実際のScanPatternを設定してからPlayしてください。
+
+### 修復後の再検証（2026-11-20）
+
+C#とREADMEの競合記号を除去し、Ubuntuの起動・ビルド処理と補助クラスを復元しました。ARM64環境のビルド用メタデータ生成もネイティブ.NETへ切り替え、通常の `./operasimvr-unity-ubuntu --build` が終了コード0で完了しました。
+
+- Unity内のNUnitアサーションは34件成功・0件失敗でした。
+- 新しいPlayerで、初期配置87個 → 内周4mで69個 → 内周2mで87個 → 保存済みの4m設定を読込して69個 → 2mに戻して87個、の操作を確認しました。11頂点・接続・外周と折れ線の間隔は保持されました。
+- ローカルTCPのテストで、ZX200の位置2mの変化と4関節の追従、Playerの終了コード0を確認しました。LiDAR例外を許容するオプションは使用せず、実行時例外は0件でした。
+- 既定の `Build/Linux` の実行用アセンブリとメインシーンが、操作検証したPlayerの生成物とSHA256で一致しています。
+
+証拠は `Logs/cone-placement-fix/` の `unity-assertions.log`、`assertions.json`、`linux-build-final.log`、`ros-smoke/result.json`、`player-ui.log`、`ui-result.json` に保存しています。
