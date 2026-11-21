@@ -475,6 +475,7 @@ public class TmsParameterJsonVisualizer : MonoBehaviour
 
     /// <summary>
     /// GeoFenceのJSONを受信して、Unity上に境界線を描画する。
+    /// coordinates内の各配列を独立した境界線として扱う。
     /// Marker / MarkerArrayは使用しない。
     /// </summary>
     private void OnGeoFenceJson(RosString message)
@@ -495,8 +496,10 @@ public class TmsParameterJsonVisualizer : MonoBehaviour
                 ClearObjects(geoFenceObjects);
             }
 
-            int created = 0;
+            int createdRings = 0;
+            int createdVertices = 0;
 
+            // GeoFenceレコードごとに処理
             foreach (JToken token in records)
             {
                 JObject record = token as JObject;
@@ -505,106 +508,11 @@ public class TmsParameterJsonVisualizer : MonoBehaviour
                 string recordName =
                     (string)record?["record_name"] ?? "geo_fence";
 
-                if (data == null || data["coordinates"] == null)
+                if (data == null || !(data["coordinates"] is JArray coordinates))
                 {
                     Debug.LogWarning(
                         $"[TmsParameterJsonVisualizer] " +
                         $"GeoFence '{recordName}' skipped: coordinates missing."
-                    );
-                    continue;
-                }
-
-                JToken coordinates = data["coordinates"];
-
-                // 外側の配列をたどり、境界線の座標列を取得する。
-                // 例：
-                // coordinates = [[{x:..., y:...}, ...]]
-                // coordinates = [[[x, y], [x, y], ...]]
-                JArray points = GetGeoFenceRing(coordinates);
-
-                if (points == null || points.Count < 2)
-                {
-                    Debug.LogWarning(
-                        $"[TmsParameterJsonVisualizer] " +
-                        $"GeoFence '{recordName}' skipped: " +
-                        "at least two points are required."
-                    );
-                    continue;
-                }
-
-                List<Vector3> positions = new List<Vector3>();
-
-                foreach (JToken point in points)
-                {
-                    float x;
-                    float y;
-                    float z;
-
-                    if (point is JObject pointObject)
-                    {
-                        // { "x": ..., "y": ..., "z": ... } 形式
-                        x = GetFloat(pointObject, "x", float.NaN);
-                        y = GetFloat(pointObject, "y", float.NaN);
-                        z = GetFloat(pointObject, "z", 0f);
-                    }
-                    else if (point is JArray coordinateArray &&
-                            coordinateArray.Count >= 2)
-                    {
-                        // GeoJSON形式 [x, y] または [x, y, z]
-                        if (!TryGetCoordinate(coordinateArray[0], out x) ||
-                            !TryGetCoordinate(coordinateArray[1], out y))
-                        {
-                            Debug.LogWarning(
-                                $"[TmsParameterJsonVisualizer] " +
-                                $"GeoFence '{recordName}' contains invalid coordinates."
-                            );
-                            continue;
-                        }
-
-                        z = 0f;
-
-                        if (coordinateArray.Count >= 3)
-                        {
-                            if (!TryGetCoordinate(coordinateArray[2], out z))
-                            {
-                                Debug.LogWarning(
-                                    $"[TmsParameterJsonVisualizer] " +
-                                    $"GeoFence '{recordName}' contains invalid Z coordinate."
-                                );
-                                continue;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        Debug.LogWarning(
-                            $"[TmsParameterJsonVisualizer] " +
-                            $"GeoFence '{recordName}' contains an unsupported point format."
-                        );
-                        continue;
-                    }
-
-                    if (float.IsNaN(x) || float.IsInfinity(x) ||
-                        float.IsNaN(y) || float.IsInfinity(y) ||
-                        float.IsNaN(z) || float.IsInfinity(z))
-                    {
-                        Debug.LogWarning(
-                            $"[TmsParameterJsonVisualizer] " +
-                            $"GeoFence '{recordName}' contains non-finite coordinates."
-                        );
-                        continue;
-                    }
-
-                    // 既存のブロック・建機表示と同じ座標変換を使用
-                    positions.Add(RosPositionToUnity(x, y, z));
-                }
-
-                if (positions.Count < 2)
-                {
-                    Debug.LogWarning(
-                        $"[TmsParameterJsonVisualizer] " +
-                        $"GeoFence '{recordName}' skipped: " +
-                        "not enough valid points."
                     );
                     continue;
                 }
@@ -614,147 +522,203 @@ public class TmsParameterJsonVisualizer : MonoBehaviour
                     ? geoFenceParent
                     : machineryParent;
 
-                // ============================================================
-                // 1. 既存のGeoFence境界線を描画
-                // ============================================================
-
-                GameObject lineObject =
-                    new GameObject($"GeoFence_{recordName}");
-
-                if (parent != null)
+                // coordinates内の各配列を独立した境界線として処理
+                for (int ringIndex = 0;
+                    ringIndex < coordinates.Count;
+                    ringIndex++)
                 {
-                    lineObject.transform.SetParent(parent, true);
-                }
+                    JArray points = coordinates[ringIndex] as JArray;
 
-                LineRenderer line =
-                    lineObject.AddComponent<LineRenderer>();
+                    if (points == null || points.Count < 2)
+                    {
+                        Debug.LogWarning(
+                            $"[TmsParameterJsonVisualizer] " +
+                            $"GeoFence '{recordName}' ring[{ringIndex}] skipped: " +
+                            "at least two points are required."
+                        );
+                        continue;
+                    }
 
-                line.useWorldSpace = true;
-                line.positionCount = positions.Count;
-                line.SetPositions(positions.ToArray());
+                    List<Vector3> positions = new List<Vector3>();
 
-                line.startWidth = geoFenceLineWidth;
-                line.endWidth = geoFenceLineWidth;
+                    // ------------------------------------------
+                    // 1. 頂点座標を取得
+                    // ------------------------------------------
+                    foreach (JToken point in points)
+                    {
+                        if (!(point is JObject pointObject))
+                        {
+                            Debug.LogWarning(
+                                $"[TmsParameterJsonVisualizer] " +
+                                $"GeoFence '{recordName}' ring[{ringIndex}] " +
+                                "contains an invalid point."
+                            );
+                            continue;
+                        }
 
-                line.startColor = geoFenceColor;
-                line.endColor = geoFenceColor;
+                        float x = GetFloat(pointObject, "x", float.NaN);
+                        float y = GetFloat(pointObject, "y", float.NaN);
+                        float z = GetFloat(pointObject, "z", 0f);
 
-                line.material = new Material(
-                    Shader.Find("Sprites/Default")
-                );
+                        if (float.IsNaN(x) || float.IsInfinity(x) ||
+                            float.IsNaN(y) || float.IsInfinity(y) ||
+                            float.IsNaN(z) || float.IsInfinity(z))
+                        {
+                            Debug.LogWarning(
+                                $"[TmsParameterJsonVisualizer] " +
+                                $"GeoFence '{recordName}' ring[{ringIndex}] " +
+                                "contains non-finite coordinates."
+                            );
+                            continue;
+                        }
 
-                line.numCapVertices = 2;
-                line.numCornerVertices = 2;
+                        // ROS座標からUnity座標へ変換
+                        positions.Add(RosPositionToUnity(x, y, z));
+                    }
 
-                // 境界線を閉じる
-                line.loop = true;
+                    if (positions.Count < 2)
+                    {
+                        Debug.LogWarning(
+                            $"[TmsParameterJsonVisualizer] " +
+                            $"GeoFence '{recordName}' ring[{ringIndex}] skipped: " +
+                            "not enough valid points."
+                        );
+                        continue;
+                    }
 
-                geoFenceObjects.Add(lineObject);
-
-
-                // ============================================================
-                // 2. 各頂点にCylinderを生成
-                // ============================================================
-
-                List<GameObject> vertexObjects = new List<GameObject>();
-
-                for (int i = 0; i < positions.Count; i++)
-                {
-                    GameObject vertex = GameObject.CreatePrimitive(
-                        PrimitiveType.Cylinder
+                    // ==========================================
+                    // 2. 境界線を描画
+                    // ==========================================
+                    GameObject lineObject = new GameObject(
+                        $"GeoFence_{recordName}_Ring_{ringIndex}"
                     );
-
-                    vertex.name = $"GeoFenceVertex_{recordName}_{i}";
 
                     if (parent != null)
                     {
-                        vertex.transform.SetParent(parent, true);
+                        lineObject.transform.SetParent(parent, true);
                     }
 
-                    // GeoFenceの頂点位置に配置
-                    vertex.transform.position = positions[i];
+                    LineRenderer line =
+                        lineObject.AddComponent<LineRenderer>();
 
-                    // Cylinderの標準高さは2なので、Yスケールを高さの半分にする
-                    vertex.transform.localScale = new Vector3(
-                        geoFenceVertexDiameter,
-                        geoFenceVertexHeight * 0.5f,
-                        geoFenceVertexDiameter
+                    line.useWorldSpace = true;
+                    line.positionCount = positions.Count;
+                    line.SetPositions(positions.ToArray());
+
+                    line.startWidth = geoFenceLineWidth;
+                    line.endWidth = geoFenceLineWidth;
+
+                    line.startColor = geoFenceColor;
+                    line.endColor = geoFenceColor;
+
+                    line.material = new Material(
+                        Shader.Find("Sprites/Default")
                     );
 
-                    // 表示用CylinderのColliderは無効化
-                    // Raycastの検出対象にはしない
-                    Collider vertexCollider = vertex.GetComponent<Collider>();
+                    line.numCapVertices = 2;
+                    line.numCornerVertices = 2;
 
-                    if (vertexCollider != null)
+                    // 最後の頂点と最初の頂点を接続
+                    line.loop = true;
+
+                    geoFenceObjects.Add(lineObject);
+
+                    // ==========================================
+                    // 3. 各頂点にCylinderを生成
+                    // ==========================================
+                    List<GameObject> vertexObjects =
+                        new List<GameObject>();
+
+                    for (int i = 0; i < positions.Count; i++)
                     {
-                        vertexCollider.enabled = false;
-                    }
+                        GameObject vertex =
+                            GameObject.CreatePrimitive(
+                                PrimitiveType.Cylinder
+                            );
 
-                    Renderer vertexRenderer = vertex.GetComponent<Renderer>();
+                        vertex.name =
+                            $"GeoFenceVertex_{recordName}_{ringIndex}_{i}";
 
-                    if (vertexRenderer != null)
-                    {
-                        vertexRenderer.material = new Material(
-                            Shader.Find("Standard")
+                        if (parent != null)
+                        {
+                            vertex.transform.SetParent(parent, true);
+                        }
+
+                        vertex.transform.position = positions[i];
+
+                        // Cylinderの標準高さは2
+                        vertex.transform.localScale = new Vector3(
+                            geoFenceVertexDiameter,
+                            geoFenceVertexHeight * 0.5f,
+                            geoFenceVertexDiameter
                         );
 
-                        vertexRenderer.material.color = geoFenceVertexColor;
+                        // 表示用CylinderのColliderは無効化
+                        Collider vertexCollider =
+                            vertex.GetComponent<Collider>();
+
+                        if (vertexCollider != null)
+                        {
+                            vertexCollider.enabled = false;
+                        }
+
+                        Renderer vertexRenderer =
+                            vertex.GetComponent<Renderer>();
+
+                        if (vertexRenderer != null)
+                        {
+                            vertexRenderer.material = new Material(
+                                Shader.Find("Standard")
+                            );
+
+                            vertexRenderer.material.color =
+                                geoFenceVertexColor;
+                        }
+
+                        vertexObjects.Add(vertex);
+                        geoFenceObjects.Add(vertex);
                     }
 
-                    vertexObjects.Add(vertex);
-                    geoFenceObjects.Add(vertex);
+                    // ==========================================
+                    // 4. Geofenceコンポーネントを追加
+                    // ==========================================
+                    for (int i = 0; i < vertexObjects.Count; i++)
+                    {
+                        GameObject vertex = vertexObjects[i];
+
+                        // 次の頂点。最後の頂点は最初に戻る
+                        int nextIndex = (i + 1) % vertexObjects.Count;
+
+                        GameObject nextVertex =
+                            vertexObjects[nextIndex];
+
+                        Geofence geofence =
+                            vertex.AddComponent<Geofence>();
+
+                        geofence.EndpointObj =
+                            nextVertex.transform;
+
+                        geofence.collisionLayer =
+                            geoFenceCollisionLayer;
+                    }
+
+                    createdRings++;
+                    createdVertices += positions.Count;
+
+                    Debug.Log(
+                        $"[TmsParameterJsonVisualizer] " +
+                        $"GeoFence '{recordName}' ring[{ringIndex}]: " +
+                        $"{positions.Count} vertices and " +
+                        $"{positions.Count} collision segments created."
+                    );
                 }
-
-
-                // ============================================================
-                // 3. 各頂点にGeofenceコンポーネントを追加
-                //    EndpointObjを次の頂点に設定
-                // ============================================================
-
-                for (int i = 0; i < vertexObjects.Count; i++)
-                {
-                    GameObject vertex = vertexObjects[i];
-
-                    // 次の頂点。最後の頂点は最初の頂点につなぐ
-                    int nextIndex = (i + 1) % vertexObjects.Count;
-
-                    GameObject nextVertex = vertexObjects[nextIndex];
-
-                    Geofence geofence = vertex.AddComponent<Geofence>();
-
-                    // 次の頂点を設定
-                    geofence.EndpointObj = nextVertex.transform;
-
-                    // 衝突判定対象のLayerを設定
-                    geofence.collisionLayer = geoFenceCollisionLayer;
-                }
-
-
-                // ============================================================
-                // 4. ログ
-                // ============================================================
-
-                created++;
-
-                Debug.Log(
-                    $"[TmsParameterJsonVisualizer] " +
-                    $"GeoFence '{recordName}': " +
-                    $"{positions.Count} vertices and " +
-                    $"{positions.Count} collision segments created."
-                );
-
-                created++;
-
-                Debug.Log(
-                    $"[TmsParameterJsonVisualizer] " +
-                    $"GeoFence '{recordName}': " +
-                    $"{positions.Count} points created."
-                );
             }
 
             Debug.Log(
                 $"[TmsParameterJsonVisualizer] " +
-                $"GeoFence objects created: {created}"
+                $"GeoFence visualization completed. " +
+                $"Rings: {createdRings}, " +
+                $"Vertices: {createdVertices}"
             );
         }
         catch (Exception e)
