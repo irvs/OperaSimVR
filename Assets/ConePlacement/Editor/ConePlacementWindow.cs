@@ -10,13 +10,16 @@ namespace OperaSimVR.ConePlacement.Editor
         Vector2 scroll;
         bool editScene;
 
-        [MenuItem("OperaSimVR/Cone Placement/配置線を編集")]
-        public static void Open() => GetWindow<ConePlacementWindow>("コーン自動配置");
+        [MenuItem("OperaSimVR/Cone Placement/Edit Layout")]
+        public static void Open() => GetWindow<ConePlacementWindow>("Cone Placement");
 
         void OnEnable()
         {
+            titleContent = new GUIContent("Cone Placement");
             SceneView.duringSceneGui += DuringSceneGUI;
             Undo.undoRedoPerformed += UndoRedo;
+            EditorApplication.update += PollRosService;
+            AssemblyReloadEvents.beforeAssemblyReload += CancelRosService;
             minSize = new Vector2(345, 440);
         }
 
@@ -24,7 +27,18 @@ namespace OperaSimVR.ConePlacement.Editor
         {
             SceneView.duringSceneGui -= DuringSceneGUI;
             Undo.undoRedoPerformed -= UndoRedo;
+            EditorApplication.update -= PollRosService;
+            AssemblyReloadEvents.beforeAssemblyReload -= CancelRosService;
+            CancelRosService();
             if (controller != null) controller.BeforeEdit = null;
+        }
+
+        void CancelRosService() { if (controller != null) controller.CancelRosService(); }
+        void PollRosService()
+        {
+            if (controller == null || !controller.IsSendingToRos) return;
+            controller.PollRosService();
+            Repaint();
         }
 
         void UndoRedo()
@@ -48,12 +62,17 @@ namespace OperaSimVR.ConePlacement.Editor
                 controller = FindObjectOfType<ConePlacementController>();
                 if (controller != null && !Application.isPlaying) controller.RefreshFromLayout();
             }
-            GUILayout.Label("Sceneビューでコーン配置線を編集", EditorStyles.boldLabel);
-            EditorGUILayout.HelpBox("地面クリックで頂点を追加します。IDを選んで隣接IDを指定し、グループごとの間隔を入力してください。Sceneで作成した配置はシーンに保存できます。Play中はF8からも編集できます。", MessageType.Info);
-            controller = (ConePlacementController)EditorGUILayout.ObjectField("配置データ", controller, typeof(ConePlacementController), true);
+            GUILayout.Label("Cone Placement in Scene View", EditorStyles.boldLabel);
+            EditorGUILayout.HelpBox("Add points on the ground, connect their IDs, then place cones. Save the scene with Ctrl+S. In Play Mode, press F8 to edit.", MessageType.Info);
+            var selected = (ConePlacementController)EditorGUILayout.ObjectField("Layout", controller, typeof(ConePlacementController), true);
+            if (selected != controller)
+            {
+                if (controller != null) { controller.CancelRosService(); controller.BeforeEdit = null; }
+                controller = selected;
+            }
             if (controller == null)
             {
-                if (GUILayout.Button("このシーンにコーン配置機能を追加"))
+                if (GUILayout.Button("Add Cone Placement to Scene"))
                 {
                     var obj = new GameObject("Cone Placement");
                     Undo.RegisterCreatedObjectUndo(obj, "Create cone placement");
@@ -64,8 +83,8 @@ namespace OperaSimVR.ConePlacement.Editor
                 return;
             }
             controller.BeforeEdit = PrepareEdit;
-            editScene = GUILayout.Toggle(editScene, "Sceneビューでクリック編集を有効にする", "Button");
-            if (Application.isPlaying) EditorGUILayout.HelpBox("Play中の変更はJSON保存してください。停止するとシーン内の編集は元に戻ります。", MessageType.Info);
+            editScene = GUILayout.Toggle(editScene, "Enable Scene Click Editing", "Button");
+            if (Application.isPlaying) EditorGUILayout.HelpBox("Save Play Mode changes to JSON before stopping. Scene changes are reset when Play Mode stops.", MessageType.Info);
             scroll = EditorGUILayout.BeginScrollView(scroll);
             GUIStyle oldLabel = GUI.skin.label;
             GUI.skin.label = new GUIStyle(oldLabel) { wordWrap = true };
@@ -109,11 +128,13 @@ namespace OperaSimVR.ConePlacement.Editor
     {
         public override void OnInspectorGUI()
         {
-            EditorGUILayout.HelpBox("頂点・接続・間隔は専用ウィンドウまたはPlay中のF8で編集します。メッシュ地面にはConePlacementSurfaceを追加してください。", MessageType.Info);
-            if (GUILayout.Button("コーン配置ウィンドウを開く")) ConePlacementWindow.Open();
+            EditorGUILayout.HelpBox("Edit points, connections, and spacing in the Cone Placement window, or press F8 in Play Mode. Add ConePlacementSurface to mesh ground.", MessageType.Info);
+            if (GUILayout.Button("Open Cone Placement")) ConePlacementWindow.Open();
             SerializedProperty layers = serializedObject.FindProperty("surfaceLayers");
             serializedObject.Update();
-            EditorGUILayout.PropertyField(layers, new GUIContent("地面のレイヤー"));
+            EditorGUILayout.PropertyField(layers, new GUIContent("Ground Layers"));
+            SerializedProperty ros = serializedObject.FindProperty("rosService");
+            EditorGUILayout.PropertyField(ros, new GUIContent("ROS 2 Service"), true);
             serializedObject.ApplyModifiedProperties();
         }
     }

@@ -40,6 +40,20 @@ namespace OperaSimVR.ConePlacement.Tests
             Assert.That(controller.TryPickSurface(ray, out _), Is.False);
         }
 
+        [Test] public void SendRejectsUnappliedSpacingInput()
+        {
+            controller.AddVertex(new Vector3(1995, 5, 2000));
+            controller.AddVertex(new Vector3(2005, 5, 2000));
+            controller.SetNeighbors(1, new[] { 2 });
+            Assert.That(controller.PlaceCones(), Is.True);
+            var inputs = (System.Collections.Generic.Dictionary<string, string>)typeof(ConePlacementController)
+                .GetField("spacingText", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(controller);
+            inputs[controller.Layout.GetGroups()[0].Key] = "3";
+            Assert.That(controller.SendToRos(), Is.False);
+            Assert.That(controller.IsSendingToRos, Is.False);
+            Assert.That(controller.RosStatus, Does.Contain("Place / Update Cones"));
+        }
+
         [Test] public void GeneratedConesRestOnSlopeAndDirtyEditsHideStaleBoundary()
         {
             controller.AddVertex(new Vector3(1995, 5, 2000));
@@ -100,6 +114,52 @@ namespace OperaSimVR.ConePlacement.Tests
             Vector3 screen = camera.WorldToScreenPoint(new Vector3(2000, 5.2f, 2000));
             Assert.That(controller.PickVertex(camera, screen), Is.EqualTo(1));
             Assert.That(controller.PickVertex(camera, (Vector2)screen + new Vector2(80, 80)), Is.EqualTo(-1));
+        }
+
+        [Test] public void GroupExportUsesPlacedGroundPositionsAndInvalidatesAfterEdits()
+        {
+            controller.AddVertex(new Vector3(1995, 5, 2000));
+            controller.AddVertex(new Vector3(2005, 5, 2000));
+            controller.AddVertex(new Vector3(2010, 5, 2000));
+            Assert.That(controller.SetNeighbors(1, new[] { 2 }), Is.True);
+            Assert.That(controller.TryGetPlacedGroups(out _, out _), Is.False);
+            Assert.That(controller.PlaceCones(), Is.True, controller.Status);
+            Assert.That(controller.TryGetPlacedGroups(out var groups, out var error), Is.True, error);
+            Assert.That(groups.Select(g => g.Id), Is.EqualTo(new[] { 1, 3 }));
+            Assert.That(groups[0].Positions.Count, Is.EqualTo(6));
+            Assert.That(groups[1].Positions.Count, Is.EqualTo(1));
+            Assert.That(groups.SelectMany(g => g.Positions), Is.EqualTo(controller.PlacedPositions));
+            foreach (Vector3 position in groups.SelectMany(g => g.Positions))
+            {
+                Assert.That(controller.TryProjectToSurface(position, out var ground), Is.True);
+                Assert.That(Vector3.Distance(position, ground), Is.LessThan(.001));
+            }
+            Assert.That(controller.SetSpacing("1-2", 1), Is.True);
+            Assert.That(controller.TryGetPlacedGroups(out _, out _), Is.False);
+            Assert.That(groups[0].Positions.Count, Is.EqualTo(6), "Previously exported snapshots stay immutable.");
+            Assert.That(controller.PlaceCones(), Is.True);
+            controller.ClearCones();
+            Assert.That(controller.TryGetPlacedGroups(out _, out _), Is.False);
+        }
+
+        [Test] public void GroupExportRejectsManualConeMovesAndDirectLayoutEdits()
+        {
+            controller.AddVertex(new Vector3(2000, 5, 2000));
+            Assert.That(controller.PlaceCones(), Is.True);
+            controller.transform.Find("Placed Cones").GetChild(0).position += Vector3.up;
+            Assert.That(controller.TryGetPlacedGroups(out _, out _), Is.False);
+            Assert.That(controller.PlaceCones(), Is.True);
+            controller.Layout.AddVertex(new Vector3(2005, 5, 2000));
+            Assert.That(controller.TryGetPlacedGroups(out _, out _), Is.False);
+        }
+
+        [Test] public void GroupExportRejectsAPlacementThatFailedAfterGroundWasRemoved()
+        {
+            controller.AddVertex(new Vector3(2000, 5, 2000));
+            Assert.That(controller.PlaceCones(), Is.True);
+            UnityEngine.Object.DestroyImmediate(field.GetComponent<ConePlacementSurface>());
+            Assert.That(controller.PlaceCones(), Is.False);
+            Assert.That(controller.TryGetPlacedGroups(out _, out _), Is.False);
         }
 
         [Test] public void EditingCameraDoesNotInheritVrProjectionAndRestoresOriginalCamera()

@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using OperaSimVR.ConePlacement.Ros;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
@@ -18,12 +21,13 @@ namespace OperaSimVR.ConePlacement
         [SerializeField] bool showGuides = true;
         [SerializeField] bool conesPlaced;
         [SerializeField] string filePath;
+        [SerializeField] ConeRosSettings rosService = new ConeRosSettings();
         [NonSerialized] public Action BeforeEdit;
         public ConeLayout Layout => layout;
         public bool IsEditing { get; private set; }
         public int SelectedId { get; private set; } = -1;
         public int PlacedConeCount { get; private set; }
-        public string Status { get; private set; } = "F8 またはボタンで編集を開始";
+        public string Status { get; private set; } = "Press F8 or click Cone Placement to start.";
         public bool HasPlacedCones => conesPlaced;
         public bool NeedsPlacement { get; private set; }
         public Camera EditingCamera => editingCamera;
@@ -44,8 +48,18 @@ namespace OperaSimVR.ConePlacement
         List<ConeGroup> groups = new List<ConeGroup>();
         readonly Dictionary<string, string> spacingText = new Dictionary<string, string>();
         readonly List<Vector3> placedPositions = new List<Vector3>();
+        readonly List<ConePositionGroup> placedGroups = new List<ConePositionGroup>();
+        string placedLayoutJson;
+        bool lastPlacementFailed;
+        CancellationTokenSource rosCancellation;
+        Task<SetConeLayoutResponse> rosTask;
+        bool showRosSettings;
+        string rosPortText;
+        public bool IsSendingToRos => rosTask != null;
+        public string RosStatus { get; private set; } = "Ready. Place cones, then send once.";
+        public ConeRosSettings RosSettings => rosService;
         GUISkin skin;
-        Font japaneseFont;
+        Font uiFont;
         const float PanelWidth = 366;
         public IReadOnlyList<Vector3> PlacedPositions => placedPositions.AsReadOnly();
         public string FilePath
@@ -90,7 +104,7 @@ namespace OperaSimVR.ConePlacement
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
                 if (Application.isPlaying) OpenEditingCamera();
-                Status = "地面クリック: 頂点追加 ／ IDクリック: 選択";
+                Status = "Click ground to add a point. Click a point ID to select it.";
             }
             else
             {
@@ -104,6 +118,7 @@ namespace OperaSimVR.ConePlacement
 
         void Update()
         {
+            PollRosService();
             if (Input.GetKeyDown(KeyCode.F8)) SetEditing(!IsEditing);
             if (!IsEditing) return;
             if (editingCamera == null && Camera.main != null) OpenEditingCamera();
@@ -127,7 +142,7 @@ namespace OperaSimVR.ConePlacement
             int pick = PickVertex(camera, Input.mousePosition);
             if (pick >= 0 && !moveNextClick) { SelectVertex(pick); return; }
             if (!TryPickSurface(camera.ScreenPointToRay(Input.mousePosition), out Vector3 point))
-            { Status = "地面を選択してください（Terrain または ConePlacementSurface）。"; return; }
+            { Status = "Click ground with Terrain or ConePlacementSurface."; return; }
             if (moveNextClick) { MoveVertex(SelectedId, point); moveNextClick = false; }
             else AddVertex(point);
         }
@@ -138,7 +153,7 @@ namespace OperaSimVR.ConePlacement
             {
                 BeforeEdit?.Invoke();
                 int id = layout.AddVertex(position);
-                Changed(); SelectVertex(id); Status = "頂点 " + id + " を追加。隣接IDを入力して接続できます。";
+                Changed(); SelectVertex(id); Status = "Point " + id + " added. Enter a neighbor ID to connect it.";
                 return id;
             }
             catch (Exception e) when (e is ArgumentException || e is InvalidOperationException)
@@ -159,21 +174,21 @@ namespace OperaSimVR.ConePlacement
         {
             BeforeEdit?.Invoke();
             if (!layout.SetNeighbors(id, neighbors, out string error)) { Status = error; return false; }
-            Changed(); SelectVertex(id); Status = "隣接関係を更新しました。"; return true;
+            Changed(); SelectVertex(id); Status = "Connections updated."; return true;
         }
 
         public bool MoveVertex(int id, Vector3 position)
         {
             BeforeEdit?.Invoke();
             if (!layout.MoveVertex(id, position, out string error)) { Status = error; return false; }
-            Changed(); Status = "頂点 " + id + " を移動しました。"; return true;
+            Changed(); Status = "Point " + id + " moved."; return true;
         }
 
         public void DeleteSelected()
         {
             BeforeEdit?.Invoke();
             if (!layout.RemoveVertex(SelectedId, out string error)) { Status = error; return; }
-            SelectedId = -1; moveNextClick = false; Changed(); Status = "頂点と接続を削除しました。";
+            SelectedId = -1; moveNextClick = false; Changed(); Status = "Point and connections deleted.";
         }
 
         public bool SetSpacing(string key, float value)
@@ -181,7 +196,7 @@ namespace OperaSimVR.ConePlacement
             BeforeEdit?.Invoke();
             if (!layout.SetGroupSpacing(key, value, out string error)) { Status = error; return false; }
             spacingText[key] = value.ToString("0.###", CultureInfo.InvariantCulture);
-            Changed(); Status = "間隔を更新しました。配置ボタンで反映してください。"; return true;
+            Changed(); Status = "Spacing updated. Click Place / Update Cones to apply."; return true;
         }
 
         void Changed()
@@ -191,6 +206,8 @@ namespace OperaSimVR.ConePlacement
             if (conesRoot != null) conesRoot.gameObject.SetActive(false);
             PlacedConeCount = 0;
             placedPositions.Clear();
+            placedGroups.Clear();
+            placedLayoutJson = null;
             RefreshGroups(); RebuildVisuals();
         }
 
@@ -212,14 +229,27 @@ namespace OperaSimVR.ConePlacement
 
         public bool PlaceCones()
         {
-            if (!layout.TryGeneratePositions(ConeLayout.MaxCones, out List<Vector3> positions, out string error))
+            lastPlacementFailed = true;
+            if (!layout.TryGeneratePositionGroups(ConeLayout.MaxCones, out var generatedGroups, out string error))
             { Status = error; return false; }
             var projected = new List<Vector3>();
-            foreach (Vector3 position in positions)
+            var groundByPosition = new Dictionary<Vector3, Vector3>();
+            var projectedGroups = new List<ConePositionGroup>();
+            foreach (ConePositionGroup group in generatedGroups)
             {
-                if (!TryProjectToSurface(position, out Vector3 ground))
-                { Status = "地面がない配置位置があります。頂点と接続線を確認してください。"; return false; }
-                projected.Add(ground);
+                var groupPositions = new List<Vector3>();
+                foreach (Vector3 position in group.Positions)
+                {
+                    if (!groundByPosition.TryGetValue(position, out Vector3 ground))
+                    {
+                        if (!TryProjectToSurface(position, out ground))
+                        { Status = "Some cone positions have no ground. Check the points and lines."; return false; }
+                        groundByPosition.Add(position, ground);
+                        projected.Add(ground);
+                    }
+                    groupPositions.Add(ground);
+                }
+                projectedGroups.Add(new ConePositionGroup(group, groupPositions));
             }
             BeforeEdit?.Invoke();
             EnsureAssets();
@@ -234,9 +264,33 @@ namespace OperaSimVR.ConePlacement
                 cone.AddComponent<MeshRenderer>().sharedMaterial = coneMaterial;
             }
             placedPositions.Clear(); placedPositions.AddRange(projected);
+            placedGroups.Clear(); placedGroups.AddRange(projectedGroups);
+            placedLayoutJson = layout.ToJson(false);
+            lastPlacementFailed = false;
             conesPlaced = true; NeedsPlacement = false; PlacedConeCount = projected.Count;
-            Status = projected.Count + "個のコーンを配置しました。";
+            Status = projected.Count + " cones placed.";
             Debug.Log("[ConePlacement] " + Status);
+            return true;
+        }
+
+        /// <summary>Export the actual placed cones, without resampling or changing the visible layout.</summary>
+        public bool TryGetPlacedGroups(out IReadOnlyList<ConePositionGroup> result, out string error)
+        {
+            result = Array.Empty<ConePositionGroup>();
+            error = null;
+            if (!conesPlaced || NeedsPlacement || lastPlacementFailed || placedPositions.Count == 0
+                || placedGroups.Count == 0 || placedLayoutJson != layout.ToJson(false)
+                || conesRoot == null || !conesRoot.gameObject.activeInHierarchy)
+            { error = "Place / Update Cones before exporting the layout."; return false; }
+            if (conesRoot.childCount != placedPositions.Count)
+            { error = "Placed cones have changed. Click Place / Update Cones before exporting."; return false; }
+            for (int i = 0; i < placedPositions.Count; i++)
+            {
+                Transform cone = conesRoot.GetChild(i);
+                if (!cone.gameObject.activeInHierarchy || !((cone.position - placedPositions[i]).sqrMagnitude <= .00000001f))
+                { error = "Placed cones have moved or been hidden. Click Place / Update Cones before exporting."; return false; }
+            }
+            result = Array.AsReadOnly(placedGroups.ToArray());
             return true;
         }
 
@@ -244,7 +298,8 @@ namespace OperaSimVR.ConePlacement
         {
             BeforeEdit?.Invoke(); ClearRoot(ref conesRoot);
             conesPlaced = false; NeedsPlacement = false; PlacedConeCount = 0; placedPositions.Clear();
-            Status = "配置したコーンを取り除きました。頂点は保持しています。";
+            placedGroups.Clear(); placedLayoutJson = null;
+            Status = "Cones cleared. Points and connections kept.";
         }
 
         public bool SaveLayout()
@@ -257,25 +312,25 @@ namespace OperaSimVR.ConePlacement
                 File.WriteAllText(temporary, layout.ToJson());
                 if (File.Exists(path)) File.Replace(temporary, path, null);
                 else File.Move(temporary, path);
-                Status = "保存しました: " + path; return true;
+                Status = "Saved: " + path; return true;
             }
             catch (Exception e) when (e is IOException || e is UnauthorizedAccessException || e is ArgumentException || e is NotSupportedException)
-            { Status = "保存失敗: " + e.Message; return false; }
+            { Status = "Save failed: " + e.Message; return false; }
         }
 
         public bool LoadLayout()
         {
             try
             {
-                if (new FileInfo(FilePath).Length > 2000000) { Status = "配置ファイルのサイズ上限を超えています。"; return false; }
+                if (new FileInfo(FilePath).Length > 2000000) { Status = "Layout file exceeds the size limit."; return false; }
                 string json = File.ReadAllText(FilePath);
                 if (!ConeLayout.TryFromJson(json, out ConeLayout loaded, out string error)) { Status = error; return false; }
                 BeforeEdit?.Invoke();
                 layout = loaded; ClearCones(); spacingText.Clear(); SelectedId = -1; moveNextClick = false;
-                RefreshGroups(); RebuildVisuals(); Status = "配置データを読み込みました。配置ボタンでコーンを生成できます。"; return true;
+                RefreshGroups(); RebuildVisuals(); Status = "Layout loaded. Click Place / Update Cones to generate cones."; return true;
             }
             catch (Exception e) when (e is IOException || e is UnauthorizedAccessException || e is ArgumentException || e is NotSupportedException)
-            { Status = "読込失敗: " + e.Message; return false; }
+            { Status = "Load failed: " + e.Message; return false; }
         }
 
         public bool TryPickSurface(Ray ray, out Vector3 position)
@@ -449,8 +504,8 @@ namespace OperaSimVR.ConePlacement
             if (skin != null) return;
             skin = Instantiate(GUI.skin);
             skin.hideFlags = HideFlags.DontSave;
-            japaneseFont = Font.CreateDynamicFontFromOSFont(new[] { "Noto Sans CJK JP", "Yu Gothic", "Meiryo", "Hiragino Sans", "Arial" }, 14);
-            skin.font = japaneseFont;
+            uiFont = Font.CreateDynamicFontFromOSFont(new[] { "Arial", "Liberation Sans", "DejaVu Sans" }, 14);
+            skin.font = uiFont;
             skin.label.fontSize = skin.button.fontSize = skin.textField.fontSize = skin.toggle.fontSize = 14;
             skin.label.wordWrap = true;
             skin.button.fixedHeight = 27;
@@ -462,7 +517,7 @@ namespace OperaSimVR.ConePlacement
             GUISkin previous = GUI.skin;
             EnsureSkin(); GUI.skin = skin;
             if (GUI.Button(new Rect(Mathf.Max(8, Screen.width - PanelWidth - 12), 8, PanelWidth, 34),
-                IsEditing ? "コーン配置を終了 [F8 / Esc]" : "コーン自動配置 [F8]"))
+                IsEditing ? "Exit Cone Placement [F8 / Esc]" : "Cone Placement [F8]"))
             { SetEditing(!IsEditing); GUI.skin = previous; GUIUtility.ExitGUI(); }
             if (IsEditing)
             {
@@ -491,23 +546,23 @@ namespace OperaSimVR.ConePlacement
         // The same controls are hosted by the Editor window for persistent Scene-view authoring.
         public void DrawControls()
         {
-            GUILayout.Label("コーン配置線の編集");
-            GUILayout.Label("地面クリックで頂点追加。IDを選び、隣接IDを0～2個指定します。空欄で接続を解除できます。");
+            GUILayout.Label("Edit Cone Layout");
+            GUILayout.Label("Click ground to add points. Select a point and enter up to two neighbor IDs. Leave both fields blank to disconnect.");
             if (Application.isPlaying)
             {
-                GUILayout.Label("右ドラッグ: 俯瞰移動 ／ ホイール: 拡大縮小");
-                if (GUILayout.Button("配置線の全体を表示")) FrameLayout();
+                GUILayout.Label("Right-drag: pan | Scroll: zoom");
+                if (GUILayout.Button("Frame Layout")) FrameLayout();
             }
             ConeVertex selected = layout.FindVertex(SelectedId);
             GUILayout.Space(6);
             if (selected != null)
             {
-                GUILayout.Label("選択頂点: P" + selected.Id + "  (" + selected.Position.x.ToString("F2") + ", " + selected.Position.y.ToString("F2") + ", " + selected.Position.z.ToString("F2") + ") m");
-                GUILayout.BeginHorizontal(); GUILayout.Label("隣接ID", GUILayout.Width(65));
+                GUILayout.Label("Selected Point: P" + selected.Id + "  (" + selected.Position.x.ToString("F2") + ", " + selected.Position.y.ToString("F2") + ", " + selected.Position.z.ToString("F2") + ") m");
+                GUILayout.BeginHorizontal(); GUILayout.Label("Neighbor IDs", GUILayout.Width(92));
                 neighborA = GUILayout.TextField(neighborA, 10, GUILayout.MinWidth(0));
                 neighborB = GUILayout.TextField(neighborB, 10, GUILayout.MinWidth(0));
                 GUILayout.EndHorizontal();
-                if (GUILayout.Button("隣接関係を適用"))
+                if (GUILayout.Button("Apply Connections"))
                 {
                     var ids = new List<int>(); bool valid = true;
                     foreach (string input in new[] { neighborA, neighborB })
@@ -517,35 +572,35 @@ namespace OperaSimVR.ConePlacement
                         else valid = false;
                     }
                     if (valid) { SetNeighbors(SelectedId, ids); GUIUtility.ExitGUI(); }
-                    else Status = "隣接IDは正の整数、または空欄にしてください。";
+                    else Status = "Enter positive whole numbers for neighbor IDs, or leave blank.";
                 }
                 GUILayout.BeginHorizontal();
-                if (GUILayout.Button(moveNextClick ? "移動をキャンセル" : "次のクリック位置へ移動")) moveNextClick = !moveNextClick;
-                if (GUILayout.Button("頂点削除", GUILayout.Width(80))) { DeleteSelected(); GUIUtility.ExitGUI(); }
+                if (GUILayout.Button(moveNextClick ? "Cancel Move" : "Move Point")) moveNextClick = !moveNextClick;
+                if (GUILayout.Button("Delete Point", GUILayout.Width(96))) { DeleteSelected(); GUIUtility.ExitGUI(); }
                 GUILayout.EndHorizontal();
-                if (moveNextClick) GUILayout.Label("移動先の地面をクリックしてください。");
+                if (moveNextClick) GUILayout.Label("Click ground at the new position.");
             }
-            else GUILayout.Label("選択頂点: なし");
+            else GUILayout.Label("Selected Point: None");
             GUILayout.Space(7);
-            GUILayout.Label("自動グループ: " + groups.Count + " ／ 頂点: " + layout.Vertices.Count);
+            GUILayout.Label("Groups: " + groups.Count + " | Points: " + layout.Vertices.Count);
             foreach (ConeGroup group in groups.ToArray())
             {
-                string kind = group.IsClosed ? "エリア（閉路）" : group.OrderedVertexIds.Count == 1 ? "孤立点" : "線（開路）";
+                string kind = group.IsClosed ? "Area (closed)" : group.OrderedVertexIds.Count == 1 ? "Single point" : "Line (open)";
                 GUILayout.BeginVertical(GUI.skin.box);
-                GUILayout.Label("G" + group.OrderedVertexIds.Min() + " · " + kind + " · " + group.OrderedVertexIds.Count + "点");
+                GUILayout.Label("G" + group.OrderedVertexIds.Min() + " · " + kind + " · " + group.OrderedVertexIds.Count + " points");
                 GUILayout.Label("ID: " + string.Join(", ", group.OrderedVertexIds));
-                GUILayout.BeginHorizontal(); GUILayout.Label("間隔 (m)", GUILayout.Width(75));
+                GUILayout.BeginHorizontal(); GUILayout.Label("Spacing (m)", GUILayout.Width(82));
                 spacingText[group.Key] = GUILayout.TextField(spacingText[group.Key], 12, GUILayout.MinWidth(0));
-                if (GUILayout.Button("適用", GUILayout.Width(52)))
+                if (GUILayout.Button("Apply", GUILayout.Width(60)))
                 {
                     if (float.TryParse(spacingText[group.Key], NumberStyles.Float, CultureInfo.InvariantCulture, out float spacing)) SetSpacing(group.Key, spacing);
-                    else Status = "間隔を数値で入力してください（例: 2.5）。";
+                    else Status = "Enter a number for spacing (for example, 2.5).";
                 }
                 GUILayout.EndHorizontal(); GUILayout.EndVertical();
             }
-            GUILayout.Label("角・端点に必ず配置。端の余りは指定間隔以下。二重囲いは内周・外周を別々の閉路で定義。");
+            GUILayout.Label("Cones include corners and endpoints. The last gap may be shorter. Use separate closed loops for inner and outer boundaries.");
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button("コーンを配置 / 更新"))
+            if (GUILayout.Button("Place / Update Cones"))
             {
                 // An un-applied text edit must not silently use the old value.
                 bool valid = true;
@@ -553,9 +608,9 @@ namespace OperaSimVR.ConePlacement
                 foreach (ConeGroup group in groups.ToArray())
                 {
                     if (!float.TryParse(spacingText[group.Key], NumberStyles.Float, CultureInfo.InvariantCulture, out float value))
-                    { Status = "間隔を数値で入力してください。"; valid = false; break; }
+                    { Status = "Enter a number for spacing."; valid = false; break; }
                     if (!ConeLayout.IsFinite(value) || value < ConeLayout.MinimumSpacing || value > 10000)
-                    { Status = "配置間隔は0.1～10000mで入力してください。"; valid = false; break; }
+                    { Status = "Spacing must be between 0.1 and 10000 m."; valid = false; break; }
                     values[group.Key] = value;
                 }
                 if (valid)
@@ -565,18 +620,110 @@ namespace OperaSimVR.ConePlacement
                     Changed(); PlaceCones();
                 }
             }
-            if (GUILayout.Button("配置を解除", GUILayout.Width(90))) ClearCones();
+            if (GUILayout.Button("Clear Cones", GUILayout.Width(100))) ClearCones();
             GUILayout.EndHorizontal();
-            bool visible = GUILayout.Toggle(showGuides, "編集終了後も配置線・IDを表示");
+            bool visible = GUILayout.Toggle(showGuides, "Keep lines and IDs visible");
             if (visible != showGuides) { BeforeEdit?.Invoke(); showGuides = visible; SetGuideVisibility(); }
-            GUILayout.Label("配置数: " + PlacedConeCount + (NeedsPlacement ? " （変更あり・再配置が必要）" : ""));
-            GUILayout.Space(7); GUILayout.Label("配置データ (JSON)");
+            GUILayout.Label("Cones: " + PlacedConeCount + (NeedsPlacement ? " (changed; update required)" : ""));
+            GUILayout.Space(7); GUILayout.Label("Layout File (JSON)");
             filePath = GUILayout.TextField(FilePath, GUILayout.MinWidth(0), GUILayout.ExpandWidth(true));
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button("保存")) SaveLayout();
-            if (GUILayout.Button("読込")) { LoadLayout(); GUIUtility.ExitGUI(); }
+            if (GUILayout.Button("Save")) SaveLayout();
+            if (GUILayout.Button("Load")) { LoadLayout(); GUIUtility.ExitGUI(); }
             GUILayout.EndHorizontal();
             GUILayout.Label(Status);
+            DrawRosControls();
+        }
+
+        void DrawRosControls()
+        {
+            PollRosService();
+            GUILayout.Space(10);
+            GUILayout.Label("ROS 2 Service (20 group slots)");
+            bool wasEnabled = GUI.enabled;
+            GUI.enabled = wasEnabled && !IsSendingToRos;
+            showRosSettings = GUILayout.Toggle(showRosSettings, "Connection Settings", "Button");
+            if (showRosSettings)
+            {
+                if (rosPortText == null) rosPortText = rosService.port.ToString(CultureInfo.InvariantCulture);
+                GUILayout.Label("Host (dedicated cone endpoint)");
+                string host = GUILayout.TextField(rosService.host ?? "");
+                GUILayout.Label("Port");
+                rosPortText = GUILayout.TextField(rosPortText, 5);
+                int.TryParse(rosPortText, out int port);
+                GUILayout.Label("Service");
+                string service = GUILayout.TextField(rosService.serviceName ?? "");
+                GUILayout.Label("Frame ID");
+                string frame = GUILayout.TextField(rosService.frameId ?? "");
+                if (host != rosService.host || port != rosService.port || service != rosService.serviceName || frame != rosService.frameId)
+                {
+                    BeforeEdit?.Invoke();
+                    rosService.host = host; rosService.port = port;
+                    rosService.serviceName = service; rosService.frameId = frame;
+                }
+                GUILayout.Label("ROS FLU: X forward, Y left, Z up (m). Frame Origin and timeout are in the Inspector.");
+            }
+            if (GUILayout.Button("Send Layout to ROS 2")) SendToRos();
+            GUI.enabled = wasEnabled;
+            if (IsSendingToRos && GUILayout.Button("Stop Waiting")) CancelRosService();
+            GUILayout.Label(RosStatus);
+        }
+
+        public bool SendToRos()
+        {
+            if (IsSendingToRos) return false;
+            foreach (ConeGroup group in groups)
+            {
+                if (!spacingText.TryGetValue(group.Key, out string text) ||
+                    !float.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out float value) ||
+                    value != float.Parse(group.Spacing.ToString("0.###", CultureInfo.InvariantCulture), CultureInfo.InvariantCulture))
+                { RosStatus = "Spacing input has changed. Click Place / Update Cones before sending."; return false; }
+            }
+            if (!TryGetPlacedGroups(out var snapshot, out string error)) { RosStatus = error; return false; }
+            Transform origin = rosService.frameOrigin;
+            if (!ConeRosRequestBuilder.TryBuild(snapshot, rosService.frameId,
+                origin != null ? origin.position : Vector3.zero,
+                origin != null ? origin.rotation : Quaternion.identity, out var request, out error))
+            { RosStatus = error; return false; }
+            try
+            {
+                rosCancellation = new CancellationTokenSource();
+                rosTask = ConeRosServiceClient.SendAsync(rosService.host, rosService.port, rosService.serviceName,
+                    request, rosService.timeoutSeconds, rosCancellation.Token);
+                RosStatus = "Sending once; waiting for one response...";
+                return true;
+            }
+            catch (Exception e)
+            {
+                rosCancellation?.Dispose(); rosCancellation = null;
+                RosStatus = e.Message; return false;
+            }
+        }
+
+        // EditorWindow pumps completion while the scene is stopped; runtime Update does the same.
+        public void PollRosService()
+        {
+            if (rosTask == null || !rosTask.IsCompleted) return;
+            try
+            {
+                SetConeLayoutResponse response = rosTask.GetAwaiter().GetResult();
+                RosStatus = (response.success ? "Accepted" : "Rejected") + ": " + response.message +
+                    " | Groups: " + response.group_count + " | Cone entries: " + response.cone_count +
+                    " | Response received. Sending finished.";
+            }
+            catch (OperationCanceledException) { RosStatus = "Waiting stopped. The receiver may have applied the layout. No automatic retry."; }
+            catch (Exception e) { RosStatus = "No response confirmed: " + e.Message; }
+            finally
+            {
+                rosTask = null;
+                rosCancellation?.Dispose(); rosCancellation = null;
+            }
+        }
+
+        public void CancelRosService()
+        {
+            rosCancellation?.Cancel();
+            rosCancellation?.Dispose(); rosCancellation = null;
         }
 
         public void HandleSceneClick(Vector3 point)
@@ -587,6 +734,7 @@ namespace OperaSimVR.ConePlacement
 
         void OnDisable()
         {
+            CancelRosService();
             SetEditing(false);
             if (Active == this) Active = null;
             ClearRoot(ref guidesRoot); ClearRoot(ref conesRoot);
@@ -595,7 +743,7 @@ namespace OperaSimVR.ConePlacement
         void OnDestroy()
         {
             DestroyObject(coneMesh); DestroyObject(coneMaterial); DestroyObject(lineMaterial);
-            DestroyObject(skin); DestroyObject(japaneseFont);
+            DestroyObject(skin); DestroyObject(uiFont);
         }
     }
 }

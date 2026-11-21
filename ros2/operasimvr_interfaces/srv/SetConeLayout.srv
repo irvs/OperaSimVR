@@ -1,0 +1,11 @@
+# Replace the entire previous layout. Used groups occupy slots [0, group_count).
+string frame_id
+uint32 group_count
+# Always 20 slots. Unused slots: group_id=0 and positions=[].
+operasimvr_interfaces/ConeGroup[20] groups
+---
+bool success
+string message
+uint32 group_count
+# Sum of positions in accepted groups; shared positions count in each group.
+uint32 cone_count

@@ -7,6 +7,24 @@ namespace OperaSimVR.ConePlacement.Tests
 {
     public sealed class ConeLayoutTests
     {
+        [Test] public void SharedConesKeepBothGroupMembershipsWithoutDuplicatingPhysicalCones()
+        {
+            var layout = new ConeLayout();
+            layout.AddVertex(new Vector3(0, 0, 0));
+            layout.AddVertex(new Vector3(4, 0, 0));
+            layout.AddVertex(new Vector3(2, 0, 0));
+            layout.AddVertex(new Vector3(6, 0, 0));
+            Assert.That(layout.SetNeighbors(1, new[] { 2 }, out _), Is.True);
+            Assert.That(layout.SetNeighbors(3, new[] { 4 }, out _), Is.True);
+            Assert.That(layout.TryGeneratePositionGroups(100, out var groups, out var error), Is.True, error);
+            Assert.That(groups.Select(g => g.Id), Is.EqualTo(new[] { 1, 3 }));
+            Assert.That(groups.Select(g => g.Key), Is.EqualTo(new[] { "1-2", "3-4" }));
+            Assert.That(groups[0].Positions, Is.EqualTo(new[] { Vector3.zero, Vector3.right * 2, Vector3.right * 4 }));
+            Assert.That(groups[1].Positions, Is.EqualTo(new[] { Vector3.right * 2, Vector3.right * 4, Vector3.right * 6 }));
+            Assert.That(layout.TryGeneratePositions(100, out var physical, out error), Is.True, error);
+            Assert.That(physical.Count, Is.EqualTo(4));
+        }
+
         static int Point(ConeLayout layout, float x, float z = 0) => layout.AddVertex(new Vector3(x, 0, z));
         static void Link(ConeLayout layout, int id, params int[] others)
         { Assert.That(layout.SetNeighbors(id, others, out string error), Is.True, error); }

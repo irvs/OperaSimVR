@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>operasimvr_cone_receiver</name>
+  <version>0.1.0</version>
+  <description>Example cone layout receiver and dedicated Unity TCP endpoint.</description>
+  <maintainer email="maintainers@example.com">OperaSimVR maintainers</maintainer>
+  <license>Apache-2.0</license>
+  <buildtool_depend>ament_python</buildtool_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>operasimvr_interfaces</exec_depend>
+  <exec_depend>ros_tcp_endpoint</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <export><build_type>ament_python</build_type></export>
+</package>

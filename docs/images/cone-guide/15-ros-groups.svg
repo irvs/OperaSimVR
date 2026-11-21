@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="440" viewBox="0 0 1000 440" role="img" aria-labelledby="title desc">
+  <title id="title">Twenty fixed group slots</title>
+  <desc id="desc">G1, G5, and G9 occupy groups zero, one, and two. The remaining seventeen slots have ID zero and empty positions.</desc>
+  <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0 0L8 3L0 6" fill="#4573a6"/></marker></defs>
+  <rect width="1000" height="440" rx="16" fill="#f3f6fa"/>
+  <g font-family="sans-serif" fill="#18334d">
+    <text x="35" y="44" font-size="26" font-weight="bold">One request • 20 fixed group slots</text>
+    <text x="35" y="78" font-size="18">group_count = 3   |   Sorted by G number   |   Unused slots stay empty</text>
+    <g font-size="21" text-anchor="middle">
+      <rect x="40" y="120" width="190" height="65" rx="9" fill="#dceedd"/><text x="135" y="160">G1</text>
+      <rect x="40" y="205" width="190" height="65" rx="9" fill="#dceedd"/><text x="135" y="245">G5</text>
+      <rect x="40" y="290" width="190" height="65" rx="9" fill="#dceedd"/><text x="135" y="330">G9</text>
+    </g>
+    <g stroke="#4573a6" stroke-width="3" marker-end="url(#arrow)"><path d="M240 153H315"/><path d="M240 238H315"/><path d="M240 323H315"/></g>
+    <g font-size="20">
+      <rect x="330" y="120" width="620" height="65" rx="9" fill="white" stroke="#a7bed5"/><text x="350" y="159">groups[0]   group_id: 1   positions: [point, …]</text>
+      <rect x="330" y="205" width="620" height="65" rx="9" fill="white" stroke="#a7bed5"/><text x="350" y="244">groups[1]   group_id: 5   positions: [point, …]</text>
+      <rect x="330" y="290" width="620" height="65" rx="9" fill="white" stroke="#a7bed5"/><text x="350" y="329">groups[2]   group_id: 9   positions: [point, …]</text>
+      <text x="350" y="401">groups[3] … groups[19]   group_id: 0   positions: []</text>
+    </g>
+  </g>
+</svg>

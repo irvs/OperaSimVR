@@ -1,74 +1,149 @@
-# OperaSimVR(PhysX)
-Simulator on Unity + PhysX communicating with ROS
+# OperaSimVR（Unity + PhysX）
 
-## コーン自動配置
+ROSと連携して、建設機械や地形を表示・操作するシミュレータです。
 
-フィールド上で頂点と接続を指定し、線や閉じたエリアの境界にコーンを配置できます。内周・外周を別グループにすると、二重の囲いも作れます。
+## コーンを置いてみる
 
-### Unity Editor（下部にProjectがある画面）で編集・保存
+**この手順では、地面に2点を置き、その間にコーンを並べて保存します。**
 
-OperaSimPhysXと同じように、Unity Editorで地形や物体、コーン配置を編集できます。プロジェクトのルートで次を実行すると、Playを開始せずにEditorを開きます。
+ウィンドウの表示は英語です。説明は日本語で、太字の英語は画面に表示される名前と同じです。上から1ステップずつ進めてください。
+
+**Unity Editorの「Scene」タブを使います。上部の ▶（Play）は押さず、停止したまま作業します。**
+
+![操作する画面。中央がScene、下がProject、右がCone Placement。](docs/images/cone-guide/01-workspace.png)
+
+### 1. Unity Editorを開く
+
+`OperaSimVR` フォルダでターミナルを開き、次のコマンドを実行します。
 
 ```bash
 ./operasimvr-unity-ubuntu --open-only
 ```
 
-1. 下部の **Project → Assets → Scenes** から **SampleScene** をダブルクリックします。
-2. 左の **Hierarchy** でシーン内の物体を選び、中央の **Scene** で位置などを編集し、右の **Inspector** で設定を変更します。下部の **Project** はファイル構成（Assets / Packages）を表示します。
-3. コーンを編集するには、上部メニューの **OperaSimVR → Cone Placement → 配置線を編集** を開きます。配置データがない場合は **このシーンにコーン配置機能を追加** を押します。
-4. **Sceneビューでクリック編集を有効にする** を有効にし、Sceneビューの地面クリックで頂点を追加します。P番号のそばの丸いハンドルをクリックして頂点を選び、隣接IDを指定します。グループごとの間隔を入力して **コーンを配置 / 更新** を押します。詳しい接続方法は以下の操作説明と同じです。
-5. **Playを停止した状態で編集し、Ctrl+Sでシーンを保存** すると、配置データも保存されます。このUbuntuでは **Ctrl+Z** でUndo、**Ctrl+Shift+Z** でRedoできます。シーンを開き直した後は、コーン配置ウィンドウを開くと配置が再表示されます。
+Unity Editorが開いたら、次へ進みます。初回は読み込みに時間がかかります。
 
-Terrainはそのまま地面として使えます。Planeやメッシュの地面にはColliderと **ConePlacementSurface** を追加してください。
+### 2. SampleSceneを開く
 
-このUbuntuでは、`--open-only`を既存のデスクトップ起動と同じGPU・Box64設定に合わせています。SampleSceneと上記の各パネルの表示、メニュー操作、Editorの更新処理を確認しました（2026-11-20）。検証記録は `Logs/unity-editor-workspace/verification.json` にあります。この編集起動のままPlayボタンを押しても描画方式は切り替わらないため、Compute Shaderを必要とする掘削・侵食などの実行には、下記のPlayer起動を使ってください。
+下の **Project** で `Assets → Scenes → SampleScene` をダブルクリックします。すでにHierarchyに **SampleScene** が表示されていれば、そのまま次へ進めます。
 
-![Unity Editorでのコーン編集検証。下部にProject、右側にコーン編集ウィンドウを配置。](docs/images/unity-editor-workspace.png)
+![ProjectからSampleSceneを開く場所。上部のSceneタブで作業する。](docs/images/cone-guide/02-scene.png)
 
-この画面で地面クリックによる頂点追加、87本から69本への間隔変更、Undo / Redo、シーン保存とEditor再起動後の配置復元を確認しました。画像は検証用の配置です。
+### 3. コーンのウィンドウを開く
 
-### Gameビュー / Linux Playerでの操作
+上部メニューで **OperaSimVR → Cone Placement → Edit Layout** を選びます。
 
-1. Unityで `SampleScene` を開いてPlayするか、ビルド済みのLinux Playerを `./operasimvr-player-ubuntu` で起動します。
-2. **F8** または右上の **コーン自動配置** を押して、俯瞰編集画面を開きます。**右ドラッグ** で移動、**ホイール** で拡大・縮小できます。
-3. **地面をクリック** して頂点を追加します。各頂点に `P1`, `P2`, … のIDが自動で付きます。
-4. **頂点のID表示をクリック** して選び、右側の **隣接ID** に接続先の数字を0～2個入力して **隣接関係を適用** を押します。例えば `P1` と `P2` を接続するには、`P1` の隣接ID欄に `2` を入力します。接続は双方向になり、蛍光色の線が表示されます。空欄は未接続です。
-5. 接続に応じてグループと間隔フォームが自動生成されます。端点のある接続は「線」、閉じた接続は「エリア」、未接続の頂点は「孤立点」です。
-6. **グループごとの間隔 (m)** を入力し、**コーンを配置 / 更新** を押します。各フォームの「適用」を個別に押さなくても、入力中の間隔が反映されます。角・端点にもコーンを置き、辺の最後の余りは指定間隔以下になります。
-7. **F8** または **Esc** で編集を終了し、元のカメラに戻ります。
+別枠のウィンドウで開く場合もあります。画像では右端に置いています。
 
-### 二重の囲い・折れ線を作る
+![英語のメニューからEdit Layoutを選ぶ。](docs/images/cone-guide/03-menu.png)
 
-内周と外周を、それぞれ独立した閉路として接続します。例えば内周を `1–2–3–4–1`、外周を `5–6–7–8–5` にすると、別グループとして異なる間隔を指定できます。内周の `P1` では隣接IDに `2` と `4` を指定します。二周目の位置と列間距離は、頂点の位置で指定してください。
+### 4. コーン配置機能を追加する
 
-折れ線は `9–10–11` のように接続し、両端はつなぎません。囲いと折れ線は同じフィールドに配置できます。
+**Add Cone Placement to Scene** を押します。このボタンがなく、**Layout** にオブジェクトが入っていれば追加済みです。
 
-### 配置の変更・保存・読込
+![Add Cone Placement to Sceneボタン。](docs/images/cone-guide/04-add-tool.png)
 
-- 頂点のID表示を選び、**次のクリック位置へ移動** または **頂点削除** で配置線を編集できます。
-- 頂点・接続・間隔を変更したら、**コーンを配置 / 更新** で再配置します。**配置を解除** はコーンだけを取り除きます。
-- **配置データ (JSON)** 欄で保存先のパスを指定し、**保存** を押すと頂点・接続・グループ間隔を保存できます。**読込** で復元した後は、**コーンを配置 / 更新** を押してください。
-- **Play中の変更は停止すると戻るため、必要な配置は停止前にJSON保存してください。**
+ここからは、まだ点がない状態を例にします。すでに点がある場合は、その点の番号を使って読み替えてください。既存の配置は消さずに続けられます。
 
-Gameビュー／Playerですぐに試す場合は、[二重の囲い＋折れ線のサンプルJSON](docs/examples/cone-layout-double-boundary.json) の絶対パスをJSON欄に入力し、**読込 → コーンを配置 / 更新 → 配置線の全体を表示** の順に操作します。
+### 5. 地面をクリックできる状態にする
 
-詳細な仕様、動作画面、検証手順は [コーン自動配置の操作方法と検証結果](docs/CONE_PLACEMENT.md) を参照してください。
+**Enable Scene Click Editing** を押して、オンにします。
 
-## Ubuntu
+![クリック編集をオンにした状態。](docs/images/cone-guide/05-enable.png)
 
-Linux版をビルドして起動する場合は、プロジェクトのルートで次を実行します。
+### 6. 1つ目の点を作る
+
+中央の **Scene** で、コーンを並べたい地面を1回クリックします。**P1** が現れます。
+
+![地面を1回クリックして作ったP1。](docs/images/cone-guide/06-point-one.png)
+
+### 7. 2つ目の点を作る
+
+同じ地面の、少し離れた場所を1回クリックします。**P2** が現れます。
+
+![2箇所目をクリックして作ったP2。まだ接続されていない。](docs/images/cone-guide/07-point-two.png)
+
+### 8. P1を選ぶ
+
+**P1のそばにある丸いハンドル** をクリックします。ウィンドウに **Selected Point: P1** と表示されれば選択できています。
+
+![P1を選択した状態。Selected PointがP1になっている。](docs/images/cone-guide/08-select.png)
+
+### 9. 接続先に「2」を入れる
+
+**Neighbor IDs** の左の欄に `2` を入力します。右の欄は空欄のままにします。
+
+`P2` ではなく、数字の `2` だけを入力してください。
+
+![P1のNeighbor IDsの左欄に2を入力。](docs/images/cone-guide/09-neighbor.png)
+
+### 10. 2点をつなぐ
+
+**Apply Connections** を押します。P1とP2の間に緑色の線が現れます。
+
+![Apply Connections後、P1とP2が緑色の線でつながる。](docs/images/cone-guide/10-connect.png)
+
+### 11. コーンの間隔を決める
+
+**Spacing (m)** に `2` を入力します。約2m間隔で並べる設定です。
+
+![Spacing (m)を2にした状態。](docs/images/cone-guide/11-spacing.png)
+
+### 12. コーンを並べる
+
+**Place / Update Cones** を押します。緑色の線に沿ってコーンが並びます。**Cones:** の右に配置数が表示されます。
+
+小さい **Apply** ボタンを押す必要はありません。端点にも置くため、最後の間隔は2mより短くなる場合があります。
+
+![2点の間にコーンを配置した結果。見やすいようにSceneを拡大した例。](docs/images/cone-guide/12-place.png)
+
+### 13. 保存する
+
+**Ctrl+S** でシーンを保存します。点・接続・間隔も一緒に保存されます。
+
+![シーン保存後。SampleSceneの名前の横に未保存を示すアスタリスクがない。](docs/images/cone-guide/13-save.png)
+
+次に開いたときは **Edit Layout** を開くと、保存した配置が再表示されます。
+
+## 配置したコーンをROS 2へ送る
+
+**Playボタンは不要です。** 最初に受信側を起動します。
 
 ```bash
-./operasimvr-unity-ubuntu --build
-./operasimvr-player-ubuntu
+./operasimvr-cone-service
 ```
 
-`SampleScene` と `SimpleScene` のTerrainに残っていた、ScanPattern未設定のLiDARコンポーネントは除去しました。LiDARを使う場合はセンサーを追加し、実際のScanPatternを設定してからPlayしてください。
+`Cone service ready` と表示されたら、コーンのウィンドウで順に操作します。
 
-With Unity 2022.3.4f1 installed, run `./operasimvr-unity-ubuntu` to start the original scene with its saved mode, topics, and ROS settings. Use `--mode viewer` for the ZX200 ROS viewer, or `--mode simulator`, `--mode preview`, `--mode preview-and-play`, and `--mode preview-ar` for the existing modes. `--ros-ip` and `--ros-port` provide optional connection overrides. `--build` builds a Linux x86_64 player; launch it with `./operasimvr-player-ubuntu`. See [the Ubuntu setup and verification notes](docs/UNITY_UBUNTU.md) for controls, setup, and the experimental ARM64 configuration.
-The Linux x86_64 player builds with Burst enabled. On the current ARM64 machine, the original terrain and machines render and the ZX200 follows loopback pose/joint data, using experimental Box64 and slow software rendering. Quest 3 Wi-Fi support uses an opt-in SteamVR/OpenVR backend (`--build --vr`, then `./operasimvr-player-ubuntu --vr`) with ALVR; headset operation and native Intel/AMD hardware still require device testing. See the verification limits in the notes.
-Actual OperaSimPhysX integration was also verified: simulator drive/turn commands changed its ROS state, and the Ubuntu viewer followed that state through `tools/ros-viewer-bridge.py`. This optional observation bridge forwards the original ROS bytes and discards Player publications; it generates no pose/joint states. See the notes for the separate ports, real integration recording, and first-pose camera framing.
-After building, `python3 tools/verify-ubuntu-player.py --output Logs/player-check` exercises rendering, two ROS TCP pose/joint states, and normal Player shutdown. It requires a graphical desktop and the ROS 2 Python message packages plus Pillow. See the notes for software rendering and the November 20 verification results.
+1. **Connection Settings** を開く。同じPCなら **Host: `127.0.0.1` / Port: `10001`** のままで使えます。
+2. **Place / Update Cones** を押す。
+3. **Send Layout to ROS 2** を1回押す。
+4. **Accepted: Layout replaced.** が表示されたら受信完了です。
+
+最大20グループです。G番号の小さい順に先頭から詰め、残りの枠は空で送ります。**応答を1回受信したら終了し、自動再送しません。** 拒否の応答でも終了し、理由を表示します。
+
+![20枠のうち先頭からグループを格納し、余った枠を空にする](docs/images/cone-guide/15-ros-groups.svg)
+
+[接続設定・サービス型・受信側サンプル・座標系の詳しい説明](docs/CONE_ROS2_SERVICE.md)
+
+## 操作に迷ったら
+
+| 困ったこと | 操作 |
+| --- | --- |
+| 地面が見づらい | Scene上でホイールで拡大・縮小。Alt＋左ドラッグで視点を回転、ホイールボタンのドラッグで移動。 |
+| 地面を押しても点ができない | **Scene** タブを選び、**Enable Scene Click Editing** がオンか確認。Terrain以外の地面にはColliderと **ConePlacementSurface** が必要。 |
+| ボタンが見えない | コーンのウィンドウ内を下にスクロールするか、ウィンドウを縦に広げる。 |
+| 違う場所に点を置いた | **Ctrl+Z** で1つ戻す。 |
+| 点を移動したい | 点の丸いハンドルを選択 → **Move Point** → 移動先の地面をクリック。 |
+| 間隔を変えたい | **Spacing (m)** を変更 → **Place / Update Cones** → **Ctrl+S**。 |
+| 通常のシーン編集に戻りたい | **Enable Scene Click Editing** をオフにする。 |
+
+## 次に試すこと
+
+- [四角い囲い・二重の囲い・JSON保存・Playerでの操作](docs/CONE_PLACEMENT.md)
+- [Ubuntuの起動・ビルド・ROS連携・VRの設定](docs/UNITY_UBUNTU.md)
+- [既存機能の説明：Chapter 1](OperaSimVR_CHAPTER1.md) / [Chapter 2](OperaSimVR_CHAPTER2.md)
+
+**GameビューやPlayerのF8で編集する場合は、終了前に「Layout File (JSON) → Save」で保存してください。** Play中の編集は、Ctrl+Sでは保持できません。
 
 ## Explanation
 - This system serves as the cyber component of ros2-tms for construction(https://github.com/irvs/ros2_tms_for_construction), a cyber-physical system (CPS) designed for earthwork construction sites.

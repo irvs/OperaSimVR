@@ -1,6 +1,6 @@
 {
     "name": "OperaSimVR.ConePlacement.Tests",
-    "references": ["OperaSimVR.ConePlacement"],
+    "references": ["OperaSimVR.ConePlacement", "Unity.Robotics.ROSTCPConnector.MessageGeneration", "Unity.Robotics.ROSTCPConnector.Messages"],
     "includePlatforms": ["Editor"],
     "optionalUnityReferences": ["TestAssemblies"],
     "autoReferenced": false

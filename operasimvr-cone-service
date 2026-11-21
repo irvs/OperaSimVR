@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cone_root=$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)
+if [[ "${1:-}" == --help || "${1:-}" == -h ]]; then
+    printf '%s\n' \
+        'Usage: ./operasimvr-cone-service [ROS launch arguments...]' \
+        'Build and start the cone receiver and its dedicated TCP endpoint (127.0.0.1:10001).' \
+        '  tcp_ip:=0.0.0.0          Accept Unity from another computer.' \
+        '  tcp_port:=10001         Dedicated cone TCP port.' \
+        '  service_name:=/cone_placement/set_layout' \
+        '  output_path:=/absolute/path/cones.json  Optionally save the received layout.' \
+        '  ROS_DISTRO              Default: humble.' \
+        '  OPERASIMVR_ENDPOINT_SRC Default: $HOME/ros2_ws/src/ROS-TCP-Endpoint.'
+    exit 0
+fi
+
+cone_ros_setup="/opt/ros/${ROS_DISTRO:-humble}/setup.bash"
+if [[ ! -f "$cone_ros_setup" ]]; then
+    printf 'ROS 2 setup was not found: %s\n' "$cone_ros_setup" >&2
+    exit 1
+fi
+set +u
+source "$cone_ros_setup"
+set -u
+if ! command -v colcon >/dev/null 2>&1; then
+    printf '%s\n' 'colcon is required to build the cone service packages.' >&2
+    exit 1
+fi
+cone_paths=("$cone_root/ros2")
+cone_packages=(operasimvr_interfaces operasimvr_cone_receiver)
+cone_endpoint_src="${OPERASIMVR_ENDPOINT_SRC:-$HOME/ros2_ws/src/ROS-TCP-Endpoint}"
+if [[ -f "$cone_endpoint_src/package.xml" ]]; then
+    cone_paths+=("$cone_endpoint_src")
+    cone_packages+=(ros_tcp_endpoint)
+elif ! ros2 pkg prefix ros_tcp_endpoint >/dev/null 2>&1; then
+    printf '%s\n' 'ROS-TCP-Endpoint ROS2 v0.7 is required. Set OPERASIMVR_ENDPOINT_SRC to its source directory.' >&2
+    exit 1
+fi
+cd "$cone_root"
+colcon --log-base "$cone_root/Build/ROS2Cones/log" build \
+    --base-paths "${cone_paths[@]}" \
+    --build-base "$cone_root/Build/ROS2Cones/build" \
+    --install-base "$cone_root/Build/ROS2Cones/install" \
+    --packages-select "${cone_packages[@]}" \
+    --event-handlers console_cohesion- console_direct-
+set +u
+source "$cone_root/Build/ROS2Cones/install/local_setup.bash"
+set -u
+exec ros2 launch operasimvr_cone_receiver cone_service.launch.py "$@"

@@ -8808,6 +8808,74 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 1536909547770621645, guid: c12a7b61b5050d61bbdc6698f0017fae, type: 3}
   m_PrefabInstance: {fileID: 454268462110116560}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1239805514
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1239805516}
+  - component: {fileID: 1239805515}
+  m_Layer: 0
+  m_Name: Cone Placement
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1239805515
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1239805514}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c16ef049eaf84c0597903b461b5f6eb4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  layout:
+    version: 1
+    nextId: 4
+    vertices:
+    - id: 1
+      position: {x: -58.463776, y: 0.45040512, z: 22.877197}
+      neighbors: 02000000
+    - id: 2
+      position: {x: -41.786118, y: 0.21044159, z: 29.96872}
+      neighbors: 01000000
+    - id: 3
+      position: {x: -38.21991, y: 0.3195572, z: 10.88623}
+      neighbors: 
+    settings:
+    - key: 1-2
+      spacing: 2
+    - key: 3
+      spacing: 2
+  surfaceLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  showGuides: 1
+  conesPlaced: 1
+  filePath: /home/kasahara/.config/unity3d/DefaultCompany/OperaSim-PhysX/cone-layout-SampleScene.json
+--- !u!4 &1239805516
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1239805514}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 24
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!43 &1242958620
 Mesh:
   m_ObjectHideFlags: 0
@@ -11368,6 +11436,8 @@ MonoBehaviour:
   showMachineryPositions: 1
   logJointAngleRecords: 1
   clearAndRebuildOnMessage: 1
+  showBlockLabels: 1
+  showMachineryLabels: 1
   defaultBlockHeight: 0.1
   machineryMarkerDiameter: 0.8
   blockLabelHeight: 0.25
@@ -11389,6 +11459,10 @@ MonoBehaviour:
   machineryColor: {r: 1, g: 0, b: 0, a: 1}
   targetTerrain: {fileID: 1392124484}
   terrainHeightOffset: 0.05
+  machineryConnectionTopic: /machinery_connection_params_json
+  showMachineryConnections: 1
+  machineryConnectionColor: {r: 1, g: 0.25, b: 0, a: 1}
+  machineryConnectionWidth: 0.15
 --- !u!43 &1767056671
 Mesh:
   m_ObjectHideFlags: 0

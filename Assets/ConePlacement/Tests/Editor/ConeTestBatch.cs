@@ -17,7 +17,7 @@ namespace OperaSimVR.ConePlacement.Tests
         public static void Run()
         {
             var report = new Report();
-            foreach (Type type in new[] { typeof(ConeLayoutTests), typeof(ConeControllerTests) })
+            foreach (Type type in new[] { typeof(ConeLayoutTests), typeof(ConeControllerTests), typeof(ConeRosServiceTests) })
             {
                 foreach (MethodInfo method in type.GetMethods().OrderBy(m => m.Name))
                 {

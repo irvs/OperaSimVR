@@ -27,6 +27,34 @@ namespace OperaSimVR.ConePlacement
         public float Spacing { get; internal set; }
     }
 
+    /// <summary>An immutable set of cone positions and the path/ring they belong to.</summary>
+    public sealed class ConePositionGroup
+    {
+        public int Id { get; }
+        public string Key { get; }
+        public bool IsClosed { get; }
+        public float Spacing { get; }
+        public IReadOnlyList<Vector3> Positions { get; }
+
+        internal ConePositionGroup(ConeGroup group, IEnumerable<Vector3> positions)
+        {
+            Id = group.OrderedVertexIds.Min();
+            Key = group.Key;
+            IsClosed = group.IsClosed;
+            Spacing = group.Spacing;
+            Positions = Array.AsReadOnly(positions.ToArray());
+        }
+
+        internal ConePositionGroup(ConePositionGroup group, IEnumerable<Vector3> positions)
+        {
+            Id = group.Id;
+            Key = group.Key;
+            IsClosed = group.IsClosed;
+            Spacing = group.Spacing;
+            Positions = Array.AsReadOnly(positions.ToArray());
+        }
+    }
+
     /// <summary>Undirected paths/rings. All edits validate before changing the graph.</summary>
     [Serializable]
     public sealed class ConeLayout
@@ -53,9 +81,9 @@ namespace OperaSimVR.ConePlacement
 
         public int AddVertex(Vector3 position)
         {
-            if (!ValidPosition(position)) throw new ArgumentException("頂点の座標が不正です。");
+            if (!ValidPosition(position)) throw new ArgumentException("Point coordinates are invalid.");
             if (vertices.Count >= MaxVertices || nextId == int.MaxValue)
-                throw new InvalidOperationException("頂点数またはIDの上限に達しました。");
+                throw new InvalidOperationException("Point count or ID limit reached.");
             int id = nextId++;
             vertices.Add(new ConeVertex(id, position));
             return id;
@@ -65,8 +93,8 @@ namespace OperaSimVR.ConePlacement
         {
             error = null;
             ConeVertex vertex = FindVertex(id);
-            if (vertex == null) { error = "頂点IDが存在しません。"; return false; }
-            if (!ValidPosition(position)) { error = "頂点の座標が不正です。"; return false; }
+            if (vertex == null) { error = "Point ID does not exist."; return false; }
+            if (!ValidPosition(position)) { error = "Point coordinates are invalid."; return false; }
             vertex.Move(position);
             return true;
         }
@@ -75,7 +103,7 @@ namespace OperaSimVR.ConePlacement
         {
             error = null;
             ConeVertex vertex = FindVertex(id);
-            if (vertex == null) { error = "頂点IDが存在しません。"; return false; }
+            if (vertex == null) { error = "Point ID does not exist."; return false; }
             // Materialize old settings so a split can inherit the old group's spacing.
             GetGroups();
             foreach (ConeVertex other in vertices) other.Links.Remove(id);
@@ -87,17 +115,17 @@ namespace OperaSimVR.ConePlacement
         {
             error = null;
             ConeVertex vertex = FindVertex(id);
-            if (vertex == null) { error = "頂点IDが存在しません。"; return false; }
+            if (vertex == null) { error = "Point ID does not exist."; return false; }
             var proposed = (neighbors ?? Enumerable.Empty<int>()).ToList();
-            if (proposed.Count > 2) { error = "隣接点は0～2個です。"; return false; }
-            if (proposed.Distinct().Count() != proposed.Count) { error = "同じ隣接IDを重複指定できません。"; return false; }
+            if (proposed.Count > 2) { error = "Each point can have up to two neighbors."; return false; }
+            if (proposed.Distinct().Count() != proposed.Count) { error = "Neighbor IDs must be unique."; return false; }
             foreach (int target in proposed)
             {
-                if (target == id) { error = "自分自身には接続できません。"; return false; }
+                if (target == id) { error = "A point cannot connect to itself."; return false; }
                 ConeVertex other = FindVertex(target);
-                if (other == null) { error = "隣接ID " + target + " が存在しません。"; return false; }
+                if (other == null) { error = "Neighbor ID " + target + " does not exist."; return false; }
                 if (!other.Links.Contains(id) && other.Links.Count >= 2)
-                { error = "頂点 " + target + " の隣接点が2個を超えます。"; return false; }
+                { error = "Point " + target + " would have more than two neighbors."; return false; }
             }
             GetGroups();
             foreach (int old in vertex.Links.ToArray()) FindVertex(old).Links.Remove(id);
@@ -166,30 +194,43 @@ namespace OperaSimVR.ConePlacement
         {
             error = null;
             if (!IsFinite(spacing) || spacing < MinimumSpacing || spacing > 10000)
-            { error = "配置間隔は0.1～10000mで入力してください。"; return false; }
-            if (!GetGroups().Any(g => g.Key == groupKey)) { error = "グループが存在しません。"; return false; }
+            { error = "Spacing must be between 0.1 and 10000 m."; return false; }
+            if (!GetGroups().Any(g => g.Key == groupKey)) { error = "Group does not exist."; return false; }
             settings.Find(s => s.key == groupKey).spacing = spacing;
             return true;
         }
 
         /// <summary>Keep every corner, step by the requested spacing, shorten the final gap on each edge.</summary>
         public bool TryGeneratePositions(int maxCount, out List<Vector3> positions, out string error)
+            => TryGeneratePositions(maxCount, out positions, out _, out error);
+
+        /// <summary>A shared physical cone can belong to more than one group.</summary>
+        public bool TryGeneratePositionGroups(int maxCount, out List<ConePositionGroup> groups, out string error)
+            => TryGeneratePositions(maxCount, out _, out groups, out error);
+
+        bool TryGeneratePositions(int maxCount, out List<Vector3> positions,
+            out List<ConePositionGroup> groups, out string error)
         {
             positions = new List<Vector3>();
+            groups = new List<ConePositionGroup>();
             error = null;
             maxCount = Math.Min(maxCount, MaxCones);
             var candidate = new List<Vector3>();
+            var candidateGroups = new List<ConePositionGroup>();
             var unique = new HashSet<Vector3>();
             foreach (ConeGroup group in GetGroups())
             {
+                var groupPositions = new List<Vector3>();
+                var groupUnique = new HashSet<Vector3>();
                 var ids = group.OrderedVertexIds;
                 int edgeCount = group.IsClosed ? ids.Count : ids.Count - 1;
                 for (int i = 0; i < ids.Count; i++)
                 {
                     Vector3 a = FindVertex(ids[i]).Position;
+                    if (groupUnique.Add(a)) groupPositions.Add(a);
                     if (unique.Add(a))
                     {
-                        if (candidate.Count >= maxCount) { error = "コーン数が上限（" + maxCount + "個）を超えます。間隔を広げてください。"; return false; }
+                        if (candidate.Count >= maxCount) { error = "Cone count exceeds the limit (" + maxCount + "). Increase the spacing."; return false; }
                         candidate.Add(a);
                     }
                     if (i >= edgeCount) continue;
@@ -197,15 +238,18 @@ namespace OperaSimVR.ConePlacement
                     double length = Vector3.Distance(a, b);
                     double steps = Math.Max(0, Math.Ceiling(length / group.Spacing - 0.000001) - 1);
                     if (steps > maxCount - candidate.Count)
-                    { error = "コーン数が上限（" + maxCount + "個）を超えます。間隔を広げてください。"; return false; }
+                    { error = "Cone count exceeds the limit (" + maxCount + "). Increase the spacing."; return false; }
                     for (int step = 1; step <= (int)steps; step++)
                     {
                         Vector3 point = Vector3.Lerp(a, b, (float)(step * (double)group.Spacing / length));
+                        if (groupUnique.Add(point)) groupPositions.Add(point);
                         if (unique.Add(point)) candidate.Add(point);
                     }
                 }
+                candidateGroups.Add(new ConePositionGroup(group, groupPositions));
             }
             positions = candidate;
+            groups = candidateGroups;
             return true;
         }
 
@@ -220,49 +264,49 @@ namespace OperaSimVR.ConePlacement
             layout = null;
             error = null;
             if (string.IsNullOrWhiteSpace(json) || json.Length > 2000000)
-            { error = "配置JSONが空、またはサイズ上限を超えています。"; return false; }
+            { error = "Layout JSON is empty or exceeds the size limit."; return false; }
             try
             {
                 ConeLayout parsed = JsonUtility.FromJson<ConeLayout>(json);
                 if (parsed == null || parsed.version != 1 || parsed.vertices == null || parsed.settings == null
                     || parsed.vertices.Count > MaxVertices || !json.Contains("\"vertices\"") || !json.Contains("\"version\""))
-                    throw new ArgumentException("配置JSONの形式・バージョンが不正です。");
+                    throw new ArgumentException("Layout JSON format or version is invalid.");
                 var ids = new HashSet<int>();
                 foreach (ConeVertex vertex in parsed.vertices)
                 {
                     if (vertex == null || vertex.Id < 1 || vertex.Id == int.MaxValue || !ids.Add(vertex.Id)
                         || !ValidPosition(vertex.Position) || vertex.Links == null || vertex.Links.Count > 2
                         || vertex.Links.Distinct().Count() != vertex.Links.Count)
-                        throw new ArgumentException("頂点ID・座標・隣接関係が不正です。");
+                        throw new ArgumentException("Point IDs, coordinates, or connections are invalid.");
                 }
                 foreach (ConeVertex vertex in parsed.vertices)
                     foreach (int target in vertex.Neighbors)
                         if (target == vertex.Id || !ids.Contains(target) || !parsed.FindVertex(target).Links.Contains(vertex.Id))
-                            throw new ArgumentException("隣接IDが不正、または双方向になっていません。");
+                            throw new ArgumentException("Neighbor IDs are invalid or connections are not bidirectional.");
                 var keys = new HashSet<string>();
                 foreach (GroupSetting setting in parsed.settings)
                 {
                     if (setting == null || string.IsNullOrEmpty(setting.key) || !keys.Add(setting.key)
                         || !IsFinite(setting.spacing) || setting.spacing < MinimumSpacing || setting.spacing > 10000)
-                        throw new ArgumentException("グループの配置間隔が不正です。");
+                        throw new ArgumentException("Group spacing is invalid.");
                     var parts = setting.key.Split('-');
                     int previous = 0;
                     foreach (string part in parts)
                     {
                         if (!int.TryParse(part, out int id) || id <= previous)
-                            throw new ArgumentException("グループIDが不正です。");
+                            throw new ArgumentException("Group ID is invalid.");
                         previous = id;
                     }
                 }
                 int minimumNext = parsed.vertices.Count == 0 ? 1 : parsed.vertices.Max(v => v.Id) + 1;
                 parsed.nextId = Math.Max(minimumNext, parsed.nextId);
-                if (parsed.nextId < 1) throw new ArgumentException("次の頂点IDが不正です。");
+                if (parsed.nextId < 1) throw new ArgumentException("Next point ID is invalid.");
                 parsed.GetGroups();
                 layout = parsed;
                 return true;
             }
             catch (Exception exception) when (exception is ArgumentException || exception is InvalidOperationException || exception is NullReferenceException)
-            { error = "読込失敗: " + exception.Message; return false; }
+            { error = "Load failed: " + exception.Message; return false; }
         }
     }
 }

@@ -1,6 +1,6 @@
 {
     "name": "OperaSimVR.ConePlacement",
     "rootNamespace": "OperaSimVR.ConePlacement",
-    "references": ["Unity.ugui"],
+    "references": ["Unity.ugui", "Unity.Robotics.ROSTCPConnector.MessageGeneration", "Unity.Robotics.ROSTCPConnector.Messages"],
     "autoReferenced": true
 }
