@@ -28600,7 +28600,7 @@ MonoBehaviour:
   ViaDB: 0
   JointPositions: []
   OffsetSwing: 0
-  OffsetBoom: -28.4
+  OffsetBoom: -32
   OffsetArm: 0
   OffsetBucket: 0
 --- !u!114 &3551451264562611630
@@ -28617,11 +28617,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ChengePositionSW: 1
   PoseMsgType: 1
-  PoseSubscribeTopicName: /zx200/pose
+  PoseSubscribeTopicName: /zx200/global_pose
   ViaDBSubscribeTopicName: /output/zx200/odom
   ViaDB: 0
   Coordinate: 1
-  WorldToMap: 0
+  WorldToMap: 1
   UseHeightFromTopic: 0
   DumpUpperCorrection: 0
   DumpUpperDiff: 0
@@ -28644,7 +28644,7 @@ MonoBehaviour:
   Offset_y: 0
   Offset_z: -19317.145
   OffsetRotation_x: 0
-  OffsetRotation_y: 0
+  OffsetRotation_y: -90
   OffsetRotation_z: 0
 --- !u!114 &3551451264562611645
 MonoBehaviour:
