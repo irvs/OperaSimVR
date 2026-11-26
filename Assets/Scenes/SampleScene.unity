@@ -24174,7 +24174,7 @@ MonoBehaviour:
   KindsOfHeavyMachinery: 0
   Offset_x: -138648.38
   Offset_y: 0
-  Offset_z: -19317.145
+  Offset_z: -19317.14
   OffsetRotation_x: 0
   OffsetRotation_y: -90
   OffsetRotation_z: 0
@@ -24405,6 +24405,10 @@ GameObject:
   - component: {fileID: 1842354361}
   - component: {fileID: 1842354360}
   - component: {fileID: 1842354359}
+  - component: {fileID: 1842354363}
+  - component: {fileID: 1842354362}
+  - component: {fileID: 1842354365}
+  - component: {fileID: 1842354364}
   m_Layer: 0
   m_Name: d37pxi24
   m_TagString: robot
@@ -24467,6 +24471,83 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 11
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1842354362
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1842354358}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b44405aee2451141a54c4f8bab60f96, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ChengePositionSW: 1
+  PoseMsgType: 0
+  PoseSubscribeTopicName: /d37pxi/global_pose
+  ViaDBSubscribeTopicName: 
+  ViaDB: 0
+  Coordinate: 1
+  WorldToMap: 1
+  UseHeightFromTopic: 0
+  DumpUpperCorrection: 0
+  DumpUpperDiff: 0
+  MapMachinePosition: {x: 0, y: 0, z: 0}
+  MapMachineRotation: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &1842354363
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1842354358}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b564e56bdadf9cd4f9d96537279e8eb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  KindsOfHeavyMachinery: 0
+  Offset_x: -138648.4
+  Offset_y: 0
+  Offset_z: -19317.14
+  OffsetRotation_x: 0
+  OffsetRotation_y: -90
+  OffsetRotation_z: 0
+--- !u!114 &1842354364
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1842354358}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc8b80745dae554459601de3e3d8c8bf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  HeightOffset: 0
+  PreviewObject: {fileID: 0}
+--- !u!114 &1842354365
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1842354358}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98dbd64536ed7034d9ae8ccac42b1b43, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  JointChengeSw: 1
+  JointSubscribeTopicName: /d37pxi/joint_states
+  ViaDBSubscribeTopicName: 
+  ViaDB: 0
+  JointPositions: []
+  OffsetBladeLift: 0
+  OffsetBladeAngle: 0
+  OffsetBladeTilt: 0
 --- !u!43 &1842613556
 Mesh:
   m_ObjectHideFlags: 0
@@ -28513,8 +28594,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e69972db1468b4e47904fc6cd69a2de8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  JointChengeSw: 0
-  JointSubscribeTopicName: /zx200/joint_state
+  JointChengeSw: 1
+  JointSubscribeTopicName: /zx200/joint_states
   ViaDBSubscribeTopicName: /output/zx200/joint_state
   ViaDB: 0
   JointPositions: []
@@ -28534,7 +28615,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0b44405aee2451141a54c4f8bab60f96, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ChengePositionSW: 0
+  ChengePositionSW: 1
   PoseMsgType: 1
   PoseSubscribeTopicName: /zx200/pose
   ViaDBSubscribeTopicName: /output/zx200/odom
@@ -30577,7 +30658,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0b44405aee2451141a54c4f8bab60f96, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ChengePositionSW: 0
+  ChengePositionSW: 1
   PoseMsgType: 1
   PoseSubscribeTopicName: /mst110cr_2/global_pose
   ViaDBSubscribeTopicName: /output/mst110cr_2/global_pose
@@ -30628,7 +30709,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   KindsOfHeavyMachinery: 0
-  Offset_x: -138648.38
+  Offset_x: -138648.4
   Offset_y: 0
   Offset_z: -19317.145
   OffsetRotation_x: 0
