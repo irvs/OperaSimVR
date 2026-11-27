@@ -24126,7 +24126,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   JointChengeSw: 0
   ViaDB: 0
-  VesselSubscriberTopicName: /mst2200vdr/joint_states
+  VesselSubscriberTopicName: /mst2200vdr/joint_state
   ViaDBVesselSubscriberTopicName: /output/mst2200vdr/joint_states
   JointSelection: 1
   AngleOfSwing: 0
